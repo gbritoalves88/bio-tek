@@ -1,13 +1,28 @@
 import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import {
+  RouterOutlet,
+  RouterLink,
+  RouterLinkActive
+} from '@angular/router';
 
 @Component({
   selector: 'app-shell',
   standalone: true,
-  imports: [RouterOutlet],
-  template: `
-    <h1>Shell OK</h1>
-    <router-outlet></router-outlet>
-  `
+  imports: [
+    RouterOutlet,
+    RouterLink,
+    RouterLinkActive
+  ],
+  templateUrl: './shell.component.html',
+  styleUrl: './shell.component.scss'
 })
-export class ShellComponent {}
+export class ShellComponent {
+
+  darkMode = false;
+
+  toggleTheme() {
+    this.darkMode = !this.darkMode;
+
+    document.body.classList.toggle('dark-theme');
+  }
+}

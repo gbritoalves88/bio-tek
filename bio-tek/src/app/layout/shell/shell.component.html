@@ -1,2 +1,56 @@
-<h1>Shell funcionando</h1>
-<router-outlet></router-outlet>
+<div class="shell">
+
+<header class="header">
+
+  <h1>Bookly</h1>
+
+  <button class="theme-btn" (click)="toggleTheme()">
+    🌙
+  </button>
+
+</header>
+
+  <div class="main-layout">
+
+    <aside class="sidebar">
+      <nav>
+       <a
+        routerLink="/"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }">
+        Home
+      </a>
+
+      <a
+        routerLink="/biblioteca"
+        routerLinkActive="active">
+        Biblioteca
+      </a>
+
+      <a
+        routerLink="/comunidade"
+        routerLinkActive="active">
+        Comunidade
+      </a>
+
+      <a
+        routerLink="/social"
+        routerLinkActive="active">
+        Social
+      </a>
+
+      <a
+        routerLink="/perfil"
+        routerLinkActive="active">
+        Perfil
+      </a>
+      </nav>
+    </aside>
+
+    <main class="content">
+      <router-outlet></router-outlet>
+    </main>
+
+  </div>
+
+</div>
