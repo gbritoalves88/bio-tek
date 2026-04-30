@@ -1,2 +1,135 @@
-<h1>Shell funcionando</h1>
-<router-outlet></router-outlet>
+<div class="shell">
+  <header class="header">
+    <div class="header-inner">
+      <button class="hamburger" (click)="toggleMenu()" aria-label="Menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+
+      <a routerLink="/inicio" class="logo-link" aria-label="Ir para Home">
+        <svg class="logo-full" viewBox="0 0 120 30" fill="none">
+          <path d="M4 25.5A2.5 2.5 0 0 1 6.5 23H20V2H6.5A2.5 2.5 0 0 0 4 4.5v21z"
+                stroke="currentColor" stroke-width="2" fill="none"/>
+          <text x="28" y="22" font-family="'Segoe UI', sans-serif" font-size="18"
+                font-weight="700" fill="currentColor">Bio-Tek</text>
+        </svg>
+      </a>
+
+      <button class="theme-btn" (click)="toggleTheme()">
+        {{ isDarkMode ? '☀️' : '🌙' }}
+      </button>
+    </div>
+  </header>
+
+  <div class="main-layout">
+    <div class="overlay" [class.active]="menuOpen" (click)="closeMenu()"></div>
+
+    <div class="layout-container">
+      <aside class="sidebar" [class.open]="menuOpen">
+        <nav>
+          <a routerLink="/inicio"
+             routerLinkActive="active"
+             [routerLinkActiveOptions]="{ exact: true }"
+             (click)="closeMenu()">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+              <polyline points="9 22 9 12 15 12 15 22"/>
+            </svg>
+            Home
+          </a>
+          <a routerLink="/inicio/biblioteca"
+             routerLinkActive="active"
+             (click)="closeMenu()">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+            </svg>
+            Biblioteca
+          </a>
+          <a routerLink="/inicio/comunidade"
+             routerLinkActive="active"
+             (click)="closeMenu()">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+            Comunidade
+          </a>
+          <a routerLink="/inicio/social"
+             routerLinkActive="active"
+             (click)="closeMenu()">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </svg>
+            Social
+          </a>
+          <a routerLink="/inicio/perfil"
+             routerLinkActive="active"
+             (click)="closeMenu()">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+            Perfil
+          </a>
+        </nav>
+      </aside>
+
+      <main class="content">
+        <router-outlet></router-outlet>
+      </main>
+    </div>
+  </div>
+
+  <nav class="bottom-nav">
+    <a routerLink="/inicio"
+       routerLinkActive="active"
+       [routerLinkActiveOptions]="{ exact: true }">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+        <polyline points="9 22 9 12 15 12 15 22"/>
+      </svg>
+      <span>Início</span>
+    </a>
+
+    <a routerLink="/inicio/biblioteca"
+       routerLinkActive="active">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+      </svg>
+      <span>Biblioteca</span>
+    </a>
+
+    <a routerLink="/inicio/comunidade"
+       routerLinkActive="active">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+        <circle cx="9" cy="7" r="4"/>
+        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+      </svg>
+      <span>Comunidade</span>
+    </a>
+
+    <a routerLink="/inicio/social"
+       routerLinkActive="active">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+      </svg>
+      <span>Social</span>
+    </a>
+
+    <a routerLink="/inicio/perfil"
+       routerLinkActive="active">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+        <circle cx="12" cy="7" r="4"/>
+      </svg>
+      <span>Perfil</span>
+    </a>
+  </nav>
+</div>

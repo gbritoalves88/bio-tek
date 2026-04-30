@@ -1,0 +1,151 @@
+.login {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: 32px 20px;
+  background: var(--bg-primary);
+  transition: background 0.3s;
+}
+
+.login-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 36px;
+  width: 100%;
+  max-width: 380px;
+  text-align: center;
+}
+
+// ===== LOGO =====
+.logo-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+
+  .logo-grande {
+    width: 80px;
+    height: 80px;
+    color: var(--accent);
+  }
+
+  .app-nome {
+    margin: 0;
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  .slogan {
+    margin: 0;
+    font-size: 14px;
+    color: var(--text-secondary);
+  }
+}
+
+// ===== BOTÕES =====
+.botoes-login {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.btn-social {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  .btn-icon {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+  }
+
+  &:hover {
+    border-color: var(--accent);
+  }
+}
+
+.btn-google {
+  &:hover {
+    background: rgba(66, 133, 244, 0.08);
+    border-color: #4285f4;
+  }
+}
+
+.btn-facebook {
+  &:hover {
+    background: rgba(24, 119, 242, 0.08);
+    border-color: #1877f2;
+  }
+}
+
+// ===== DIVIDER =====
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 8px 0;
+
+  &::before,
+  &::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border-color);
+  }
+
+  span {
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+}
+
+// ===== BOTÃO CONVIDADO =====
+.btn-convidado {
+  padding: 14px;
+  border: 1px dashed var(--border-color);
+  border-radius: 12px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+}
+
+// ===== TERMOS =====
+.termos {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+
+  a {
+    color: var(--accent);
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
