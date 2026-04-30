@@ -1,11 +1,48 @@
-body {
-  margin: 0;
-  background: #f5f1e8;
-  color: #222;
-  transition: 0.3s;
+/* ===== VARIÁVEIS GLOBAIS ===== */
+:root {
+  --bg-primary: #111111;
+  --bg-card: #1e1e1e;
+  --bg-header: #111111;
+  --bg-sidebar: #111111;
+  --bg-bottom-nav: #111111;
+  --text-primary: #ffffff;
+  --text-secondary: #999999;
+  --border-color: #2a2a2a;
+  --accent: #db7c00
 }
 
-body.dark-theme {
-  background: #121212;
-  color: #ffffff;
+body.light-theme {
+  --bg-primary: #F5EFE6;
+  --bg-card: #ffffff;
+  --bg-header: #F5EFE6;
+  --bg-sidebar: #F5EFE6;
+  --bg-bottom-nav: #F5EFE6;
+  --text-primary: #111111;
+  --text-secondary: #888888;
+  --border-color: #e8e0d5;
+  --accent: #db7c00
+}
+
+/* ===== BASE ===== */
+body {
+  margin: 0;
+   min-height: 100vh;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  transition: background 0.3s, color 0.3s;
+}
+
+@media (max-width: 768px) {
+  button, a {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+html {
+   scroll-behavior: smooth;
+  overflow-y: auto;
 }

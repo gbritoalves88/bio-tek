@@ -9,8 +9,12 @@ import { PerfilComponent } from './features/perfil/perfil.component';
 import { LoginComponent } from './features/login/login.component';
 
 export const routes: Routes = [
+  // Tela inicial → Login
+  { path: '', component: LoginComponent },
+
+  // App interno (SEM /app)
   {
-    path: '',
+    path: 'inicio',
     component: ShellComponent,
     children: [
       { path: '', component: HomeComponent },
@@ -21,8 +25,6 @@ export const routes: Routes = [
     ]
   },
 
-  {
-    path: 'login',
-    component: LoginComponent
-  }
+  // Fallback
+  { path: '**', redirectTo: '' }
 ];

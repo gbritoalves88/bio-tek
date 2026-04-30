@@ -1,73 +1,300 @@
 .home {
-  padding: 24px;
+  padding: 20px 16px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100%;
+  transition: background 0.3s, color 0.3s;
 }
 
 .hero {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
+  margin-bottom: 28px;
+
+  h1 {
+    margin: 0;
+    font-size: 26px;
+    font-weight: 700;
+  }
 }
 
-.hero h1 {
-  margin: 0;
-}
-
-.hero p {
-  color: #666;
-}
-
-.hero-stats {
-  display: flex;
-  gap: 12px;
-}
-
-.hero-stats span {
-  background: #ffffff;
-  padding: 10px 14px;
-  border-radius: 10px;
-  font-weight: 600;
-}
-
+// ===== LEITURA ATUAL =====
 .reading-now {
-  background: linear-gradient(135deg, #f4a261, #e76f51);
-  color: white;
-  padding: 24px;
-  border-radius: 18px;
-  margin-bottom: 24px;
+  background: var(--bg-card);
+  padding: 20px;
+  border-radius: 14px;
+  margin-bottom: 20px;
+  border: 1px solid var(--border-color);
+  transition: background 0.3s, border-color 0.3s;
+
+  h2 {
+    margin: 0 0 14px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--accent);
+    font-weight: 600;
+  }
+}
+
+.book-info {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+
+  .book-cover {
+    width: 104px;  // ⬅️ Era 56px
+    height: 142px; // ⬅️ Era 80px
+    object-fit: cover;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  }
+
+  .book-details {
+    h3 {
+      margin: 0 0 4px;
+      font-size: 20px;
+      font-weight: 600;
+    }
+
+    p {
+      margin: 0;
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+  }
 }
 
 .progress {
-  height: 10px;
-  background: rgba(255,255,255,0.3);
+  height: 4px;
+  background: var(--border-color);
   border-radius: 999px;
-  margin-top: 12px;
+  margin-top: 16px;
+  overflow: hidden;
 }
 
 .bar {
-  width: 35%;
   height: 100%;
-  background: white;
+  background: var(--accent);
   border-radius: 999px;
+  transition: width 0.5s ease;
 }
 
+// ===== GRID =====
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 18px;
+  grid-template-columns: 1fr;
+  gap: 12px;
 }
 
 .card {
-  background: white;
+  background: var(--bg-card);
   padding: 20px;
   border-radius: 14px;
-  box-shadow: 0 6px 14px rgba(0,0,0,0.08);
+  border: 1px solid var(--border-color);
+  transition: background 0.3s, border-color 0.3s;
+
+  h3 {
+    margin: 0 0 14px;
+    font-size: 15px;
+    font-weight: 600;
+  }
 }
 
-button {
-  margin-top: 10px;
-  padding: 10px 14px;
+// ===== ADICIONAR LIVRO =====
+.add-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 12px;
+
+  h3 {
+    margin: 0;
+  }
+}
+
+.btn-accent {
+  padding: 12px 28px;
   border: none;
-  border-radius: 8px;
+  border-radius: 24px;
   cursor: pointer;
+  background: var(--accent);
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 14px;
+  transition: opacity 0.2s;
+
+  &:hover {
+    opacity: 0.85;
+  }
+}
+
+// ===== LISTA DE LIVROS =====
+.book-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.book-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+ .book-thumb {
+      width: 104px;  // ⬅️ Era 60px
+      height: 140px; // ⬅️ Era 85px
+      object-fit: cover;
+      border-radius: 6px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    }
+
+  .book-item-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+    .book-title {
+      font-size: 13px; // ⬅️ Era 12px
+      max-width: 90px; // ⬅️ Era 80px
+    }
+
+  .book-stars {
+    font-size: 12px;
+    color: var(--accent);
+  }
+}
+
+// ===== RESPONSIVO =====
+@media (min-width: 600px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 900px) {
+  .home {
+    padding: 28px 0;
+  }
+}
+
+.btn-accent-full {
+  width: 100%;
+  max-width: 450px; // ⬅️ Adicione esta linha (ajuste o valor como quiser)
+  padding: 14px 16px; // ⬅️ Diminuí o padding
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+  background: var(--accent);
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 15px;
+  transition: opacity 0.2s;
+  grid-column: 1 / -1;
+
+  &:hover {
+    opacity: 0.85;
+  }
+}
+
+// ===== LINHA DE LIVROS (horizontal) =====
+.book-row {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scroll-snap-type: x proximity;
+
+  .book-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    min-width: 100px; // ⬅️ Aumentado
+    scroll-snap-align: start;
+    text-align: center;
+
+    .book-thumb {
+      width: 104px;  // ⬅️ Igual ao da capa principal
+      height: 140px; // ⬅️ Igual ao da capa principal
+      object-fit: cover;
+      border-radius: 6px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    }
+
+    .book-title {
+      font-size: 13px; // ⬅️ Aumentado
+      font-weight: 500;
+      color: var(--text-primary);
+      max-width: 100px; // ⬅️ Aumentado
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .book-stars {
+      font-size: 12px; // ⬅️ Aumentado
+      color: var(--accent);
+      white-space: nowrap;
+    }
+  }
+}
+
+.btn-circle {
+  width: 48px;        // ⬅️ Um pouco maior
+  height: 48px;
+  min-width: 48px;
+  border-radius: 50%;
+  border: none;       // ⬅️ Sem borda
+  background: var(--accent); // ⬅️ Fundo laranja
+  color: #ffffff;     // ⬅️ Ícone branco
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  transition: opacity 0.2s;
+
+  svg {
+    width: 22px;
+    height: 22px;
+    stroke-width: 3;  // ⬅️ Linha mais grossa (negrito)
+  }
+
+  &:hover {
+    opacity: 0.85;
+  }
+}
+
+
+// ===== CITAÇÃO =====
+.citacao {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 12px 12px 0;
+  padding: 18px 20px;
+  margin-bottom: 24px;
+  transition: background 0.3s, border-color 0.3s;
+
+  .citacao-texto {
+    margin: 0 0 8px;
+    font-family: 'Caveat', cursive;
+    font-size: 20px;
+    font-weight: 400;
+    color: var(--text-primary);
+    line-height: 1.4;
+    font-style: italic;
+  }
+
+  .citacao-autor {
+    font-family: 'Caveat', cursive;
+    font-size: 16px;
+    color: var(--accent);
+    font-weight: 600;
+  }
 }
