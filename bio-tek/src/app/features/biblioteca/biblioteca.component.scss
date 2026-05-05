@@ -22,10 +22,9 @@
 }
 
 .btn-circle {
-  width: 44px;
   height: 44px;
   min-width: 44px;
-  border-radius: 50%;
+  border-radius: 22px;
   border: none;
   background: var(--accent);
   color: #ffffff;
@@ -33,19 +32,40 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 0;
   padding: 10px;
-  transition: opacity 0.2s;
+  transition: all 0.3s ease;
+  overflow: hidden;
+  white-space: nowrap;
 
-  svg {
+  .btn-icon {
     width: 20px;
     height: 20px;
+    min-width: 20px;
+    flex-shrink: 0;
   }
 
-  &:hover {
-    opacity: 0.85;
+  .btn-label {
+    font-size: 14px;
+    font-weight: 600;
+    max-width: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition: all 0.3s ease;
+  }
+
+  &:hover,
+  &:active {
+    gap: 6px;
+    padding: 10px 16px;
+    border-radius: 22px;
+
+    .btn-label {
+      max-width: 40px;
+      opacity: 1;
+    }
   }
 }
-
 // ===== CAMPO DE BUSCA =====
 .search-box {
   display: flex;

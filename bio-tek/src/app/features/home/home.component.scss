@@ -177,10 +177,17 @@
 }
 
 @media (min-width: 900px) {
-  .home {
-    padding: 28px 0;
+  .book-row .book-item .book-thumb {
+    width: 104px;
+    height: 140px;
+  }
+  .book-row .book-item .book-title {
+    font-size: 13px;
+    max-width: 100px;
   }
 }
+
+
 
 .btn-accent-full {
   width: 100%;
@@ -204,69 +211,92 @@
 // ===== LINHA DE LIVROS (horizontal) =====
 .book-row {
   display: flex;
-  gap: 16px;
+  gap: 12px;
   overflow-x: auto;
   padding-bottom: 4px;
   scroll-snap-type: x proximity;
+  -webkit-overflow-scrolling: touch;
 
   .book-item {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 8px;
-    min-width: 100px; // ⬅️ Aumentado
+    gap: 6px;
+    min-width: 80px; // Reduzido
     scroll-snap-align: start;
     text-align: center;
+    flex-shrink: 0;
 
     .book-thumb {
-      width: 104px;  // ⬅️ Igual ao da capa principal
-      height: 140px; // ⬅️ Igual ao da capa principal
+      width: 80px;  // Reduzido no mobile
+      height: 112px; // Reduzido no mobile
       object-fit: cover;
       border-radius: 6px;
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
     }
 
     .book-title {
-      font-size: 13px; // ⬅️ Aumentado
+      font-size: 12px;
       font-weight: 500;
       color: var(--text-primary);
-      max-width: 100px; // ⬅️ Aumentado
+      max-width: 80px;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
 
     .book-stars {
-      font-size: 12px; // ⬅️ Aumentado
+      font-size: 11px;
       color: var(--accent);
       white-space: nowrap;
     }
   }
 }
 
+
 .btn-circle {
-  width: 48px;        // ⬅️ Um pouco maior
-  height: 48px;
-  min-width: 48px;
-  border-radius: 50%;
-  border: none;       // ⬅️ Sem borda
-  background: var(--accent); // ⬅️ Fundo laranja
-  color: #ffffff;     // ⬅️ Ícone branco
+  height: 44px;
+  min-width: 44px;
+  border-radius: 22px;
+  border: none;
+  background: var(--accent);
+  color: #ffffff;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 12px;
-  transition: opacity 0.2s;
+  gap: 0;
+  padding: 10px;
+  transition: all 0.3s ease;
+  overflow: hidden;
+  white-space: nowrap;
 
-  svg {
-    width: 22px;
-    height: 22px;
-    stroke-width: 3;  // ⬅️ Linha mais grossa (negrito)
+  .btn-icon {
+    width: 20px;
+    height: 20px;
+    min-width: 20px;
+    flex-shrink: 0;
   }
 
-  &:hover {
-    opacity: 0.85;
+  .btn-label {
+    font-size: 14px;
+    font-weight: 600;
+    max-width: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition: all 0.3s ease;
+  }
+
+  &:hover,
+  &:active {
+    gap: 6px;
+    padding: 10px 16px;
+    border-radius: 22px;
+
+    .btn-label {
+      max-width: 40px;
+      opacity: 1;
+    }
   }
 }
 
