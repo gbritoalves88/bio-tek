@@ -5,6 +5,7 @@ import {
   RouterLink,
   RouterLinkActive
 } from '@angular/router';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-shell',
@@ -22,7 +23,7 @@ export class ShellComponent implements OnInit {
   isDarkMode = true;
   menuOpen = false;
 
-  constructor(@Inject(PLATFORM_ID) private platformId: Object) {}
+  constructor(@Inject(PLATFORM_ID) private platformId: Object, private router: Router) {}
 
   ngOnInit() {
     if (isPlatformBrowser(this.platformId)) {
@@ -51,5 +52,9 @@ export class ShellComponent implements OnInit {
 
   closeMenu() {
     this.menuOpen = false;
+  }
+
+  sair() {
+    this.router.navigate(['/']);
   }
 }
