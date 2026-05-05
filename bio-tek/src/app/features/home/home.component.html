@@ -1,0 +1,61 @@
+<section class="home">
+    <div class="hero">
+      <div>
+        <h1>Olá, Leitor 👋</h1>
+      </div>
+      <button class="btn-circle" title="Adicionar livro">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="5" x2="12" y2="19"/>
+          <line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="citacao">
+    <p class="citacao-texto">"{{ citacao.texto }}"</p>
+    <span class="citacao-autor">— {{ citacao.autor }}</span>
+  </div>
+
+  <!-- LENDO AGORA -->
+  <div class="reading-now">
+    <h2>Lendo agora</h2>
+    <div class="book-info">
+      <img [src]="livroAtual.capa" [alt]="livroAtual.titulo" class="book-cover" />
+      <div class="book-details">
+        <h3>{{ livroAtual.titulo }}</h3>
+        <p>Capítulo {{ livroAtual.capituloAtual }} de {{ livroAtual.totalCapitulos }}</p>
+      </div>
+    </div>
+    <div class="progress">
+      <div class="bar" [style.width.%]="livroAtual.progresso"></div>
+    </div>
+  </div>
+
+  <div class="grid">
+  <!-- ADICIONAR LIVRO - só botão horizontal -->
+  <button class="btn-accent-full">+ Novo</button>
+
+  <!-- RECOMENDADOS -->
+  <div class="card">
+    <h3>Recomendados</h3>
+    <div class="book-row">
+      <div class="book-item" *ngFor="let livro of recomendados">
+        <img [src]="livro.capa" [alt]="livro.titulo" class="book-thumb" />
+        <span class="book-title">{{ livro.titulo }}</span>
+        <span class="book-stars">⭐ {{ livro.estrelas }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ÚLTIMOS ADICIONADOS -->
+  <div class="card">
+    <h3>Últimos adicionados</h3>
+    <div class="book-row">
+      <div class="book-item" *ngFor="let livro of ultimosAdicionados">
+        <img [src]="livro.capa" [alt]="livro.titulo" class="book-thumb" />
+        <span class="book-title">{{ livro.titulo }}</span>
+      </div>
+    </div>
+  </div>
+</div>
+</section>

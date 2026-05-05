@@ -1,0 +1,27 @@
+<section class="comunidade">
+  <div class="header-section">
+    <h1>Comunidade</h1>
+  </div>
+
+  <div class="recomendacoes-list">
+      <div class="recomendacao-card" *ngFor="let rec of recomendacoes">
+      <div class="usuario-info">
+        <img [src]="rec.avatar" [alt]="rec.usuario" class="avatar" />
+        <div class="usuario-texto">
+          <span class="usuario-nome">{{ rec.usuario }}</span>
+          <span class="recomendou">recomendou um livro</span>
+        </div>
+        <span class="estrelas">⭐ {{ rec.estrelas }}</span>
+      </div>
+
+      <div class="livro-info">
+        <img [src]="rec.capa" [alt]="rec.livro" class="capa" />
+        <div class="livro-texto">
+          <h3 class="livro-titulo">{{ rec.livro }}</h3>
+          <p class="livro-autor">{{ rec.autor }}</p>
+          <p class="comentario" *ngIf="rec.comentario">"{{ rec.comentario }}"</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

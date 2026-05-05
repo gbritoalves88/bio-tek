@@ -1,0 +1,33 @@
+<section class="social">
+  <div class="header-section">
+    <h1>Social</h1>
+  </div>
+
+  <!-- Campo de busca -->
+  <div class="search-box">
+    <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="11" cy="11" r="8"/>
+      <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+    </svg>
+    <input
+      type="text"
+      placeholder="Buscar perfil..."
+      [(ngModel)]="termoBusca"
+      class="search-input"
+    />
+  </div>
+
+  <!-- Pessoas que você acompanha -->
+  <p class="section-label">Pessoas que você acompanha</p>
+
+  <div class="pessoas-list">
+    <div class="pessoa-card" *ngFor="let pessoa of pessoasFiltradas">
+      <img [src]="pessoa.avatar" [alt]="pessoa.nome" class="avatar" />
+      <div class="info">
+        <span class="nome">{{ pessoa.nome }}</span>
+        <span class="arroba">{{ pessoa.arroba }}</span>
+      </div>
+      <span class="seguidores">{{ pessoa.seguidores }} seguidores</span>
+    </div>
+  </div>
+</section>
