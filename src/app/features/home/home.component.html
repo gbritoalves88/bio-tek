@@ -35,7 +35,8 @@
   <div class="grid">
   <!-- ADICIONAR LIVRO - só botão horizontal -->
 
-  <!-- RECOMENDADOS -->
+<!-- RECOMENDADOS -->
+<div class="card-with-arrow">
   <div class="card">
     <h3>Recomendados</h3>
     <div class="book-row">
@@ -46,8 +47,15 @@
       </div>
     </div>
   </div>
+  <a routerLink="/inicio/comunidade" class="arrow-tab">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <polyline points="9 18 15 12 9 6"/>
+    </svg>
+  </a>
+</div>
 
-  <!-- ÚLTIMOS ADICIONADOS -->
+<!-- ÚLTIMOS ADICIONADOS -->
+<div class="card-with-arrow">
   <div class="card">
     <h3>Últimos adicionados</h3>
     <div class="book-row">
@@ -57,5 +65,11 @@
       </div>
     </div>
   </div>
+  <a routerLink="/inicio/biblioteca" class="arrow-tab">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <polyline points="9 18 15 12 9 6"/>
+    </svg>
+  </a>
+</div>
 </div>
 </section>

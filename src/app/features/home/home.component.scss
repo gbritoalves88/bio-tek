@@ -328,3 +328,41 @@
     font-weight: 600;
   }
 }
+
+// ===== CARD COM SETA LATERAL =====
+.card-with-arrow {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+
+  .card {
+    flex: 1;
+    border-radius: 14px 0 0 14px; // cantos arredondados só na esquerda
+    border-right: none;
+  }
+
+  .arrow-tab {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 15px;
+    min-width: 15px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-left: none;
+    border-radius: 0 14px 14px 0;
+    color: var(--accent);
+    cursor: pointer;
+    transition: background 0.2s;
+
+    svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    &:hover {
+      background: var(--accent);
+      color: #ffffff;
+    }
+  }
+}

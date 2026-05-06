@@ -33,6 +33,11 @@
                 "glob": "**/*",
                 "input": "src/assets",
                 "output": "assets"
+              },
+              {
+                "glob": "favicon.svg",
+                "input": "src",
+                "output": "/"
               }
             ],
             "styles": [
