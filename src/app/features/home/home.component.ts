@@ -2,15 +2,20 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { Livro } from './home.model';
+import { AddBookModalComponent } from '../../shared/add-book-modal/add-book-modal.component';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, AddBookModalComponent],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'
 })
 export class HomeComponent {
+
+  // Modal
+  modalAberto = false;
+
   // Livro atual
   livroAtual: Livro = {
     id: 1,
@@ -22,11 +27,10 @@ export class HomeComponent {
     totalCapitulos: 34
   };
 
-   citacao = {
+  citacao = {
     texto: 'Um leitor vive mil vidas antes de morrer. O homem que nunca lê vive apenas uma.',
     autor: 'George R. R. Martin'
   };
-
 
   // Recomendados
   recomendados: Livro[] = [
@@ -74,4 +78,14 @@ export class HomeComponent {
       capa: 'assets/capas/habitos-atomicos.jpg'
     }
   ];
+
+  abrirModal(): void {
+    this.modalAberto = true;
+  }
+
+  onLivroAdicionado(livro: any): void {
+    console.log('Livro adicionado:', livro);
+    this.modalAberto = false;
+    // Atualizar listas futuramente
+  }
 }
