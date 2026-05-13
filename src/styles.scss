@@ -46,3 +46,7 @@ html {
    scroll-behavior: smooth;
   overflow-y: auto;
 }
+
+[hidden] {
+  display: none !important;
+}

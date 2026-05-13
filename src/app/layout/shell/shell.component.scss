@@ -16,7 +16,7 @@ $max-content-width: 900px;
   height: 100dvh;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+
 }
 
 // ===== HEADER =====
@@ -99,7 +99,7 @@ $max-content-width: 900px;
   flex: 1;
   display: flex;
   position: relative;
-  overflow: hidden;
+  //overflow: hidden;
 }
 
 .overlay {
@@ -311,7 +311,8 @@ $max-content-width: 900px;
     padding-bottom: 0;
     width: auto;
     max-width: $max-content-width;
-    overflow-y: visible; // ⬅️ Remove scroll interno
+    overflow-y: visible;// ⬅️ Remove scroll interno
+   // max-height: calc(100vh - #{$header-height});
   }
 
   .bottom-nav {

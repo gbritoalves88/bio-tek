@@ -1,9 +1,11 @@
+
+
 <section class="home">
     <div class="hero">
       <div>
         <h1>Olá, Leitor 👋</h1>
       </div>
-        <button class="btn-circle" title="Adicionar livro">
+        <button class="btn-circle" title="Adicionar livro" (click)="abrirModal()">
           <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
             <line x1="12" y1="5" x2="12" y2="19"/>
             <line x1="5" y1="12" x2="19" y2="12"/>
@@ -72,4 +74,11 @@
   </a>
 </div>
 </div>
+
+<app-add-book-modal
+  *ngIf="modalAberto"
+  (fechar)="modalAberto = false"
+  (livroAdicionado)="onLivroAdicionado($event)">
+</app-add-book-modal>
+
 </section>
