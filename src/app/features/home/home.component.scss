@@ -366,3 +366,14 @@
     }
   }
 }
+
+.empty-state {
+  text-align: center;
+  padding: 30px 20px;
+
+  p {
+    color: var(--text-secondary);
+    font-size: 14px;
+    margin: 0;
+  }
+}

@@ -1,19 +1,32 @@
-import { HttpInterceptorFn } from '@angular/common/http';
-import { inject } from '@angular/core';
-import { LoginService } from '../../features/login/login.service';
+import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
+import { HttpInterceptor, HttpRequest, HttpHandler, HttpEvent } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { isPlatformBrowser } from '@angular/common';
 
-export const authInterceptor: HttpInterceptorFn = (req, next) => {
-  const loginService = inject(LoginService);
-  const token = loginService.getToken();
+@Injectable()
+export class AuthInterceptor implements HttpInterceptor {
+  constructor(@Inject(PLATFORM_ID) private platformId: Object) {}
 
-  if (token) {
-    const cloned = req.clone({
-      setHeaders: {
-        Authorization: `Bearer ${token}`
+  intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+    // Não adicionar token para APIs externas
+    if (req.url.includes('api.imgbb.com')) {
+      return next.handle(req);
+    }
+
+    // Só acessa localStorage no navegador
+    if (isPlatformBrowser(this.platformId)) {
+      const token = localStorage.getItem('token');
+
+      if (token) {
+        const cloned = req.clone({
+          setHeaders: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+        return next.handle(cloned);
       }
-    });
-    return next(cloned);
-  }
+    }
 
-  return next(req);
-};
+    return next.handle(req);
+  }
+}
