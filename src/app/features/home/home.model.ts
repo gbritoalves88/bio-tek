@@ -1,11 +1,18 @@
 export interface Livro {
-  id: number;
+  id: string;              // Era number, agora string (GUID)
   titulo: string;
   autor: string;
-  capa: string; // caminho para assets
-  progresso?: number; // porcentagem
-  capituloAtual?: number;
-  totalCapitulos?: number;
-  estrelas?: number;
-  status?: 'lendo' | 'nao-lido' | 'lido';
+  imagem?: string;         // URL da capa (ImgBB ou placeholder)
+  codigoBarras?: string;
+  descricao?: string;
+  status: StatusLeitura;   // Enum numérico
+  progresso?: number;
+  estrelas?: number;       // Mock por enquanto
+  dataCriacao?: string;
+}
+
+export enum StatusLeitura {
+  QueroLer = 1,
+  Lendo = 2,
+  Lido = 3
 }

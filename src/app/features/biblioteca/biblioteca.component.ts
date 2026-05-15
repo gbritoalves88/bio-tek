@@ -1,82 +1,121 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms'; // ⬅️ Adicione esta linha
-
-interface Livro {
-  id: number;
-  titulo: string;
-  autor: string;
-  capa: string;
-  status: 'lendo' | 'nao-lido' | 'lido';
-  progresso?: number;
-  estrelas?: number;
-}
+import { Component, OnInit, Inject, PLATFORM_ID, ChangeDetectorRef } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { LivroBiblioteca, StatusLeitura, Nota } from './biblioteca.model';
+import { BibliotecaService } from './biblioteca.service';
+import { AddBookModalComponent } from '../../shared/add-book-modal/add-book-modal.component';
 
 @Component({
   selector: 'app-biblioteca',
   standalone: true,
-  imports: [CommonModule, FormsModule], // ⬅️ Adicione FormsModule aqui
+  imports: [CommonModule, FormsModule, AddBookModalComponent],
   templateUrl: './biblioteca.component.html',
-  styleUrl: './biblioteca.component.scss'
+  styleUrl: './biblioteca.component.scss',
+  host: { 'ngSkipHydration': 'true' }
 })
-export class BibliotecaComponent {
+export class BibliotecaComponent implements OnInit {
   termoBusca = '';
+  livros: LivroBiblioteca[] = [];
+  modalAberto = false;
+  modalEdicaoAberto = false;
+  livroEditando: LivroBiblioteca | null = null;
+  statusLeitura = StatusLeitura;
+  notas = Nota;
 
-  livros: Livro[] = [
-    {
-      id: 1,
-      titulo: 'O Nome do Vento',
-      autor: 'Patrick Rothfuss',
-      capa: 'assets/capas/nome-do-vento.jpg',
-      status: 'lendo',
-      progresso: 35
-    },
-    {
-      id: 2,
-      titulo: 'Duna',
-      autor: 'Frank Herbert',
-      capa: 'assets/capas/duna.jpg',
-      status: 'nao-lido'
-    },
-    {
-      id: 3,
-      titulo: '1984',
-      autor: 'George Orwell',
-      capa: 'assets/capas/1984.jpg',
-      status: 'lido',
-      estrelas: 4.7
-    },
-    {
-      id: 4,
-      titulo: 'Mindset',
-      autor: 'Carol Dweck',
-      capa: 'assets/capas/mindset.jpg',
-      status: 'nao-lido'
-    },
-    {
-      id: 5,
-      titulo: 'Berserk Vol. 1',
-      autor: 'Kentaro Miura',
-      capa: 'assets/capas/berserk.jpg',
-      status: 'lido',
-      estrelas: 4.9
-    },
-    {
-      id: 6,
-      titulo: 'Hábitos Atômicos',
-      autor: 'James Clear',
-      capa: 'assets/capas/habitos-atomicos.jpg',
-      status: 'nao-lido'
+  constructor(
+    private bibliotecaService: BibliotecaService,
+    @Inject(PLATFORM_ID) private platformId: Object,
+    private cdr: ChangeDetectorRef
+  ) {}
+
+  ngOnInit(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      this.carregarLivros();
     }
-  ];
+  }
 
-  get livrosFiltrados(): Livro[] {
+  carregarLivros(): void {
+    this.bibliotecaService.getMeusLivros().subscribe({
+      next: (livros) => {
+        this.livros = livros.sort((a, b) =>
+          new Date(b.dataCriacao || '').getTime() - new Date(a.dataCriacao || '').getTime()
+        );
+        this.cdr.markForCheck();
+      },
+      error: (err) => console.error('Erro ao carregar livros:', err)
+    });
+  }
+
+  get livrosFiltrados(): LivroBiblioteca[] {
     if (!this.termoBusca.trim()) return this.livros;
     const termo = this.termoBusca.toLowerCase();
     return this.livros.filter(
-      livro =>
-        livro.titulo.toLowerCase().includes(termo) ||
-        livro.autor.toLowerCase().includes(termo)
+      l => l.titulo.toLowerCase().includes(termo) || l.autor.toLowerCase().includes(termo)
     );
+  }
+
+  getStatusTexto(status: number): string {
+    switch (status) {
+      case 2: return '📖 Lendo';
+      case 3: return '✅ Lido';
+      default: return '📕 Quero ler';
+    }
+  }
+
+  getStatusClass(status: number): string {
+    switch (status) {
+      case 2: return 'lendo';
+      case 3: return 'lido';
+      default: return 'nao-lido';
+    }
+  }
+
+  abrirModal(): void {
+    this.modalAberto = true;
+  }
+
+  onLivroAdicionado(livro: any): void {
+    this.modalAberto = false;
+    this.carregarLivros();
+  }
+
+  deletarLivro(id: string): void {
+    if (confirm('Tem certeza que deseja remover este livro?')) {
+      this.bibliotecaService.deletarLivro(id).subscribe({
+        next: () => this.carregarLivros(),
+        error: (err) => console.error('Erro ao deletar:', err)
+      });
+    }
+  }
+
+  abrirEdicao(livro: LivroBiblioteca): void {
+    this.livroEditando = { ...livro };
+    this.modalEdicaoAberto = true;
+  }
+
+  fecharEdicao(): void {
+    this.modalEdicaoAberto = false;
+    this.livroEditando = null;
+  }
+
+  salvarEdicao(): void {
+    if (!this.livroEditando) return;
+
+    const livroParaSalvar = {
+      ...this.livroEditando,
+      status: Number(this.livroEditando.status),
+      estrelas: this.livroEditando.estrelas ? Number(this.livroEditando.estrelas) : undefined
+    };
+
+    this.bibliotecaService.atualizarLivroComAvaliacao(this.livroEditando.id, livroParaSalvar).subscribe({
+      next: (resultado) => {
+        if (resultado) {
+          console.log('✅ Avaliação salva:', resultado);
+        }
+        this.fecharEdicao();
+        this.carregarLivros();
+      },
+      error: (err) => console.error('Erro ao atualizar:', err)
+    });
   }
 }
