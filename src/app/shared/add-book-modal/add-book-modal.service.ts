@@ -28,18 +28,4 @@ export class AddBookModalService {
     return this.http.get<any>(`http://localhost:5081/api/Livro/buscar/isbn/${isbn}`);
   }
 
-  uploadImagem(base64: string): Observable<string> {
-    const imagemLimpa = base64.split(',')[1];
-    const body = new URLSearchParams();
-    body.set('image', imagemLimpa);
-
-    const url = `${environment.imgbbUrl}?key=${environment.imgbbApiKey}`;
-
-    // ⬅️ Usa httpSemAuth (sem token JWT)
-    return this.httpSemAuth.post<any>(url, body.toString(), {
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-    }).pipe(
-      map(response => response.data.url)
-    );
-  }
 }
