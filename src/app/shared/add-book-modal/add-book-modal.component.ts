@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ZXingScannerModule } from '@zxing/ngx-scanner';
 import { BarcodeFormat } from '@zxing/library';
 import { AddBookModalService } from './add-book-modal.service';
+import { UploadService } from '../../shared/services/upload.service';
 
 @Component({
   selector: 'app-add-book-modal',
@@ -36,7 +37,8 @@ export class AddBookModalComponent {
 
   constructor(
     private addBookService: AddBookModalService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private uploadService: UploadService
   ) {}
 
   fecharModal(): void {
@@ -152,7 +154,7 @@ export class AddBookModalComponent {
       return;
     }
 
-    this.addBookService.uploadImagem(this.novoLivro.capa).subscribe({
+    this.uploadService.uploadImagem(this.novoLivro.capa).subscribe({
       next: (url) => {
         this.novoLivro.capa = url;
         this.salvarLivro();

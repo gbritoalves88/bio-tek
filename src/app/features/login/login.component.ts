@@ -1,4 +1,4 @@
-import { Component, Inject, PLATFORM_ID } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { LoginService } from './login.service';
@@ -51,7 +51,13 @@ export class LoginComponent {
               payload.email
             ).subscribe({
               next: () => {
-                this.router.navigate(['/inicio']);
+                if (response.novoUsuario) {
+                  this.router.navigate(['/inicio/perfil'], {
+                    queryParams: { novo: true }
+                  });
+                } else {
+                  this.router.navigate(['/inicio']);
+                }
               },
               error: (err) => {
                 console.error('Erro ao logar:', err);
@@ -64,11 +70,28 @@ export class LoginComponent {
     client.requestCode();
   }
 
-  entrarComFacebook() {
-    throw new Error('Method not implemented.');
+  entrarComFacebook(): void {
+    console.log('Facebook login não implementado');
   }
 
+
+
   entrarComoConvidado(): void {
-    throw new Error('Method not implemented.');
+  const nome = 'Leitor Convidado';
+  const email = 'convidado' + Date.now() + '@mock.com';
+
+    this.loginService.loginMock(nome, email).subscribe({
+      next: (response) => {
+        if (response.novoUsuario) {
+          this.router.navigate(['/inicio/perfil'], {
+            queryParams: { novo: true }
+          });
+        } else {
+          this.router.navigate(['/inicio']);
+        }
+      },
+      error: (err) => console.error('Erro ao logar:', err)
+    });
   }
+
 }

@@ -1,17 +1,10 @@
+// src/app/features/login/login.service.ts
+
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable, tap } from 'rxjs';
-
-export interface LoginResponse {
-  token: string;
-  usuario: {
-    id: string;
-    nome: string;
-    email: string;
-    tema: number;
-  };
-}
+import { LoginResponse } from './login.model';
 
 @Injectable({
   providedIn: 'root'
@@ -39,10 +32,12 @@ export class LoginService {
   }
 
   getToken(): string | null {
+    if (typeof localStorage === 'undefined') return null;
     return localStorage.getItem('token');
   }
 
   getUsuario(): any {
+    if (typeof localStorage === 'undefined') return null;
     const usuario = localStorage.getItem('usuario');
     return usuario ? JSON.parse(usuario) : null;
   }
@@ -55,5 +50,20 @@ export class LoginService {
     localStorage.removeItem('token');
     localStorage.removeItem('usuario');
     this.router.navigate(['/']);
+  }
+
+  loginMock(nome: string, email: string): Observable<LoginResponse> {
+    const id = 'mock-' + Date.now();
+    return this.http.post<LoginResponse>(`${this.apiUrl}/mock`, {
+      id,
+      idToken: 'fake-mock-token',
+      nome,
+      email
+    }).pipe(
+      tap(response => {
+        localStorage.setItem('token', response.token);
+        localStorage.setItem('usuario', JSON.stringify(response.usuario));
+      })
+    );
   }
 }
