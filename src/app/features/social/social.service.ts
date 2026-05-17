@@ -30,7 +30,10 @@ export class SocialService {
   getSeguindoComDados(): Observable<UsuarioSocial[]> {
     return this.http.get<Seguidor[]>(`${this.apiSeguidor}/seguindo`).pipe(
       switchMap(seguidores => {
-        if (!seguidores.length) return [];
+        // Se não há seguidores, retorna array vazio IMEDIATAMENTE
+        if (!seguidores || seguidores.length === 0) {
+          return []; // ⬅️ Observable de array vazio
+        }
         const requisicoes = seguidores.map(s => this.getUsuario(s.idUsuario));
         return forkJoin(requisicoes);
       })
