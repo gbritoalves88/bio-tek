@@ -52,7 +52,7 @@ export class LoginService {
     this.router.navigate(['/']);
   }
 
-  loginMock(nome: string, email: string): Observable<LoginResponse> {
+  loginMockOld(nome: string, email: string): Observable<LoginResponse> {
     const id = 'mock-' + Date.now();
     return this.http.post<LoginResponse>(`${this.apiUrl}/mock`, {
       id,
@@ -66,4 +66,23 @@ export class LoginService {
       })
     );
   }
+
+
+  loginMock(nome: string, email: string, nickname?: string): Observable<LoginResponse> {
+    const id = 'mock-' + Date.now();
+    return this.http.post<LoginResponse>(`${this.apiUrl}/mock`, {
+      id,
+      idToken: 'fake-mock-token',
+      nome,
+      email,
+      nickname
+    }).pipe(
+      tap(response => {
+        localStorage.setItem('token', response.token);
+        localStorage.setItem('usuario', JSON.stringify(response.usuario));
+      })
+    );
+  }
+
+
 }

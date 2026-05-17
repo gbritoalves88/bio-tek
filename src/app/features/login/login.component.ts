@@ -76,7 +76,7 @@ export class LoginComponent {
 
 
 
-  entrarComoConvidado(): void {
+  entrarComoConvidadoOld(): void {
   const nome = 'Leitor Convidado';
   const email = 'convidado' + Date.now() + '@mock.com';
 
@@ -93,5 +93,32 @@ export class LoginComponent {
       error: (err) => console.error('Erro ao logar:', err)
     });
   }
+
+
+  entrarComoConvidado(): void {
+  const nome = 'Leitor Convidado';
+  const email = 'convidado' + Date.now() + '@mock.com';
+  this.fazerLoginMock(nome, email);
+}
+
+entrarMock(nome: string, nickname: string): void {
+  const email = nickname.replace('@', '') + '@mock.com';
+  this.fazerLoginMock(nome, email, nickname);
+}
+
+private fazerLoginMock(nome: string, email: string, nickname?: string): void {
+  this.loginService.loginMock(nome, email, nickname).subscribe({
+    next: (response) => {
+      if (response.novoUsuario) {
+        this.router.navigate(['/inicio/perfil'], {
+          queryParams: { novo: true }
+        });
+      } else {
+        this.router.navigate(['/inicio']);
+      }
+    },
+    error: (err) => console.error('Erro ao logar:', err)
+  });
+}
 
 }
