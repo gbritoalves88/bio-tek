@@ -6,6 +6,6 @@ export const environment = {
   google: {
     clientId: '3559837920-73a93ipuafg6ngsbhaqe8cuh1vhqqbql.apps.googleusercontent.com',
     clientSecret: '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',
-    redirectUri: 'http://localhost:4200'
+    redirectUri: 'https://biotek-three.vercel.app'
   }
 };
