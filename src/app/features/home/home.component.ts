@@ -37,6 +37,14 @@ export class HomeComponent implements OnInit {
     }
   }
 
+  get saudacao(): string {
+    if (typeof localStorage === 'undefined') return 'Olá, Leitor 👋';
+
+    const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+    const nickname = usuario?.nickname;
+    return nickname ? `Olá, ${nickname}👋` : 'Olá, Leitor 👋';
+  }
+
   carregarLivros(): void {
     this.homeService.getMeusLivros().subscribe({
       next: (livros) => {
@@ -49,7 +57,7 @@ export class HomeComponent implements OnInit {
         this.recomendados = ordenados
           .filter(l => l.status === 3)
           .slice(0, 3)
-          .map(l => ({ ...l, estrelas: 4.5 }));
+          .map(l => ({ ...l}));
 
         this.ultimosAdicionados = ordenados.slice(0, 3);
 

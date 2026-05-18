@@ -12,14 +12,17 @@
     <!-- Lista de seguindo -->
     <div class="seguindo-list" *ngIf="seguindo.length > 0">
       <div class="seguidor-card" *ngFor="let usuario of seguindo">
-        <img [src]="usuario.avatar || 'assets/capas/placeholder.jpg'" [alt]="usuario.nome" class="avatar" />
+        <img [src]="usuario.avatar || 'assets/capas/perfilSemFoto.png'" [alt]="usuario.nome" class="avatar" />
         <div class="info" (click)="verPerfil(usuario)">
           <span class="nome">{{ usuario.nome }}</span>
           <span class="nickname">{{ usuario.nickname || '@sem-nickname' }}</span>
         </div>
         <div class="stats-mini">
-          <span>📚 {{ usuario.quantidadeLivros || 0 }}</span>
-          <span>⭐ {{ usuario.mediaAvaliacoes || 0 }}</span>
+         <div class="stats-mini">
+            <span>📚 {{ usuario.quantidadeLivros || 0 }}</span>
+            <span>✅ {{ usuario.quantidadeLivrosLidos || 0 }}</span>
+            <span>⭐ {{ usuario.mediaAvaliacoes || 0 }}</span>
+          </div>
         </div>
         <button class="btn-deixar" (click)="deixarDeSeguir(usuario.id)">Deixar de seguir</button>
       </div>
@@ -62,14 +65,22 @@
         <div class="loading" *ngIf="carregandoPerfil">🔍 Carregando livros...</div>
         <div class="book-list" *ngIf="!carregandoPerfil">
           <div class="book-item" *ngFor="let livro of livrosUsuario">
-            <img [src]="livro.imagem || 'assets/capas/placeholder.jpg'" [alt]="livro.titulo" class="book-cover" />
-            <div class="book-info">
-              <span class="book-title">{{ livro.titulo || 'Sem título' }}</span>
-              <span class="book-author">{{ livro.autor }}</span>
-              <span class="book-status" [class]="getStatusClass(livro.status)">{{ getStatusTexto(livro.status) }}</span>
+              <img [src]="livro.imagem || 'assets/capas/perfilSemFoto.png'" [alt]="livro.titulo" class="book-cover" />
+              <div class="book-info">
+                <span class="book-title">{{ livro.titulo || 'Sem título' }}</span>
+                <span class="book-author">{{ livro.autor }}</span>
+                <span class="book-status" [class]="getStatusClass(livro.status)">{{ getStatusTexto(livro.status) }}</span>
+              </div>
+              <span class="book-stars" *ngIf="livro.estrelas">⭐ {{ livro.estrelas }}</span>
+              <!-- Botão comentários -->
+            <button class="btn-comentario" title="Comentários"
+                    *ngIf="livro.estrelas"
+                    (click)="abrirComentarios(livro)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+              </svg>
+            </button>
             </div>
-            <span class="book-stars" *ngIf="livro.estrelas">⭐ {{ livro.estrelas }}</span>
-          </div>
           <p class="empty" *ngIf="livrosUsuario.length === 0">Nenhum livro cadastrado</p>
         </div>
       </div>
@@ -77,3 +88,10 @@
     </div>
   </div>
 </section>
+
+<app-comentarios-modal
+  [aberto]="comentariosAberto"
+  [livroId]="livroComentarioId"
+  [livroTitulo]="livroComentarioTitulo"
+  (fechar)="comentariosAberto = false">
+</app-comentarios-modal>

@@ -4,11 +4,14 @@ import { Component, OnInit, Inject, PLATFORM_ID, ChangeDetectorRef } from '@angu
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { SocialService } from './social.service';
 import { UsuarioSocial, LivroSocial } from './social.model';
+import { ComentariosModalComponent } from '../../shared/comentarios-modal/comentarios-modal.component';
+import { forkJoin } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-social',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, ComentariosModalComponent],
   templateUrl: './social.component.html',
   styleUrl: './social.component.scss',
   host: { 'ngSkipHydration': 'true' }
@@ -17,13 +20,19 @@ export class SocialComponent implements OnInit {
   seguindo: UsuarioSocial[] = [];
   carregando = true;
 
-  // Modal
+  // Modal perfil
   perfilSelecionado: UsuarioSocial | null = null;
   livrosUsuario: LivroSocial[] = [];
   carregandoPerfil = false;
 
+  // Modal comentários
+  comentariosAberto = false;
+  livroComentarioId = '';
+  livroComentarioTitulo = '';
+
   constructor(
     private socialService: SocialService,
+    private http: HttpClient,
     @Inject(PLATFORM_ID) private platformId: Object,
     private cdr: ChangeDetectorRef
   ) {}
@@ -48,31 +57,48 @@ export class SocialComponent implements OnInit {
     });
   }
 
-  verPerfil(usuario: UsuarioSocial): void {
-    this.perfilSelecionado = usuario;
-    this.carregandoPerfil = true;
-    this.livrosUsuario = [];
+verPerfil(usuario: UsuarioSocial): void {
+  this.carregandoPerfil = true;
+  this.livrosUsuario = [];
 
-    this.socialService.getLivrosDoUsuario(usuario.id).subscribe({
-      next: (livros) => {
-        this.livrosUsuario = livros.sort((a, b) =>
-          new Date(b.dataCriacao).getTime() - new Date(a.dataCriacao).getTime()
-        );
-        this.carregandoPerfil = false;
-        this.cdr.markForCheck();
-      },
-      error: () => {
-        this.carregandoPerfil = false;
-        this.cdr.markForCheck();
-      }
-    });
-  }
+  forkJoin([
+    this.socialService.getPerfilCompleto(usuario.id),
+    this.socialService.getLivrosDoUsuario(usuario.id),
+    this.http.get<any[]>(`http://localhost:5081/api/AvaliacaoLivro/usuario/${usuario.id}`)
+  ]).subscribe({
+    next: ([perfilCompleto, livros, avaliacoes]) => {
+      this.perfilSelecionado = perfilCompleto;
+
+      // Cruza avaliações com livros
+      this.livrosUsuario = livros.map(livro => {
+        const aval = avaliacoes.find(a => a.idLivro === livro.id);
+        return { ...livro, estrelas: aval ? aval.nota : undefined };
+      }).sort((a, b) =>
+        new Date(b.dataCriacao).getTime() - new Date(a.dataCriacao).getTime()
+      );
+
+      this.carregandoPerfil = false;
+      this.cdr.markForCheck();
+    },
+    error: () => {
+      this.perfilSelecionado = usuario;
+      this.carregandoPerfil = false;
+      this.cdr.markForCheck();
+    }
+  });
+}
 
   fecharPerfil(): void {
     this.perfilSelecionado = null;
     this.livrosUsuario = [];
   }
 
+  abrirComentarios(livro: LivroSocial): void {
+    console.log('📖 Abrindo comentários:', livro);
+    this.livroComentarioId = livro.id;
+    this.livroComentarioTitulo = livro.titulo;
+    this.comentariosAberto = true;
+  }
   getStatusTexto(status: number): string {
     switch (status) {
       case 2: return '📖 Lendo';
@@ -97,5 +123,4 @@ export class SocialComponent implements OnInit {
       });
     }
   }
-
 }

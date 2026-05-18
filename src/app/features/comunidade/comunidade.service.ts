@@ -51,16 +51,16 @@ export class ComunidadeService {
               tipo: livro.status === 2 ? 'livro_lendo' :
                     livro.status === 3 ? 'livro_lido' : 'livro_novo',
               usuario: {
-                id: u?.id || livro.idUsuario,
-                nome: u?.nome || 'Desconhecido',
-                nickname: u?.nickname || '@desconhecido',
-                avatar: u?.avatar || ''
+                  id: u?.id || livro.idUsuario,
+                  nome: u?.nome || 'Desconhecido',
+                  nickname: u?.nickname || '@desconhecido',
+                  avatar: u?.avatar || 'assets/capas/perfilSemFoto.png'  // ⬅️
               },
               livro: {
                 id: livro.id,
                 titulo: livro.titulo,
                 autor: livro.autor,
-                imagem: livro.imagem
+                imagem: livro.imagem || 'assets/capas/perfilSemFoto.png'
               },
               data: livro.dataCriacao
             });

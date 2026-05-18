@@ -167,10 +167,10 @@ export class ComunidadeComponent implements OnInit {
 
   getTextoTipo(tipo: string): string {
     switch (tipo) {
-      case 'livro_novo': return 'adicionou um livro';
-      case 'livro_lendo': return 'está lendo';
-      case 'livro_lido': return 'terminou de ler';
-      case 'livro_avaliado': return 'avaliou';
+      case 'livro_novo': return 'Adicionou um Livro';
+      case 'livro_lendo': return 'Está Lendo';
+      case 'livro_lido': return 'Terminou de Ler';
+      case 'livro_avaliado': return 'Avaliou';
       default: return '';
     }
   }

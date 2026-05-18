@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, forkJoin } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 import { LivroBiblioteca } from './biblioteca.model';
+import { map } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
@@ -45,4 +46,21 @@ export class BibliotecaService {
       })
     );
   }
+
+  getMeusLivrosComAvaliacoes(): Observable<LivroBiblioteca[]> {
+  return forkJoin([
+    this.http.get<LivroBiblioteca[]>(this.apiUrl),
+    this.http.get<any[]>('http://localhost:5081/api/AvaliacaoLivro/usuario')
+  ]).pipe(
+    map(([livros, avaliacoes]) => {
+      return livros.map(livro => {
+        const avaliacao = avaliacoes.find(a => a.idLivro === livro.id);
+        return {
+          ...livro,
+          estrelas: avaliacao ? avaliacao.nota : undefined
+        };
+      });
+    })
+  );
+}
 }

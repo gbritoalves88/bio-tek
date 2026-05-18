@@ -4,11 +4,13 @@ import { FormsModule } from '@angular/forms';
 import { LivroBiblioteca, StatusLeitura, Nota } from './biblioteca.model';
 import { BibliotecaService } from './biblioteca.service';
 import { AddBookModalComponent } from '../../shared/add-book-modal/add-book-modal.component';
+import { ComentariosModalComponent } from '../../shared/comentarios-modal/comentarios-modal.component';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-biblioteca',
   standalone: true,
-  imports: [CommonModule, FormsModule, AddBookModalComponent],
+  imports: [CommonModule, FormsModule, AddBookModalComponent, ComentariosModalComponent],
   templateUrl: './biblioteca.component.html',
   styleUrl: './biblioteca.component.scss',
   host: { 'ngSkipHydration': 'true' }
@@ -21,38 +23,44 @@ export class BibliotecaComponent implements OnInit {
   livroEditando: LivroBiblioteca | null = null;
   statusLeitura = StatusLeitura;
   notas = Nota;
+  filtroStatus: number | null = null;
+  filtroAvaliado = false;
+  filtroRecente = false;
+  comentariosAberto = false;
+  livroComentarioId = '';
+  livroComentarioTitulo = '';
 
   constructor(
     private bibliotecaService: BibliotecaService,
     @Inject(PLATFORM_ID) private platformId: Object,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private route: ActivatedRoute
   ) {}
 
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
+      this.route.queryParams.subscribe(params => {
+        if (params['filtro'] === 'avaliados') {
+          this.filtroAvaliado = true;
+        } else if (params['filtro'] === 'recentes') {
+          this.filtroRecente = true;
+        }
+      });
       this.carregarLivros();
     }
   }
 
   carregarLivros(): void {
-    this.bibliotecaService.getMeusLivros().subscribe({
-      next: (livros) => {
-        this.livros = livros.sort((a, b) =>
-          new Date(b.dataCriacao || '').getTime() - new Date(a.dataCriacao || '').getTime()
-        );
-        this.cdr.markForCheck();
-      },
-      error: (err) => console.error('Erro ao carregar livros:', err)
-    });
-  }
-
-  get livrosFiltrados(): LivroBiblioteca[] {
-    if (!this.termoBusca.trim()) return this.livros;
-    const termo = this.termoBusca.toLowerCase();
-    return this.livros.filter(
-      l => l.titulo.toLowerCase().includes(termo) || l.autor.toLowerCase().includes(termo)
-    );
-  }
+  this.bibliotecaService.getMeusLivrosComAvaliacoes().subscribe({
+    next: (livros) => {
+      this.livros = livros.sort((a, b) =>
+        new Date(b.dataCriacao || '').getTime() - new Date(a.dataCriacao || '').getTime()
+      );
+      this.cdr.markForCheck();
+    },
+    error: (err) => console.error('Erro ao carregar livros:', err)
+  });
+}
 
   getStatusTexto(status: number): string {
     switch (status) {
@@ -117,5 +125,42 @@ export class BibliotecaComponent implements OnInit {
       },
       error: (err) => console.error('Erro ao atualizar:', err)
     });
+  }
+
+
+
+  get livrosFiltrados(): LivroBiblioteca[] {
+    let resultado = [...this.livros];
+
+    // Filtro por busca
+    if (this.termoBusca.trim()) {
+      const termo = this.termoBusca.toLowerCase();
+      resultado = resultado.filter(
+        l => l.titulo.toLowerCase().includes(termo) || l.autor.toLowerCase().includes(termo)
+      );
+    }
+
+    // Filtro por status
+    if (this.filtroStatus !== null) {
+      resultado = resultado.filter(l => l.status === this.filtroStatus);
+    }
+
+    // Filtro avaliados
+    if (this.filtroAvaliado) {
+      resultado = resultado.filter(l => l.estrelas && l.estrelas > 0);
+    }
+
+    // Ordenação
+    if (this.filtroRecente) {
+      resultado.sort((a, b) => new Date(b.dataCriacao || '').getTime() - new Date(a.dataCriacao || '').getTime());
+    }
+
+    return resultado;
+  }
+
+  abrirComentarios(livro: LivroBiblioteca): void {
+    this.livroComentarioId = livro.id;
+    this.livroComentarioTitulo = livro.titulo;
+    this.comentariosAberto = true;
   }
 }

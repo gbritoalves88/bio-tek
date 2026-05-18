@@ -1,7 +1,7 @@
 <section class="home">
   <div class="hero">
     <div>
-      <h1>Olá, Leitor 👋</h1>
+      <h1>{{ saudacao }}</h1>
     </div>
     <button class="btn-circle" title="Adicionar livro" (click)="abrirModal()">
       <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
@@ -47,11 +47,11 @@
           <div class="book-item" *ngFor="let livro of recomendados">
             <img [src]="livro.imagem || 'assets/capas/placeholder.jpg'" [alt]="livro.titulo" class="book-thumb" />
             <span class="book-title">{{ livro.titulo }}</span>
-            <span class="book-stars">⭐ {{ livro.estrelas }}</span>
+            <span class="book-stars">⭐</span>
           </div>
         </div>
       </div>
-      <a routerLink="/inicio/comunidade" class="arrow-tab">
+      <a [routerLink]="['/inicio/biblioteca']" [queryParams]="{ filtro: 'avaliados' }" class="arrow-tab">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <polyline points="9 18 15 12 9 6"/>
         </svg>
@@ -69,7 +69,7 @@
           </div>
         </div>
       </div>
-      <a routerLink="/inicio/biblioteca" class="arrow-tab">
+      <a [routerLink]="['/inicio/biblioteca']" [queryParams]="{ filtro: 'recentes' }" class="arrow-tab">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <polyline points="9 18 15 12 9 6"/>
         </svg>

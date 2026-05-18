@@ -3,8 +3,10 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, forkJoin } from 'rxjs';
-import { switchMap } from 'rxjs/operators';
+import { switchMap, map } from 'rxjs/operators';
 import { Seguidor, UsuarioSocial, LivroSocial } from './social.model';
+import { of } from 'rxjs';
+
 
 @Injectable({
   providedIn: 'root'
@@ -26,19 +28,6 @@ export class SocialService {
     return this.http.get<UsuarioSocial>(`${this.apiUsuario}/${id}`);
   }
 
-  // Buscar todos os usuários que estou seguindo com dados completos
-  getSeguindoComDados(): Observable<UsuarioSocial[]> {
-    return this.http.get<Seguidor[]>(`${this.apiSeguidor}/seguindo`).pipe(
-      switchMap(seguidores => {
-        // Se não há seguidores, retorna array vazio IMEDIATAMENTE
-        if (!seguidores || seguidores.length === 0) {
-          return []; // ⬅️ Observable de array vazio
-        }
-        const requisicoes = seguidores.map(s => this.getUsuario(s.idUsuario));
-        return forkJoin(requisicoes);
-      })
-    );
-  }
 
   // Buscar livros de um usuário específico
   getLivrosDoUsuario(idUsuario: string): Observable<LivroSocial[]> {
@@ -49,4 +38,45 @@ export class SocialService {
   deixarDeSeguir(idUsuario: string): Observable<any> {
     return this.http.delete(`${this.apiSeguidor}/deixar-de-seguir/${idUsuario}`);
   }
+
+  getSeguindoComDados(): Observable<UsuarioSocial[]> {
+    return this.http.get<Seguidor[]>(`${this.apiSeguidor}/seguindo`).pipe(
+      switchMap(seguidores => {
+        if (!seguidores || seguidores.length === 0) {
+          return of([]);
+        }
+        // Para cada seguidor, busca o perfil COMPLETO (com estatísticas)
+        const requisicoes = seguidores.map(s => this.getPerfilCompleto(s.idUsuario));
+        return forkJoin(requisicoes);
+      })
+    );
+  }
+
+  getPerfilCompleto(idUsuario: string): Observable<UsuarioSocial> {
+    return forkJoin([
+      this.http.get<UsuarioSocial>(`${this.apiUsuario}/${idUsuario}`),
+      this.http.get<any[]>(`${this.apiLivro}/usuario/${idUsuario}`),
+      this.http.get<any[]>(`http://localhost:5081/api/AvaliacaoLivro/usuario/${idUsuario}`) // ⬅️ Com ID
+    ]).pipe(
+      map(([usuario, livros, avaliacoes]) => {
+        const media = avaliacoes.length > 0
+          ? Math.round((avaliacoes.reduce((s, a) => s + a.nota, 0) / avaliacoes.length) * 10) / 10
+          : 0;
+
+        // Mapear estrelas nos livros
+        const livrosComEstrelas = livros.map(livro => {
+          const avaliacao = avaliacoes.find(a => a.idLivro === livro.id);
+          return { ...livro, estrelas: avaliacao ? avaliacao.nota : undefined };
+        });
+
+        return {
+          ...usuario,
+          quantidadeLivros: livros.length,
+          quantidadeLivrosLidos: livros.filter(l => l.status === 3).length,
+          mediaAvaliacoes: media
+        };
+      })
+    );
+  }
+
 }

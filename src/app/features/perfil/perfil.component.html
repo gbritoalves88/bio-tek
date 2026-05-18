@@ -8,7 +8,7 @@
   <div class="perfil-container" *ngIf="usuario && !editando">
     <div class="perfil-header">
       <div class="avatar-grande">
-        <img [src]="usuario.avatar || 'assets/capas/placeholder.jpg'" [alt]="usuario.nome" />
+        <img [src]="usuario.avatar || 'assets/capas/perfilSemFoto.png'" [alt]="usuario.nome" />
       </div>
       <h1 class="nome">{{ usuario.nome }}</h1>
       <span class="nickname">{{ usuario.nickname || '@sem-nickname' }}</span>
@@ -52,7 +52,8 @@
       <input type="text" [(ngModel)]="usuarioEdit.nome" name="edit_nome">
 
       <label class="input-label">@ Nickname</label>
-      <input type="text" [(ngModel)]="usuarioEdit.nickname" name="edit_nickname" placeholder="@seunickname">
+      <input type="text" [(ngModel)]="usuarioEdit.nickname" name="edit_nickname"
+       placeholder="@seunickname (3 a 10 caracteres)">
 
       <label class="input-label">Biografia</label>
       <textarea [(ngModel)]="usuarioEdit.descricao" name="edit_descricao" placeholder="Conte um pouco sobre você..." rows="3"></textarea>

@@ -2,38 +2,49 @@
   <div class="header-section">
     <h1>Comunidade</h1>
   </div>
-  <p class="descricao">Recomendações da comunidade</p>
+  <p class="descricao">Atualizações da comunidade</p>
+  <p class="aviso-geral">💡 Comentários só podem ser feitos por leitores que finalizaram e avaliaram o livro.</p>
 
   <div class="loading" *ngIf="carregando">🔍 Carregando feed...</div>
 
-  <div class="feed" *ngIf="!carregando">
-    <div class="feed-item" *ngFor="let item of atividades" (click)="abrirModal(item)">
-      <img [src]="item.usuario.avatar || 'assets/capas/placeholder.jpg'" [alt]="item.usuario.nome" class="avatar" />
-      <div class="feed-conteudo">
+  <div class="feed" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
+
+    <div class="feed-item" *ngFor="let item of atividades"
+     (click)="abrirModal(item)"
+     [class.borda-novo]="item.tipo === 'livro_novo'"
+     [class.borda-lendo]="item.tipo === 'livro_lendo'"
+     [class.borda-lido]="item.tipo === 'livro_lido'"
+     [class.borda-avaliado]="item.tipo === 'livro_avaliado'">
+      <!-- Topo: Avatar + Nome -->
+      <div class="feed-topo">
+        <img [src]="item.usuario.avatar || 'assets/capas/perfilSemFoto.png'" [alt]="item.usuario.nome" class="avatar" />
         <div class="feed-header">
           <span class="usuario-nome">{{ item.usuario.nome }}</span>
           <span class="usuario-nickname">{{ item.usuario.nickname || '@user' }}</span>
           <span class="feed-acao">{{ getTextoTipo(item.tipo) }}</span>
         </div>
-        <div class="feed-livro">
-          <img [src]="item.livro.imagem || 'assets/capas/placeholder.jpg'" [alt]="item.livro.titulo" class="livro-capa" />
-          <div class="livro-info">
-            <strong>{{ item.livro.titulo || 'Sem título' }}</strong>
-            <span>{{ item.livro.autor }}</span>
-            <span class="estrelas" *ngIf="item.avaliacao">
-              {{ '⭐'.repeat(item.avaliacao.nota) }}
-            </span>
-          </div>
-        </div>
-        <span class="feed-data">{{ item.data | date:'dd/MM/yyyy HH:mm' }}</span>
       </div>
-      <!-- Botão Seguir/Seguindo -->
-      <button class="btn-seguir-feed"
-              *ngIf="item.usuario.id !== meuId"
-              (click)="$event.stopPropagation(); estaSeguindo(item.usuario.id) ? deixarDeSeguirUsuario(item.usuario.id) : seguirUsuario(item.usuario.id)"
-              [class.seguindo]="estaSeguindo(item.usuario.id)">
-        {{ estaSeguindo(item.usuario.id) ? 'Seguindo' : 'Seguir' }}
-      </button>
+
+      <!-- Meio: Capa + Info -->
+      <div class="feed-livro">
+        <img [src]="item.livro.imagem || 'assets/capas/perfilSemFoto.png'" [alt]="item.livro.titulo" class="livro-capa" />
+        <div class="livro-info">
+          <strong>{{ item.livro.titulo || 'Sem título' }}</strong>
+          <span>{{ item.livro.autor }}</span>
+          <span class="estrelas" *ngIf="item.avaliacao">{{ '⭐'.repeat(item.avaliacao.nota) }}</span>
+        </div>
+      </div>
+
+      <!-- Rodapé: Data + Botão Seguir -->
+      <div class="feed-rodape">
+        <span class="feed-data">{{ item.data | date:'dd/MM/yyyy HH:mm' }}</span>
+        <button class="btn-seguir-feed"
+                *ngIf="item.usuario.id !== meuId"
+                (click)="$event.stopPropagation(); estaSeguindo(item.usuario.id) ? deixarDeSeguirUsuario(item.usuario.id) : seguirUsuario(item.usuario.id)"
+                [class.seguindo]="estaSeguindo(item.usuario.id)">
+          {{ estaSeguindo(item.usuario.id) ? 'Seguindo' : 'Seguir' }}
+        </button>
+      </div>
     </div>
 
     <div class="empty" *ngIf="atividades.length === 0">
@@ -47,7 +58,6 @@
 <div class="comunidade-modal-overlay" *ngIf="modalAberto && itemSelecionado" (click)="fecharModal()">
   <div class="comunidade-modal-content" (click)="$event.stopPropagation()">
 
-    <!-- Header -->
     <div class="comunidade-modal-header">
       <h3>{{ getIconeTipo(itemSelecionado.tipo) }} {{ getTextoTipo(itemSelecionado.tipo) }}</h3>
       <button class="comunidade-modal-close" (click)="fecharModal()">
@@ -57,14 +67,12 @@
       </button>
     </div>
 
-    <!-- Usuário -->
     <div class="comunidade-usuario">
-      <img [src]="itemSelecionado.usuario.avatar || 'assets/capas/placeholder.jpg'" [alt]="itemSelecionado.usuario.nome" class="avatar" />
+      <img [src]="itemSelecionado.usuario.avatar || 'assets/capas/perfilSemFoto.png'" [alt]="itemSelecionado.usuario.nome" class="avatar" />
       <div>
         <span class="nome">{{ itemSelecionado.usuario.nome }}</span>
         <span class="nickname">{{ itemSelecionado.usuario.nickname }}</span>
       </div>
-      <!-- Botão Seguir/Seguindo no modal -->
       <button class="btn-seguir-modal"
               *ngIf="itemSelecionado.usuario.id !== meuId"
               (click)="estaSeguindo(itemSelecionado.usuario.id) ? deixarDeSeguirUsuario(itemSelecionado.usuario.id) : seguirUsuario(itemSelecionado.usuario.id)"
@@ -73,9 +81,8 @@
       </button>
     </div>
 
-    <!-- Livro -->
     <div class="comunidade-livro">
-      <img [src]="itemSelecionado.livro.imagem || 'assets/capas/placeholder.jpg'" [alt]="itemSelecionado.livro.titulo" class="capa" />
+      <img [src]="itemSelecionado.livro.imagem || 'assets/capas/perfilSemFoto.png'" [alt]="itemSelecionado.livro.titulo" class="capa" />
       <div class="info">
         <strong>{{ itemSelecionado.livro.titulo || 'Sem título' }}</strong>
         <span>{{ itemSelecionado.livro.autor }}</span>
@@ -83,14 +90,12 @@
       </div>
     </div>
 
-    <!-- Avaliação -->
     <div class="comunidade-avaliacao" *ngIf="itemSelecionado.tipo === 'livro_avaliado' && itemSelecionado.avaliacao">
       <div class="estrelas-grandes">
         {{ getEstrelas(itemSelecionado.avaliacao.nota) }}
       </div>
     </div>
 
-    <!-- Comentários -->
     <div class="comunidade-comentarios" *ngIf="itemSelecionado.tipo === 'livro_avaliado'">
       <h4>Comentários</h4>
       <div class="loading" *ngIf="carregandoComentarios">🔍 Carregando...</div>
