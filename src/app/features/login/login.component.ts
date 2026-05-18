@@ -62,9 +62,7 @@ export class LoginComponent {
   }
 
   entrarComoConvidado(): void {
-    const nome = 'Leitor Convidado';
-    const email = 'convidado' + Date.now() + '@mock.com';
-    this.fazerLoginMock(nome, email);
+    console.log('Facebook login não implementado');
   }
 
   entrarMock(nome: string, nickname: string): void {
