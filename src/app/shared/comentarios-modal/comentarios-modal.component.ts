@@ -3,13 +3,12 @@
 import { Component, Input, Output, EventEmitter, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { HttpClient } from '@angular/common/http';
-import { forkJoin } from 'rxjs';
 import { Comentario } from './comentarios-modal.model';
+import { ComentariosModalService } from './comentarios-modal.service';
 
 @Component({
   selector: 'app-comentarios-modal',
-  standalone: true,  // ⬅️ TEM QUE TER ISSO
+  standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './comentarios-modal.component.html',
   styleUrl: './comentarios-modal.component.scss'
@@ -24,10 +23,10 @@ export class ComentariosModalComponent {
   novoComentario = '';
   carregandoComentarios = false;
 
-  private apiComentario = 'http://localhost:5081/api/ComentarioLivro';
-  private apiUsuario = 'http://localhost:5081/api/Usuario';
-
-  constructor(private http: HttpClient, private cdr: ChangeDetectorRef) {}
+  constructor(
+    private comentariosService: ComentariosModalService,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnChanges(): void {
     if (this.aberto && this.livroId) {
@@ -37,43 +36,11 @@ export class ComentariosModalComponent {
 
   carregarComentarios(): void {
     this.carregandoComentarios = true;
-    this.http.get<any[]>(`${this.apiComentario}/livro/${this.livroId}`).subscribe({
-      next: (data) => {
-        if (!data || data.length === 0) {
-          this.comentarios = [];
-          this.carregandoComentarios = false;
-          this.cdr.markForCheck();
-          return;
-        }
-        const idsUsuarios = [...new Set(data.map(c => c.idUsuario))];
-        const requisicoes = idsUsuarios.map(id =>
-          this.http.get<any>(`${this.apiUsuario}/${id}`)
-        );
-        forkJoin(requisicoes).subscribe({
-          next: (usuarios) => {
-            const usuarioMap = new Map(usuarios.map(u => [u.id, u]));
-            this.comentarios = data.map(c => ({
-              id: c.id,
-              idUsuario: c.idUsuario,
-              usuarioNickname: usuarioMap.get(c.idUsuario)?.nickname || '@desconhecido',
-              comentario: c.comentario,
-              dataCriacao: c.dataCriacao
-            }));
-            this.carregandoComentarios = false;
-            this.cdr.markForCheck();
-          },
-          error: () => {
-            this.comentarios = data.map(c => ({
-              id: c.id,
-              idUsuario: c.idUsuario,
-              usuarioNickname: '@user',
-              comentario: c.comentario,
-              dataCriacao: c.dataCriacao
-            }));
-            this.carregandoComentarios = false;
-            this.cdr.markForCheck();
-          }
-        });
+    this.comentariosService.getComentarios(this.livroId).subscribe({
+      next: (comentarios) => {
+        this.comentarios = comentarios;
+        this.carregandoComentarios = false;
+        this.cdr.markForCheck();
       },
       error: () => {
         this.carregandoComentarios = false;
@@ -84,10 +51,7 @@ export class ComentariosModalComponent {
 
   enviarComentario(): void {
     if (!this.novoComentario.trim()) return;
-    this.http.post(this.apiComentario, {
-      idLivro: this.livroId,
-      comentario: this.novoComentario.trim()
-    }).subscribe({
+    this.comentariosService.enviarComentario(this.livroId, this.novoComentario.trim()).subscribe({
       next: () => {
         this.novoComentario = '';
         this.carregarComentarios();

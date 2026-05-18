@@ -5,14 +5,15 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, forkJoin } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { Usuario } from './perfil.model';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class PerfilService {
-  private apiUrl = 'http://localhost:5081/api/Usuario';
-  private apiLivro = 'http://localhost:5081/api/Livro';
-  private apiAvaliacao = 'http://localhost:5081/api/AvaliacaoLivro';
+  private apiUrl = `${environment.apiUrl}/Usuario`;
+  private apiLivro = `${environment.apiUrl}/Livro`;
+  private apiAvaliacao = `${environment.apiUrl}/AvaliacaoLivro`;
 
   constructor(private http: HttpClient) {}
 
@@ -31,7 +32,6 @@ export class PerfilService {
         const media = avaliacoes.length > 0
           ? Math.round((avaliacoes.reduce((s, a) => s + a.nota, 0) / avaliacoes.length) * 10) / 10
           : 0;
-
         return {
           ...perfil,
           quantidadeLivros: meusLivros.length,

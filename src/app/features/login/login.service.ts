@@ -5,12 +5,13 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable, tap } from 'rxjs';
 import { LoginResponse } from './login.model';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class LoginService {
-  private apiUrl = 'http://localhost:5081/api/Auth';
+  private apiUrl = `${environment.apiUrl}/Auth`;
 
   constructor(
     private http: HttpClient,
@@ -18,11 +19,22 @@ export class LoginService {
   ) {}
 
   loginComGoogle(idToken: string, id: string, nome: string, email: string): Observable<LoginResponse> {
-    return this.http.post<LoginResponse>(`${this.apiUrl}/google`, {
+    return this.http.post<LoginResponse>(`${this.apiUrl}/google`, { id, idToken, nome, email }).pipe(
+      tap(response => {
+        localStorage.setItem('token', response.token);
+        localStorage.setItem('usuario', JSON.stringify(response.usuario));
+      })
+    );
+  }
+
+  loginMock(nome: string, email: string, nickname?: string): Observable<LoginResponse> {
+    const id = 'mock-' + Date.now();
+    return this.http.post<LoginResponse>(`${this.apiUrl}/mock`, {
       id,
-      idToken,
+      idToken: 'fake-mock-token',
       nome,
-      email
+      email,
+      nickname
     }).pipe(
       tap(response => {
         localStorage.setItem('token', response.token);
@@ -51,38 +63,4 @@ export class LoginService {
     localStorage.removeItem('usuario');
     this.router.navigate(['/']);
   }
-
-  loginMockOld(nome: string, email: string): Observable<LoginResponse> {
-    const id = 'mock-' + Date.now();
-    return this.http.post<LoginResponse>(`${this.apiUrl}/mock`, {
-      id,
-      idToken: 'fake-mock-token',
-      nome,
-      email
-    }).pipe(
-      tap(response => {
-        localStorage.setItem('token', response.token);
-        localStorage.setItem('usuario', JSON.stringify(response.usuario));
-      })
-    );
-  }
-
-
-  loginMock(nome: string, email: string, nickname?: string): Observable<LoginResponse> {
-    const id = 'mock-' + Date.now();
-    return this.http.post<LoginResponse>(`${this.apiUrl}/mock`, {
-      id,
-      idToken: 'fake-mock-token',
-      nome,
-      email,
-      nickname
-    }).pipe(
-      tap(response => {
-        localStorage.setItem('token', response.token);
-        localStorage.setItem('usuario', JSON.stringify(response.usuario));
-      })
-    );
-  }
-
-
 }

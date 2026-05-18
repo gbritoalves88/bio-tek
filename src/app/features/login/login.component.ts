@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { LoginService } from './login.service';
+import { environment } from '../../../environments/environment';
 
 declare const google: any;
 
@@ -21,48 +22,38 @@ export class LoginComponent {
 
   entrarComGoogle(): void {
     const client = google.accounts.oauth2.initCodeClient({
-      client_id: '3559837920-73a93ipuafg6ngsbhaqe8cuh1vhqqbql.apps.googleusercontent.com',
+      client_id: environment.google.clientId,
       scope: 'email profile openid',
       ux_mode: 'popup',
       callback: (response: any) => {
         if (response.code) {
-          // Trocar o code por ID token
           fetch('https://oauth2.googleapis.com/token', {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             body: new URLSearchParams({
               code: response.code,
-              client_id: '3559837920-73a93ipuafg6ngsbhaqe8cuh1vhqqbql.apps.googleusercontent.com',
-              client_secret: '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',
-              redirect_uri: 'http://localhost:4200',
+              client_id: environment.google.clientId,
+              client_secret: environment.google.clientSecret,
+              redirect_uri: environment.google.redirectUri,
               grant_type: 'authorization_code'
             })
           })
           .then(res => res.json())
           .then(data => {
             const idToken = data.id_token;
-            // Decodificar o token para pegar os dados
             const payload = JSON.parse(atob(idToken.split('.')[1]));
 
-            this.loginService.loginComGoogle(
-              idToken,
-              payload.sub,
-              payload.name,
-              payload.email
-            ).subscribe({
-              next: () => {
-                if (response.novoUsuario) {
-                  this.router.navigate(['/inicio/perfil'], {
-                    queryParams: { novo: true }
-                  });
-                } else {
-                  this.router.navigate(['/inicio']);
-                }
-              },
-              error: (err) => {
-                console.error('Erro ao logar:', err);
-              }
-            });
+            this.loginService.loginComGoogle(idToken, payload.sub, payload.name, payload.email)
+              .subscribe({
+                next: (response) => {
+                  if (response.novoUsuario) {
+                    this.router.navigate(['/inicio/perfil'], { queryParams: { novo: true } });
+                  } else {
+                    this.router.navigate(['/inicio']);
+                  }
+                },
+                error: (err) => console.error('Erro ao logar:', err)
+              });
           });
         }
       }
@@ -70,22 +61,22 @@ export class LoginComponent {
     client.requestCode();
   }
 
-  entrarComFacebook(): void {
-    console.log('Facebook login não implementado');
+  entrarComoConvidado(): void {
+    const nome = 'Leitor Convidado';
+    const email = 'convidado' + Date.now() + '@mock.com';
+    this.fazerLoginMock(nome, email);
   }
 
+  entrarMock(nome: string, nickname: string): void {
+    const email = nickname.replace('@', '') + '@mock.com';
+    this.fazerLoginMock(nome, email, nickname);
+  }
 
-
-  entrarComoConvidadoOld(): void {
-  const nome = 'Leitor Convidado';
-  const email = 'convidado' + Date.now() + '@mock.com';
-
-    this.loginService.loginMock(nome, email).subscribe({
+  private fazerLoginMock(nome: string, email: string, nickname?: string): void {
+    this.loginService.loginMock(nome, email, nickname).subscribe({
       next: (response) => {
         if (response.novoUsuario) {
-          this.router.navigate(['/inicio/perfil'], {
-            queryParams: { novo: true }
-          });
+          this.router.navigate(['/inicio/perfil'], { queryParams: { novo: true } });
         } else {
           this.router.navigate(['/inicio']);
         }
@@ -94,31 +85,7 @@ export class LoginComponent {
     });
   }
 
-
-  entrarComoConvidado(): void {
-  const nome = 'Leitor Convidado';
-  const email = 'convidado' + Date.now() + '@mock.com';
-  this.fazerLoginMock(nome, email);
-}
-
-entrarMock(nome: string, nickname: string): void {
-  const email = nickname.replace('@', '') + '@mock.com';
-  this.fazerLoginMock(nome, email, nickname);
-}
-
-private fazerLoginMock(nome: string, email: string, nickname?: string): void {
-  this.loginService.loginMock(nome, email, nickname).subscribe({
-    next: (response) => {
-      if (response.novoUsuario) {
-        this.router.navigate(['/inicio/perfil'], {
-          queryParams: { novo: true }
-        });
-      } else {
-        this.router.navigate(['/inicio']);
-      }
-    },
-    error: (err) => console.error('Erro ao logar:', err)
-  });
-}
-
+  entrarComFacebook(): void {
+    console.log('Facebook login não implementado');
+  }
 }

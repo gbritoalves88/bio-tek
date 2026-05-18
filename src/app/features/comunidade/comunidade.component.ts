@@ -1,10 +1,10 @@
+// src/app/features/comunidade/comunidade.component.ts
+
 import { Component, OnInit, Inject, PLATFORM_ID, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ComunidadeService } from './comunidade.service';
 import { AtividadeComunidade, Comentario } from './comunidade.model';
-import { HttpClient } from '@angular/common/http';
-import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-comunidade',
@@ -18,26 +18,19 @@ export class ComunidadeComponent implements OnInit {
   atividades: AtividadeComunidade[] = [];
   carregando = true;
 
-  // Modal
   modalAberto = false;
   itemSelecionado: AtividadeComunidade | null = null;
   novoComentario = '';
   comentarios: Comentario[] = [];
   carregandoComentarios = false;
   seguindoIds: Set<string> = new Set();
-
   meuId = '';
-
-  private apiComentario = 'http://localhost:5081/api/ComentarioLivro';
 
   constructor(
     private comunidadeService: ComunidadeService,
-    private http: HttpClient,
     @Inject(PLATFORM_ID) private platformId: Object,
     private cdr: ChangeDetectorRef
   ) {}
-
-
 
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
@@ -49,25 +42,24 @@ export class ComunidadeComponent implements OnInit {
   }
 
   carregarFeed(): void {
-  this.comunidadeService.getFeedComunidade(this.meuId).subscribe({
-    next: (data) => {
-      this.atividades = data;
-      this.carregando = false;
-      this.cdr.markForCheck();
-    },
-    error: (err) => {
-      console.error('Erro:', err);
-      this.carregando = false;
-    }
-  });
-}
+    this.comunidadeService.getFeedComunidade(this.meuId).subscribe({
+      next: (data) => {
+        this.atividades = data;
+        this.carregando = false;
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        console.error('Erro:', err);
+        this.carregando = false;
+      }
+    });
+  }
 
   abrirModal(item: AtividadeComunidade): void {
     this.itemSelecionado = item;
     this.modalAberto = true;
     this.novoComentario = '';
     this.comentarios = [];
-
     if (item.tipo === 'livro_avaliado') {
       this.carregarComentarios(item.livro.id);
     }
@@ -82,56 +74,11 @@ export class ComunidadeComponent implements OnInit {
 
   carregarComentarios(idLivro: string): void {
     this.carregandoComentarios = true;
-
-    this.http.get<any[]>(`${this.apiComentario}/livro/${idLivro}`).subscribe({
-      next: (data) => {
-        if (!data || data.length === 0) {
-          this.comentarios = [];
-          this.carregandoComentarios = false;
-          this.cdr.markForCheck();
-          return;
-        }
-
-        // Coletar IDs únicos dos usuários que comentaram
-        const idsUsuarios = [...new Set(data.map(c => c.idUsuario))];
-
-        // Buscar dados de cada usuário
-        const requisicoes = idsUsuarios.map(id =>
-          this.http.get<any>(`http://localhost:5081/api/Usuario/${id}`)
-        );
-
-        forkJoin(requisicoes).subscribe({
-          next: (usuarios) => {
-            const usuarioMap = new Map<string, any>();
-            usuarios.forEach(u => usuarioMap.set(u.id, u));
-
-            this.comentarios = data.map(c => {
-              const u = usuarioMap.get(c.idUsuario);
-              return {
-                id: c.id,
-                idUsuario: c.idUsuario,
-                usuarioNickname: u?.nickname || '@desconhecido',
-                comentario: c.comentario,
-                dataCriacao: c.dataCriacao
-              };
-            });
-
-            this.carregandoComentarios = false;
-            this.cdr.markForCheck();
-          },
-          error: () => {
-            // Fallback: mostra sem nickname
-            this.comentarios = data.map(c => ({
-              id: c.id,
-              idUsuario: c.idUsuario,
-              usuarioNickname: '@user',
-              comentario: c.comentario,
-              dataCriacao: c.dataCriacao
-            }));
-            this.carregandoComentarios = false;
-            this.cdr.markForCheck();
-          }
-        });
+    this.comunidadeService.getComentariosDoLivro(idLivro).subscribe({
+      next: (comentarios) => {
+        this.comentarios = comentarios;
+        this.carregandoComentarios = false;
+        this.cdr.markForCheck();
       },
       error: () => {
         this.carregandoComentarios = false;
@@ -142,11 +89,7 @@ export class ComunidadeComponent implements OnInit {
 
   enviarComentario(): void {
     if (!this.novoComentario.trim() || !this.itemSelecionado) return;
-
-    this.http.post(this.apiComentario, {
-      idLivro: this.itemSelecionado.livro.id,
-      comentario: this.novoComentario.trim()
-    }).subscribe({
+    this.comunidadeService.enviarComentario(this.itemSelecionado.livro.id, this.novoComentario.trim()).subscribe({
       next: () => {
         this.novoComentario = '';
         this.carregarComentarios(this.itemSelecionado!.livro.id);
@@ -155,34 +98,10 @@ export class ComunidadeComponent implements OnInit {
     });
   }
 
-  getIconeTipo(tipo: string): string {
-    switch (tipo) {
-      case 'livro_novo': return '📕';
-      case 'livro_lendo': return '📖';
-      case 'livro_lido': return '✅';
-      case 'livro_avaliado': return '⭐';
-      default: return '📚';
-    }
-  }
-
-  getTextoTipo(tipo: string): string {
-    switch (tipo) {
-      case 'livro_novo': return 'Adicionou um Livro';
-      case 'livro_lendo': return 'Está Lendo';
-      case 'livro_lido': return 'Terminou de Ler';
-      case 'livro_avaliado': return 'Avaliou';
-      default: return '';
-    }
-  }
-
-  getEstrelas(nota: number): string {
-      return '⭐'.repeat(nota);
-    }
-
-    carregarSeguindo(): void {
-    this.http.get<any[]>('http://localhost:5081/api/Seguidor/seguindo').subscribe({
-      next: (seguidores) => {
-        this.seguindoIds = new Set(seguidores.map(s => s.idUsuario));
+  carregarSeguindo(): void {
+    this.comunidadeService.getSeguindo().subscribe({
+      next: (ids) => {
+        this.seguindoIds = new Set(ids);
         this.cdr.markForCheck();
       }
     });
@@ -193,7 +112,7 @@ export class ComunidadeComponent implements OnInit {
   }
 
   seguirUsuario(idUsuario: string): void {
-    this.http.post(`http://localhost:5081/api/Seguidor/seguir/${idUsuario}`, {}).subscribe({
+    this.comunidadeService.seguir(idUsuario).subscribe({
       next: () => {
         this.seguindoIds.add(idUsuario);
         this.cdr.markForCheck();
@@ -202,11 +121,23 @@ export class ComunidadeComponent implements OnInit {
   }
 
   deixarDeSeguirUsuario(idUsuario: string): void {
-    this.http.delete(`http://localhost:5081/api/Seguidor/deixar-de-seguir/${idUsuario}`).subscribe({
+    this.comunidadeService.deixarDeSeguir(idUsuario).subscribe({
       next: () => {
         this.seguindoIds.delete(idUsuario);
         this.cdr.markForCheck();
       }
     });
+  }
+
+  getIconeTipo(tipo: string): string {
+    switch (tipo) { case 'livro_novo': return '📕'; case 'livro_lendo': return '📖'; case 'livro_lido': return '✅'; case 'livro_avaliado': return '⭐'; default: return '📚'; }
+  }
+
+  getTextoTipo(tipo: string): string {
+    switch (tipo) { case 'livro_novo': return 'Adicionou um Livro'; case 'livro_lendo': return 'Está Lendo'; case 'livro_lido': return 'Terminou de Ler'; case 'livro_avaliado': return 'Avaliou'; default: return ''; }
+  }
+
+  getEstrelas(nota: number): string {
+    return '⭐'.repeat(nota);
   }
 }
