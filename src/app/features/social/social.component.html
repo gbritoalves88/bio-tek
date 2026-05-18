@@ -3,31 +3,95 @@
     <h1>Social</h1>
   </div>
 
-  <!-- Campo de busca -->
-  <div class="search-box">
-    <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <circle cx="11" cy="11" r="8"/>
-      <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-    </svg>
-    <input
-      type="text"
-      placeholder="Buscar perfil..."
-      [(ngModel)]="termoBusca"
-      class="search-input"
-    />
-  </div>
-
-  <!-- Pessoas que você acompanha -->
   <p class="section-label">Pessoas que você acompanha</p>
 
-  <div class="pessoas-list">
-    <div class="pessoa-card" *ngFor="let pessoa of pessoasFiltradas">
-      <img [src]="pessoa.avatar" [alt]="pessoa.nome" class="avatar" />
-      <div class="info">
-        <span class="nome">{{ pessoa.nome }}</span>
-        <span class="arroba">{{ pessoa.arroba }}</span>
+
+  <!-- Conteúdo (aparece após carregar) -->
+  <div *ngIf="!carregando">
+
+    <!-- Lista de seguindo -->
+    <div class="seguindo-list" *ngIf="seguindo.length > 0">
+      <div class="seguidor-card" *ngFor="let usuario of seguindo">
+        <img [src]="usuario.avatar || 'assets/capas/perfilSemFoto.png'" [alt]="usuario.nome" class="avatar" />
+        <div class="info" (click)="verPerfil(usuario)">
+          <span class="nome">{{ usuario.nome }}</span>
+          <span class="nickname">{{ usuario.nickname || '@sem-nickname' }}</span>
+        </div>
+        <div class="stats-mini">
+         <div class="stats-mini">
+            <span>📚 {{ usuario.quantidadeLivros || 0 }}</span>
+            <span>✅ {{ usuario.quantidadeLivrosLidos || 0 }}</span>
+            <span>⭐ {{ usuario.mediaAvaliacoes || 0 }}</span>
+          </div>
+        </div>
+        <button class="btn-deixar" (click)="deixarDeSeguir(usuario.id)">Deixar de seguir</button>
       </div>
-      <span class="seguidores">{{ pessoa.seguidores }} seguidores</span>
+    </div>
+
+    <!-- Vazio (sem loading) -->
+    <div class="empty" *ngIf="seguindo.length === 0">
+      <p>Você ainda não segue ninguém.</p>
+      <p>Encontre leitores na Comunidade!</p>
+    </div>
+
+  </div>
+
+  <!-- Modal Perfil do Usuário -->
+  <div class="perfil-modal-overlay" *ngIf="perfilSelecionado" (click)="fecharPerfil()">
+    <div class="perfil-modal-content" (click)="$event.stopPropagation()">
+
+      <div class="perfil-modal-header">
+        <button class="perfil-modal-close" (click)="fecharPerfil()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="perfil-usuario">
+        <img [src]="perfilSelecionado.avatar || 'assets/capas/placeholder.jpg'" [alt]="perfilSelecionado.nome" class="avatar-grande" />
+        <h2>{{ perfilSelecionado.nome }}</h2>
+        <span class="nickname">{{ perfilSelecionado.nickname || '@sem-nickname' }}</span>
+        <p class="bio" *ngIf="perfilSelecionado.descricao">{{ perfilSelecionado.descricao }}</p>
+        <div class="stats-row">
+          <span>📚 {{ perfilSelecionado.quantidadeLivros || 0 }} livros</span>
+          <span>✅ {{ perfilSelecionado.quantidadeLivrosLidos || 0 }} lidos</span>
+          <span>⭐ {{ perfilSelecionado.mediaAvaliacoes || 0 }} média</span>
+        </div>
+      </div>
+
+      <div class="livros-usuario">
+        <h3>Livros</h3>
+        <div class="loading" *ngIf="carregandoPerfil">🔍 Carregando livros...</div>
+        <div class="book-list" *ngIf="!carregandoPerfil">
+          <div class="book-item" *ngFor="let livro of livrosUsuario">
+              <img [src]="livro.imagem || 'assets/capas/perfilSemFoto.png'" [alt]="livro.titulo" class="book-cover" />
+              <div class="book-info">
+                <span class="book-title">{{ livro.titulo || 'Sem título' }}</span>
+                <span class="book-author">{{ livro.autor }}</span>
+                <span class="book-status" [class]="getStatusClass(livro.status)">{{ getStatusTexto(livro.status) }}</span>
+              </div>
+              <span class="book-stars" *ngIf="livro.estrelas">⭐ {{ livro.estrelas }}</span>
+              <!-- Botão comentários -->
+            <button class="btn-comentario" title="Comentários"
+                    *ngIf="livro.estrelas"
+                    (click)="abrirComentarios(livro)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+              </svg>
+            </button>
+            </div>
+          <p class="empty" *ngIf="livrosUsuario.length === 0">Nenhum livro cadastrado</p>
+        </div>
+      </div>
+
     </div>
   </div>
 </section>
+
+<app-comentarios-modal
+  [aberto]="comentariosAberto"
+  [livroId]="livroComentarioId"
+  [livroTitulo]="livroComentarioTitulo"
+  (fechar)="comentariosAberto = false">
+</app-comentarios-modal>

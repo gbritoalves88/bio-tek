@@ -1,85 +1,143 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+// src/app/features/comunidade/comunidade.component.ts
 
-interface Recomendacao {
-  id: number;
-  usuario: string;
-  avatar: string;
-  livro: string;
-  autor: string;
-  capa: string;
-  estrelas: number;
-  comentario?: string;
-}
+import { Component, OnInit, Inject, PLATFORM_ID, ChangeDetectorRef } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { ComunidadeService } from './comunidade.service';
+import { AtividadeComunidade, Comentario } from './comunidade.model';
 
 @Component({
   selector: 'app-comunidade',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './comunidade.component.html',
-  styleUrl: './comunidade.component.scss'
+  styleUrl: './comunidade.component.scss',
+  host: { 'ngSkipHydration': 'true' }
 })
-export class ComunidadeComponent {
-  recomendacoes: Recomendacao[] = [
-    {
-      id: 1,
-      usuario: 'Mariana Santos',
-      avatar: 'https://i.pravatar.cc/150?img=1',
-      livro: 'Duna',
-      autor: 'Frank Herbert',
-      capa: 'assets/capas/duna.jpg',
-      estrelas: 4.8,
-      comentario: 'Uma obra-prima da ficção científica!'
-    },
-    {
-      id: 2,
-      usuario: 'Lucas Almeida',
-      avatar: 'https://i.pravatar.cc/150?img=2',
-      livro: '1984',
-      autor: 'George Orwell',
-      capa: 'assets/capas/1984.jpg',
-      estrelas: 4.7,
-      comentario: 'Distópico e mais atual do que nunca.'
-    },
-    {
-      id: 3,
-      usuario: 'Juliana Pereira',
-      avatar: 'https://i.pravatar.cc/150?img=3',
-      livro: 'Mindset',
-      autor: 'Carol Dweck',
-      capa: 'assets/capas/mindset.jpg',
-      estrelas: 4.6,
-      comentario: 'Mudou minha forma de pensar sobre aprendizado.'
-    },
-    {
-      id: 4,
-      usuario: 'Pedro Henrique',
-      avatar: 'https://i.pravatar.cc/150?img=4',
-      livro: 'Hábitos Atômicos',
-      autor: 'James Clear',
-      capa: 'assets/capas/habitos-atomicos.jpg',
-      estrelas: 4.9,
-      comentario: 'Pequenas mudanças, resultados impressionantes.'
-    },
-    {
-      id: 5,
-      usuario: 'Ana Clara',
-      avatar: 'https://i.pravatar.cc/150?img=5',
-      livro: 'Berserk Vol. 1',
-      autor: 'Kentaro Miura',
-      capa: 'assets/capas/berserk.jpg',
-      estrelas: 4.9,
-      comentario: 'Arte incrível e história profunda.'
-    },
-    {
-      id: 6,
-      usuario: 'Rafael Costa',
-      avatar: 'https://i.pravatar.cc/150?img=6',
-      livro: 'O Nome do Vento',
-      autor: 'Patrick Rothfuss',
-      capa: 'assets/capas/nome-do-vento.jpg',
-      estrelas: 4.8,
-      comentario: 'Fantasia no seu mais alto nível.'
+export class ComunidadeComponent implements OnInit {
+  atividades: AtividadeComunidade[] = [];
+  carregando = true;
+
+  modalAberto = false;
+  itemSelecionado: AtividadeComunidade | null = null;
+  novoComentario = '';
+  comentarios: Comentario[] = [];
+  carregandoComentarios = false;
+  seguindoIds: Set<string> = new Set();
+  meuId = '';
+
+  constructor(
+    private comunidadeService: ComunidadeService,
+    @Inject(PLATFORM_ID) private platformId: Object,
+    private cdr: ChangeDetectorRef
+  ) {}
+
+  ngOnInit(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+      this.meuId = usuario.id || '';
+      this.carregarFeed();
+      this.carregarSeguindo();
     }
-  ];
+  }
+
+  carregarFeed(): void {
+    this.comunidadeService.getFeedComunidade(this.meuId).subscribe({
+      next: (data) => {
+        this.atividades = data;
+        this.carregando = false;
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        console.error('Erro:', err);
+        this.carregando = false;
+      }
+    });
+  }
+
+  abrirModal(item: AtividadeComunidade): void {
+    this.itemSelecionado = item;
+    this.modalAberto = true;
+    this.novoComentario = '';
+    this.comentarios = [];
+    if (item.tipo === 'livro_avaliado') {
+      this.carregarComentarios(item.livro.id);
+    }
+  }
+
+  fecharModal(): void {
+    this.modalAberto = false;
+    this.itemSelecionado = null;
+    this.comentarios = [];
+    this.novoComentario = '';
+  }
+
+  carregarComentarios(idLivro: string): void {
+    this.carregandoComentarios = true;
+    this.comunidadeService.getComentariosDoLivro(idLivro).subscribe({
+      next: (comentarios) => {
+        this.comentarios = comentarios;
+        this.carregandoComentarios = false;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.carregandoComentarios = false;
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  enviarComentario(): void {
+    if (!this.novoComentario.trim() || !this.itemSelecionado) return;
+    this.comunidadeService.enviarComentario(this.itemSelecionado.livro.id, this.novoComentario.trim()).subscribe({
+      next: () => {
+        this.novoComentario = '';
+        this.carregarComentarios(this.itemSelecionado!.livro.id);
+      },
+      error: (err) => console.error('Erro ao comentar:', err)
+    });
+  }
+
+  carregarSeguindo(): void {
+    this.comunidadeService.getSeguindo().subscribe({
+      next: (ids) => {
+        this.seguindoIds = new Set(ids);
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  estaSeguindo(idUsuario: string): boolean {
+    return this.seguindoIds.has(idUsuario);
+  }
+
+  seguirUsuario(idUsuario: string): void {
+    this.comunidadeService.seguir(idUsuario).subscribe({
+      next: () => {
+        this.seguindoIds.add(idUsuario);
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  deixarDeSeguirUsuario(idUsuario: string): void {
+    this.comunidadeService.deixarDeSeguir(idUsuario).subscribe({
+      next: () => {
+        this.seguindoIds.delete(idUsuario);
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  getIconeTipo(tipo: string): string {
+    switch (tipo) { case 'livro_novo': return '📕'; case 'livro_lendo': return '📖'; case 'livro_lido': return '✅'; case 'livro_avaliado': return '⭐'; default: return '📚'; }
+  }
+
+  getTextoTipo(tipo: string): string {
+    switch (tipo) { case 'livro_novo': return 'Adicionou um Livro'; case 'livro_lendo': return 'Está Lendo'; case 'livro_lido': return 'Terminou de Ler'; case 'livro_avaliado': return 'Avaliou'; default: return ''; }
+  }
+
+  getEstrelas(nota: number): string {
+    return '⭐'.repeat(nota);
+  }
 }

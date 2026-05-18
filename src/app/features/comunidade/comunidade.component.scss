@@ -3,134 +3,241 @@
   background: var(--bg-primary);
   color: var(--text-primary);
   min-height: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
 }
-
-// ===== HEADER =====
-.header-section {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-
-  h1 {
-    margin: 0;
-    font-size: 26px;
-    font-weight: 700;
-  }
-}
-
-// ===== LISTA DE RECOMENDAÇÕES =====
-.recomendacoes-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.recomendacao-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: 14px;
-  padding: 16px;
-  transition: background 0.3s, border-color 0.3s;
-
-  .usuario-info {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 14px;
-
-    .avatar {
-      width: 44px;
-      height: 44px;
-      border-radius: 50%;
-      object-fit: cover;
-      flex-shrink: 0;
-    }
-
-    .usuario-texto {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-
-      .usuario-nome {
-        font-size: 15px;
-        font-weight: 600;
-        color: var(--text-primary);
-      }
-
-      .recomendou {
-        font-size: 12px;
-        color: var(--text-secondary);
-      }
-    }
-
-    .estrelas {
-      font-size: 14px;
-      color: var(--accent);
-      font-weight: 600;
-      white-space: nowrap;
-    }
-  }
-
-  .livro-info {
-    display: flex;
-    gap: 12px;
-    align-items: flex-start;
-
-    .capa {
-      width: 48px;
-      height: 68px;
-      object-fit: cover;
-      border-radius: 4px;
-      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
-      flex-shrink: 0;
-    }
-
-    .livro-texto {
-      flex: 1;
-
-      .livro-titulo {
-        margin: 0 0 2px;
-        font-size: 16px;
-        font-weight: 600;
-      }
-
-      .livro-autor {
-        margin: 0 0 6px;
-        font-size: 13px;
-        color: var(--text-secondary);
-      }
-
-      .comentario {
-        margin: 0;
-        font-size: 13px;
-        color: var(--text-secondary);
-        font-style: italic;
-        line-height: 1.4;
-      }
-    }
-  }
-}
-
 
 .header-section {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-
-  h1 {
-    margin: 0;
-    font-size: 26px;
-    font-weight: 700;
-  }
+  h1 { margin: 0; font-size: 26px; font-weight: 700; }
 }
 
 .descricao {
-  margin: 4px 0 0;
+  margin: 4px 0 8px;
   font-size: 14px;
   color: var(--text-secondary);
 }
+
+.aviso-geral {
+  margin: 4px 0 16px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 8px 14px;
+  text-align: center;
+}
+
+.loading { text-align: center; color: var(--accent); padding: 40px; }
+
+// ===== GRID DE CARDS =====
+.feed {
+  display: grid !important;
+  grid-template-columns: repeat(2, 1fr) !important;
+  gap: 12px !important;
+
+  @media (min-width: 900px) {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+}
+
+.feed-item {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px;
+  padding: 12px; // ⬅️ Reduzido de 16px
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: opacity 0.2s, border-color 0.2s;
+
+  @media (min-width: 500px) {
+    padding: 16px; // ⬅️ Volta ao normal em telas maiores
+  }
+
+  &:hover { opacity: 0.9; border-color: var(--accent); }
+}
+
+.feed-topo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  .avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+
+  .feed-header {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    min-width: 0;
+    flex: 1;
+    .usuario-nome { font-size: 13px; font-weight: 600; }
+    .usuario-nickname { font-size: 11px; color: var(--accent); }
+    .feed-acao { font-size: 10px; color: var(--text-secondary); }
+  }
+}
+
+.feed-livro {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex: 1;
+
+  .livro-capa { width: 36px; height: 50px; object-fit: cover; border-radius: 4px; flex-shrink: 0; }
+
+  .livro-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    strong { font-size: 12px; }
+    span { font-size: 11px; color: var(--text-secondary); }
+    .estrelas { color: var(--accent); font-size: 11px; }
+  }
+}
+
+.feed-rodape {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: auto;
+  .feed-data { font-size: 10px; color: var(--text-secondary); }
+}
+
+.btn-seguir-feed {
+  padding: 3px 10px;
+  border: 1px solid var(--accent);
+  border-radius: 12px;
+  background: transparent;
+  color: var(--accent);
+  font-size: 10px;
+  cursor: pointer;
+  white-space: nowrap;
+  &:hover { background: var(--accent); color: #fff; }
+  &.seguindo { background: var(--accent); color: #fff; }
+}
+
+.empty {
+  text-align: center;
+  padding: 40px;
+  color: var(--text-secondary);
+  grid-column: 1 / -1;
+}
+
+// ===== MODAL =====
+.comunidade-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.comunidade-modal-content {
+  background: var(--bg-card);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 480px;
+  max-height: 85vh;
+  overflow-y: auto;
+  border: 1px solid var(--border-color);
+  padding: 20px;
+}
+
+.comunidade-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  h3 { margin: 0; font-size: 16px; }
+}
+
+.comunidade-modal-close {
+  background: none; border: none; color: var(--text-secondary); cursor: pointer; padding: 4px;
+  svg { width: 20px; height: 20px; }
+  &:hover { color: var(--accent); }
+}
+
+.comunidade-usuario {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 16px;
+  .avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+  .nome { font-weight: 600; display: block; }
+  .nickname { font-size: 12px; color: var(--accent); }
+}
+
+.comunidade-livro {
+  display: flex; gap: 12px; margin-bottom: 16px;
+  .capa { width: 60px; height: 84px; object-fit: cover; border-radius: 6px; }
+  .info {
+    strong { display: block; font-size: 15px; }
+    span { font-size: 13px; color: var(--text-secondary); }
+    p { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
+  }
+}
+
+.comunidade-avaliacao {
+  text-align: center; margin-bottom: 16px;
+  .estrelas-grandes { font-size: 24px; letter-spacing: 4px; }
+}
+
+.comunidade-comentarios {
+  border-top: 1px solid var(--border-color); padding-top: 12px;
+  h4 { margin: 0 0 12px; font-size: 14px; }
+}
+
+.comentario-item {
+  padding: 10px; background: var(--bg-primary); border-radius: 8px; margin-bottom: 8px;
+  p { margin: 0; font-size: 13px; }
+  .data { font-size: 11px; color: var(--text-secondary); }
+}
+
+.comentario-autor { font-weight: 600; color: var(--accent); margin-right: 4px; }
+
+.novo-comentario {
+  margin-top: 12px;
+  textarea {
+    width: 100%; max-width: 100%; min-width: 100%;
+    padding: 10px; border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-primary); color: var(--text-primary);
+    font-size: 13px; resize: vertical; font-family: inherit;
+    outline: none; box-sizing: border-box;
+    &:focus { border-color: var(--accent); }
+  }
+  .comentario-actions {
+    display: flex; justify-content: space-between; align-items: center; margin-top: 6px;
+    .contador { font-size: 11px; color: var(--text-secondary); }
+    button {
+      padding: 6px 16px; border: none; border-radius: 16px;
+      background: var(--accent); color: #fff; font-size: 13px; cursor: pointer;
+      &:disabled { opacity: 0.5; cursor: not-allowed; }
+    }
+  }
+}
+
+.btn-seguir-modal {
+  margin-left: auto;
+  padding: 6px 16px; border: 1px solid var(--accent); border-radius: 16px;
+  background: transparent; color: var(--accent); font-size: 12px; cursor: pointer;
+  &:hover { background: var(--accent); color: #fff; }
+  &.seguindo { background: var(--accent); color: #fff; }
+}
+
+.feed-item {
+  border-left: 4px solid transparent; // ⬅️ reserva espaço para a borda colorida
+
+  &.borda-novo {
+    border-left-color: #ff2d55; // vermelho vibrante
+  }
+  &.borda-lendo {
+    border-left-color: #007aff; // azul Apple
+  }
+  &.borda-lido {
+    border-left-color: #34c759; // verde Apple
+  }
+  &.borda-avaliado {
+    border-left-color: #ffcc00; // amarelo vibrante
+  }
+}
+

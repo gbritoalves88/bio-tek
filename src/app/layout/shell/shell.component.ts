@@ -1,21 +1,13 @@
+// shell.component.ts
+
 import { Component, Inject, OnInit, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import {
-  RouterOutlet,
-  RouterLink,
-  RouterLinkActive
-} from '@angular/router';
-import { Router } from '@angular/router';
+import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/router';
 
 @Component({
   selector: 'app-shell',
   standalone: true,
-  imports: [
-    CommonModule,
-    RouterOutlet,
-    RouterLink,
-    RouterLinkActive
-  ],
+  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive],
   templateUrl: './shell.component.html',
   styleUrl: './shell.component.scss'
 })
@@ -23,12 +15,22 @@ export class ShellComponent implements OnInit {
   isDarkMode = true;
   menuOpen = false;
 
-  constructor(@Inject(PLATFORM_ID) private platformId: Object, private router: Router) {}
+  constructor(
+    @Inject(PLATFORM_ID) private platformId: Object,
+    private router: Router
+  ) {}
 
   ngOnInit() {
     if (isPlatformBrowser(this.platformId)) {
-      // Só executa no navegador
-      document.body.classList.add('dark-theme');
+      // Carregar tema do localStorage
+      const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+      this.isDarkMode = usuario.tema !== 2;
+
+      if (this.isDarkMode) {
+        document.body.classList.add('dark-theme');
+      } else {
+        document.body.classList.add('light-theme');
+      }
     }
   }
 
@@ -44,6 +46,11 @@ export class ShellComponent implements OnInit {
       document.body.classList.add('light-theme');
       document.body.classList.remove('dark-theme');
     }
+
+    // Salvar apenas no localStorage
+    const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+    usuario.tema = this.isDarkMode ? 1 : 2;
+    localStorage.setItem('usuario', JSON.stringify(usuario));
   }
 
   toggleMenu() {
@@ -55,6 +62,8 @@ export class ShellComponent implements OnInit {
   }
 
   sair() {
+    localStorage.removeItem('token');
+    localStorage.removeItem('usuario');
     this.router.navigate(['/']);
   }
 }

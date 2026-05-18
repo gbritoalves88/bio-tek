@@ -6,45 +6,75 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  text-align: center;
-  gap: 24px;
 }
 
-// ===== HEADER DO PERFIL =====
+.loading {
+  color: var(--accent);
+  padding: 40px;
+  font-size: 16px;
+}
+
+.perfil-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+  max-width: 400px;
+}
+
 .perfil-header {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
+  text-align: center;
+}
 
-  .avatar {
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
+.avatar-grande {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 3px solid var(--accent);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+
+  img {
+    width: 100%;
+    height: 100%;
     object-fit: cover;
-    border: 3px solid var(--accent);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
   }
 
-  .nome {
-    margin: 0;
-    font-size: 24px;
-    font-weight: 700;
-  }
-
-  .bio {
-    margin: 0;
-    font-size: 14px;
-    color: var(--text-secondary);
-    max-width: 300px;
-    line-height: 1.5;
+  &.editavel {
+    cursor: pointer;
+    transition: opacity 0.2s;
+    &:hover { opacity: 0.8; }
   }
 }
 
-// ===== ESTATÍSTICAS =====
+.nome {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.nickname {
+  font-size: 14px;
+  color: var(--accent);
+  font-weight: 500;
+}
+
+.bio {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-secondary);
+  max-width: 300px;
+  line-height: 1.5;
+}
+
 .stats {
   display: flex;
-  gap: 24px;
+  gap: 32px;
   justify-content: center;
 }
 
@@ -55,7 +85,7 @@
   gap: 4px;
 
   .stat-valor {
-    font-size: 20px;
+    font-size: 22px;
     font-weight: 700;
     color: var(--accent);
   }
@@ -66,7 +96,6 @@
   }
 }
 
-// ===== BOTÃO EDITAR =====
 .btn-editar {
   padding: 12px 32px;
   border: 1px solid var(--border-color);
@@ -84,8 +113,6 @@
   }
 }
 
-
-// ===== BOTÃO SAIR =====
 .btn-sair {
   padding: 12px 32px;
   border: 1px solid #e74c3c;
@@ -101,4 +128,104 @@
     background: #e74c3c;
     color: #ffffff;
   }
+}
+
+// ===== FORMULÁRIO DE EDIÇÃO =====
+.form-edicao {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+
+  .input-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  input, textarea {
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-card);
+    color: var(--text-primary);
+    font-size: 14px;
+    outline: none;
+    font-family: inherit;
+    resize: vertical;
+
+    &:focus { border-color: var(--accent); }
+    &::placeholder { color: var(--text-secondary); }
+  }
+}
+
+.botoes-edicao {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+
+  button {
+    flex: 1;
+    padding: 12px;
+    border-radius: 24px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+}
+
+.btn-salvar {
+  border: none;
+  background: var(--accent);
+  color: #ffffff;
+
+  &:hover { opacity: 0.85; }
+}
+
+.btn-cancelar {
+  border: 1px solid var(--border-color);
+  background: transparent;
+  color: var(--text-secondary);
+
+  &:hover { color: var(--text-primary); }
+}
+
+.avatar-grande {
+  position: relative;
+
+  &.editavel {
+    cursor: pointer;
+  }
+
+  .avatar-overlay {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s;
+
+    svg {
+      width: 28px;
+      height: 28px;
+      color: white;
+    }
+  }
+
+  &:hover .avatar-overlay {
+    opacity: 1;
+  }
+}
+
+.upload-erro {
+  color: #e74c3c;
+  font-size: 12px;
+  margin: 0;
+  text-align: center;
 }

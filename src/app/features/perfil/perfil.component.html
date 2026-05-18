@@ -1,25 +1,67 @@
 <section class="perfil">
-  <div class="perfil-header">
-    <img [src]="usuario.avatar" [alt]="usuario.nome" class="avatar" />
-    <h1 class="nome">{{ usuario.nome }}</h1>
-    <p class="bio">{{ usuario.bio }}</p>
+  <!-- Loading -->
+  <div class="loading" *ngIf="carregando">
+    🔍 Carregando perfil...
   </div>
 
-  <div class="stats">
-    <div class="stat-item">
-      <span class="stat-valor">{{ usuario.livrosLidos }}</span>
-      <span class="stat-label">Livros lidos</span>
+  <!-- Dados do perfil -->
+  <div class="perfil-container" *ngIf="usuario && !editando">
+    <div class="perfil-header">
+      <div class="avatar-grande">
+        <img [src]="usuario.avatar || 'assets/capas/perfilSemFoto.png'" [alt]="usuario.nome" />
+      </div>
+      <h1 class="nome">{{ usuario.nome }}</h1>
+      <span class="nickname">{{ usuario.nickname || '@sem-nickname' }}</span>
+      <p class="bio" *ngIf="usuario.descricao">{{ usuario.descricao }}</p>
     </div>
-    <div class="stat-item">
-      <span class="stat-valor">{{ usuario.horasLidas }}</span>
-      <span class="stat-label">Horas lidas</span>
+
+    <div class="stats">
+      <div class="stat-item">
+        <span class="stat-valor">{{ usuario.quantidadeLivros || 0 }}</span>
+        <span class="stat-label">Livros</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-valor">{{ usuario.quantidadeLivrosLidos || 0 }}</span>
+        <span class="stat-label">Lidos</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-valor">⭐ {{ usuario.mediaAvaliacoes || 0 }}</span>
+        <span class="stat-label">Média</span>
+      </div>
     </div>
-    <div class="stat-item">
-      <span class="stat-valor">⭐ {{ usuario.avaliacaoMedia }}</span>
-      <span class="stat-label">Avaliação média</span>
-    </div>
+
+    <button class="btn-editar" (click)="abrirEdicao()">Editar perfil</button>
+    <button class="btn-sair" (click)="sair()">Sair</button>
   </div>
 
-  <button class="btn-editar">Editar perfil</button>
-  <button class="btn-sair" (click)="sair()">Sair</button>
+  <!-- Edição do perfil -->
+  <div class="perfil-container" *ngIf="editando && usuarioEdit">
+    <div class="perfil-header">
+      <div class="avatar-grande editavel" (click)="fileInput.click()">
+        <img [src]="usuarioEdit.avatar || 'assets/capas/placeholder.jpg'" [alt]="usuarioEdit.nome" />
+        <div class="avatar-overlay">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        </div>
+        <input type="file" #fileInput hidden (change)="onAvatarSelected($event)" accept="image/*">
+      </div>
+      <p class="upload-erro" *ngIf="uploadErro">{{ uploadErro }}</p>
+    </div>
+
+    <div class="form-edicao">
+      <label class="input-label">Nome</label>
+      <input type="text" [(ngModel)]="usuarioEdit.nome" name="edit_nome">
+
+      <label class="input-label">@ Nickname</label>
+      <input type="text" [(ngModel)]="usuarioEdit.nickname" name="edit_nickname"
+       placeholder="@seunickname (3 a 10 caracteres)">
+
+      <label class="input-label">Biografia</label>
+      <textarea [(ngModel)]="usuarioEdit.descricao" name="edit_descricao" placeholder="Conte um pouco sobre você..." rows="3"></textarea>
+    </div>
+
+    <div class="botoes-edicao">
+      <button class="btn-salvar" (click)="salvarPerfil()">Salvar</button>
+      <button class="btn-cancelar" (click)="fecharEdicao()">Cancelar</button>
+    </div>
+  </div>
 </section>

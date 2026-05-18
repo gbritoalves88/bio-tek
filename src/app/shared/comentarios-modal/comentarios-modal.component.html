@@ -1,0 +1,36 @@
+<div class="comentarios-modal-overlay" *ngIf="aberto" (click)="fecharModal()">
+  <div class="comentarios-modal-content" (click)="$event.stopPropagation()">
+
+    <div class="comentarios-modal-header">
+      <h3>💬 {{ livroTitulo || 'Livro' }}</h3>
+      <button class="comentarios-modal-close" (click)="fecharModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="loading" *ngIf="carregandoComentarios">🔍 Carregando...</div>
+
+    <div class="comentario-item" *ngFor="let c of comentarios">
+      <p>
+        <span class="comentario-autor">{{ c.usuarioNickname || '@user' }}</span>
+        {{ c.comentario }}
+      </p>
+      <span class="data">{{ c.dataCriacao | date:'dd/MM/yyyy HH:mm' }}</span>
+    </div>
+
+    <div class="empty" *ngIf="!carregandoComentarios && comentarios.length === 0">
+      Nenhum comentário ainda.
+    </div>
+
+    <div class="novo-comentario">
+      <textarea [(ngModel)]="novoComentario" name="comentario" placeholder="Escreva um comentário..." rows="2" maxlength="200"></textarea>
+      <div class="comentario-actions">
+        <span class="contador">{{ novoComentario.length }}/200</span>
+        <button (click)="enviarComentario()" [disabled]="novoComentario.trim().length < 5">Enviar</button>
+      </div>
+    </div>
+
+  </div>
+</div>

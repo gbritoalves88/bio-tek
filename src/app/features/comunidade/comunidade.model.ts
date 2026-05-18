@@ -1,0 +1,32 @@
+export interface Comentario {
+  id: string;
+  idUsuario: string;
+  usuarioNome?: string;
+  usuarioNickname?: string;
+  comentario: string;
+  dataCriacao: string;
+}
+
+export interface AtividadeComunidade {
+  id: string;
+  tipo: 'livro_novo' | 'livro_lido' | 'livro_lendo' | 'livro_avaliado';
+  usuario: {
+    id: string;
+    nome: string;
+    nickname: string;
+    avatar?: string;
+  };
+  livro: {
+    id: string;
+    titulo: string;
+    autor: string;
+    descricao?: string;
+    imagem?: string;
+  };
+  avaliacao?: {
+    id?: string;
+    nota: number;
+  };
+  comentarios?: Comentario[];
+  data: string;
+}

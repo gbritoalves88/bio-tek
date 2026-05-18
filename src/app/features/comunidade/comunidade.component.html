@@ -1,30 +1,125 @@
 <section class="comunidade">
-   <div class="header-section">
+  <div class="header-section">
     <h1>Comunidade</h1>
-
   </div>
+  <p class="descricao">Atualizações da comunidade</p>
+  <p class="aviso-geral">💡 Comentários só podem ser feitos por leitores que finalizaram e avaliaram o livro.</p>
 
-  <p class="descricao">Recomendações da comunidade</p>
+  <div class="loading" *ngIf="carregando">🔍 Carregando feed...</div>
 
-  <div class="recomendacoes-list">
-      <div class="recomendacao-card" *ngFor="let rec of recomendacoes">
-      <div class="usuario-info">
-        <img [src]="rec.avatar" [alt]="rec.usuario" class="avatar" />
-        <div class="usuario-texto">
-          <span class="usuario-nome">{{ rec.usuario }}</span>
-          <span class="recomendou">recomendou um livro</span>
+  <div class="feed" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
+
+    <div class="feed-item" *ngFor="let item of atividades"
+     (click)="abrirModal(item)"
+     [class.borda-novo]="item.tipo === 'livro_novo'"
+     [class.borda-lendo]="item.tipo === 'livro_lendo'"
+     [class.borda-lido]="item.tipo === 'livro_lido'"
+     [class.borda-avaliado]="item.tipo === 'livro_avaliado'">
+      <!-- Topo: Avatar + Nome -->
+      <div class="feed-topo">
+        <img [src]="item.usuario.avatar || 'assets/capas/perfilSemFoto.png'" [alt]="item.usuario.nome" class="avatar" />
+        <div class="feed-header">
+          <span class="usuario-nome">{{ item.usuario.nome }}</span>
+          <span class="usuario-nickname">{{ item.usuario.nickname || '@user' }}</span>
+          <span class="feed-acao">{{ getTextoTipo(item.tipo) }}</span>
         </div>
-        <span class="estrelas">⭐ {{ rec.estrelas }}</span>
       </div>
 
-      <div class="livro-info">
-        <img [src]="rec.capa" [alt]="rec.livro" class="capa" />
-        <div class="livro-texto">
-          <h3 class="livro-titulo">{{ rec.livro }}</h3>
-          <p class="livro-autor">{{ rec.autor }}</p>
-          <p class="comentario" *ngIf="rec.comentario">"{{ rec.comentario }}"</p>
+      <!-- Meio: Capa + Info -->
+      <div class="feed-livro">
+        <img [src]="item.livro.imagem || 'assets/capas/perfilSemFoto.png'" [alt]="item.livro.titulo" class="livro-capa" />
+        <div class="livro-info">
+          <strong>{{ item.livro.titulo || 'Sem título' }}</strong>
+          <span>{{ item.livro.autor }}</span>
+          <span class="estrelas" *ngIf="item.avaliacao">{{ '⭐'.repeat(item.avaliacao.nota) }}</span>
         </div>
       </div>
+
+      <!-- Rodapé: Data + Botão Seguir -->
+      <div class="feed-rodape">
+        <span class="feed-data">{{ item.data | date:'dd/MM/yyyy HH:mm' }}</span>
+        <button class="btn-seguir-feed"
+                *ngIf="item.usuario.id !== meuId"
+                (click)="$event.stopPropagation(); estaSeguindo(item.usuario.id) ? deixarDeSeguirUsuario(item.usuario.id) : seguirUsuario(item.usuario.id)"
+                [class.seguindo]="estaSeguindo(item.usuario.id)">
+          {{ estaSeguindo(item.usuario.id) ? 'Seguindo' : 'Seguir' }}
+        </button>
+      </div>
+    </div>
+
+    <div class="empty" *ngIf="atividades.length === 0">
+      <p>Nenhuma atividade na comunidade ainda.</p>
+      <p>Adicione livros e avaliações para aparecer aqui!</p>
     </div>
   </div>
 </section>
+
+<!-- Modal de detalhes -->
+<div class="comunidade-modal-overlay" *ngIf="modalAberto && itemSelecionado" (click)="fecharModal()">
+  <div class="comunidade-modal-content" (click)="$event.stopPropagation()">
+
+    <div class="comunidade-modal-header">
+      <h3>{{ getIconeTipo(itemSelecionado.tipo) }} {{ getTextoTipo(itemSelecionado.tipo) }}</h3>
+      <button class="comunidade-modal-close" (click)="fecharModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="comunidade-usuario">
+      <img [src]="itemSelecionado.usuario.avatar || 'assets/capas/perfilSemFoto.png'" [alt]="itemSelecionado.usuario.nome" class="avatar" />
+      <div>
+        <span class="nome">{{ itemSelecionado.usuario.nome }}</span>
+        <span class="nickname">{{ itemSelecionado.usuario.nickname }}</span>
+      </div>
+      <button class="btn-seguir-modal"
+              *ngIf="itemSelecionado.usuario.id !== meuId"
+              (click)="estaSeguindo(itemSelecionado.usuario.id) ? deixarDeSeguirUsuario(itemSelecionado.usuario.id) : seguirUsuario(itemSelecionado.usuario.id)"
+              [class.seguindo]="estaSeguindo(itemSelecionado.usuario.id)">
+        {{ estaSeguindo(itemSelecionado.usuario.id) ? 'Seguindo' : 'Seguir' }}
+      </button>
+    </div>
+
+    <div class="comunidade-livro">
+      <img [src]="itemSelecionado.livro.imagem || 'assets/capas/perfilSemFoto.png'" [alt]="itemSelecionado.livro.titulo" class="capa" />
+      <div class="info">
+        <strong>{{ itemSelecionado.livro.titulo || 'Sem título' }}</strong>
+        <span>{{ itemSelecionado.livro.autor }}</span>
+        <p *ngIf="itemSelecionado.livro.descricao">{{ itemSelecionado.livro.descricao }}</p>
+      </div>
+    </div>
+
+    <div class="comunidade-avaliacao" *ngIf="itemSelecionado.tipo === 'livro_avaliado' && itemSelecionado.avaliacao">
+      <div class="estrelas-grandes">
+        {{ getEstrelas(itemSelecionado.avaliacao.nota) }}
+      </div>
+    </div>
+
+    <div class="comunidade-comentarios" *ngIf="itemSelecionado.tipo === 'livro_avaliado'">
+      <h4>Comentários</h4>
+      <div class="loading" *ngIf="carregandoComentarios">🔍 Carregando...</div>
+
+      <div class="comentario-item" *ngFor="let c of comentarios">
+        <p>
+          <span class="comentario-autor">{{ c.usuarioNickname || '@user' }}</span>
+          {{ c.comentario }}
+        </p>
+        <span class="data">{{ c.dataCriacao | date:'dd/MM/yyyy HH:mm' }}</span>
+      </div>
+
+      <div class="empty" *ngIf="!carregandoComentarios && comentarios.length === 0">
+        Nenhum comentário ainda. Seja o primeiro!
+      </div>
+
+      <div class="novo-comentario">
+        <textarea [(ngModel)]="novoComentario" name="comentario" placeholder="Escreva um comentário..." rows="2" maxlength="200"></textarea>
+        <div class="comentario-actions">
+          <span class="contador">{{ novoComentario.length }}/200</span>
+          <button (click)="enviarComentario()" [disabled]="novoComentario.trim().length < 5">Enviar</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
