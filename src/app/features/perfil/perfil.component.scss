@@ -38,6 +38,7 @@
   overflow: hidden;
   border: 3px solid var(--accent);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  position: relative;
 
   img {
     width: 100%;
@@ -49,6 +50,28 @@
     cursor: pointer;
     transition: opacity 0.2s;
     &:hover { opacity: 0.8; }
+  }
+
+  .avatar-overlay {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s;
+
+    svg {
+      width: 28px;
+      height: 28px;
+      color: white;
+    }
+  }
+
+  &:hover .avatar-overlay {
+    opacity: 1;
   }
 }
 
@@ -130,6 +153,13 @@
   }
 }
 
+.upload-erro {
+  color: #e74c3c;
+  font-size: 12px;
+  margin: 0;
+  text-align: center;
+}
+
 // ===== FORMULÁRIO DE EDIÇÃO =====
 .form-edicao {
   display: flex;
@@ -145,7 +175,7 @@
     letter-spacing: 0.5px;
   }
 
-  input, textarea {
+  input, textarea, select {
     padding: 10px 14px;
     border-radius: 10px;
     border: 1px solid var(--border-color);
@@ -154,10 +184,21 @@
     font-size: 14px;
     outline: none;
     font-family: inherit;
-    resize: vertical;
 
     &:focus { border-color: var(--accent); }
     &::placeholder { color: var(--text-secondary); }
+  }
+
+  textarea {
+    resize: vertical;
+  }
+
+  select {
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23888' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
   }
 }
 
@@ -191,41 +232,4 @@
   color: var(--text-secondary);
 
   &:hover { color: var(--text-primary); }
-}
-
-.avatar-grande {
-  position: relative;
-
-  &.editavel {
-    cursor: pointer;
-  }
-
-  .avatar-overlay {
-    position: absolute;
-    inset: 0;
-    border-radius: 50%;
-    background: rgba(0, 0, 0, 0.4);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    transition: opacity 0.2s;
-
-    svg {
-      width: 28px;
-      height: 28px;
-      color: white;
-    }
-  }
-
-  &:hover .avatar-overlay {
-    opacity: 1;
-  }
-}
-
-.upload-erro {
-  color: #e74c3c;
-  font-size: 12px;
-  margin: 0;
-  text-align: center;
 }
