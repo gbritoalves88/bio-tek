@@ -21,18 +21,20 @@ export class ShellComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    if (isPlatformBrowser(this.platformId)) {
-      // Carregar tema do localStorage
-      const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
-      this.isDarkMode = usuario.tema !== 2;
+  if (isPlatformBrowser(this.platformId)) {
+    const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
 
-      if (this.isDarkMode) {
-        document.body.classList.add('dark-theme');
-      } else {
-        document.body.classList.add('light-theme');
-      }
+    this.isDarkMode = usuario.tema !== 2;
+
+    if (this.isDarkMode) {
+      document.body.classList.add('dark-theme');
+      document.body.classList.remove('light-theme');
+    } else {
+      document.body.classList.add('light-theme');
+      document.body.classList.remove('dark-theme');
     }
   }
+}
 
   toggleTheme() {
     if (!isPlatformBrowser(this.platformId)) return;

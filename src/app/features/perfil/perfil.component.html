@@ -57,6 +57,12 @@
 
       <label class="input-label">Biografia</label>
       <textarea [(ngModel)]="usuarioEdit.descricao" name="edit_descricao" placeholder="Conte um pouco sobre você..." rows="3"></textarea>
+
+      <label class="input-label">Tema</label>
+      <select [(ngModel)]="usuarioEdit.tema" name="edit_tema" class="select-status">
+        <option [ngValue]="1">🌙 Escuro</option>
+        <option [ngValue]="2">☀️ Claro</option>
+      </select>
     </div>
 
     <div class="botoes-edicao">
