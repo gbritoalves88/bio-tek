@@ -28,15 +28,21 @@ export class ComunidadeService {
         const livrosFiltrados = livros.filter(l => l.idUsuario !== meuId);
         const avaliacoesFiltradas = avaliacoes.filter(a => a.idUsuario !== meuId);
         const idsUsuarios = new Set<string>();
+
         livrosFiltrados.forEach(l => { if (l.idUsuario) idsUsuarios.add(l.idUsuario); });
         avaliacoesFiltradas.forEach(a => { if (a.idUsuario) idsUsuarios.add(a.idUsuario); });
+
         const idsArray = Array.from(idsUsuarios);
         if (idsArray.length === 0) return of([]);
+
+        // Mapa de livros para cruzar com avaliações
+        const livroMap = new Map(livros.map(l => [l.id, l]));
 
         return forkJoin(idsArray.map(id => this.http.get<any>(`${this.apiUsuario}/${id}`))).pipe(
           map(usuarios => {
             const usuarioMap = new Map(usuarios.map(u => [u.id, u]));
             const atividades: AtividadeComunidade[] = [];
+
             livrosFiltrados.slice(0, 10).forEach(livro => {
               const u = usuarioMap.get(livro.idUsuario);
               atividades.push({
@@ -44,19 +50,30 @@ export class ComunidadeService {
                 tipo: livro.status === 2 ? 'livro_lendo' : livro.status === 3 ? 'livro_lido' : 'livro_novo',
                 usuario: { id: u?.id, nome: u?.nome || 'Desconhecido', nickname: u?.nickname || '@desconhecido', avatar: u?.avatar || 'assets/capas/perfilSemFoto.png' },
                 livro: { id: livro.id, titulo: livro.titulo, autor: livro.autor, imagem: livro.imagem || 'assets/capas/perfilSemFoto.png' },
-                data: livro.dataCriacao
+                data: livro.dataAtualizacao || livro.dataCriacao  // ⬅️ Prioriza data de atualização
               });
             });
+
             avaliacoesFiltradas.slice(0, 10).forEach(av => {
               const u = usuarioMap.get(av.idUsuario);
+              const livroAvaliado = livroMap.get(av.idLivro);
               atividades.push({
                 id: 'av-' + av.id, tipo: 'livro_avaliado',
                 usuario: { id: u?.id, nome: u?.nome || 'Desconhecido', nickname: u?.nickname || '@desconhecido', avatar: u?.avatar || 'assets/capas/perfilSemFoto.png' },
-                livro: { id: av.idLivro, titulo: 'Livro avaliado', autor: '', imagem: '' },
-                avaliacao: { nota: av.nota }, data: av.dataCriacao
+                livro: {
+                  id: av.idLivro,
+                  titulo: livroAvaliado?.titulo || 'Livro avaliado',
+                  autor: livroAvaliado?.autor || '',
+                  imagem: livroAvaliado?.imagem || 'assets/capas/perfilSemFoto.png'
+                },
+                avaliacao: { nota: av.nota },
+                data: av.dataAtualizacao || av.dataCriacao  // ⬅️ Prioriza data de atualização
               });
             });
-            return atividades.sort((a, b) => new Date(b.data).getTime() - new Date(a.data).getTime()).slice(0, 20);
+
+            return atividades
+              .sort((a, b) => new Date(b.data).getTime() - new Date(a.data).getTime())
+              .slice(0, 20);
           })
         );
       })
