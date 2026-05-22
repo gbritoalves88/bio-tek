@@ -19,6 +19,7 @@ export class HomeComponent implements OnInit {
   livroAtual: Livro | null = null;
   recomendados: Livro[] = [];
   ultimosAdicionados: Livro[] = [];
+  carregando = true;
 
   citacao = {
     texto: 'Um leitor vive mil vidas antes de morrer. O homem que nunca lê vive apenas uma.',
@@ -45,7 +46,7 @@ export class HomeComponent implements OnInit {
     return nickname ? `Olá, ${nickname}👋` : 'Olá, Leitor 👋';
   }
 
-  carregarLivros(): void {
+  carregarLivrosOld(): void {
     this.homeService.getMeusLivros().subscribe({
       next: (livros) => {
         const ordenados = livros.sort((a, b) =>
@@ -64,6 +65,26 @@ export class HomeComponent implements OnInit {
         this.cdr.markForCheck();  // ⬅️ Força atualização
       },
       error: (err) => console.error('Erro ao carregar livros:', err)
+    });
+  }
+
+  carregarLivros(): void {
+    this.carregando = true;
+    this.homeService.getMeusLivros().subscribe({
+      next: (livros) => {
+        const ordenados = livros.sort((a, b) =>
+          new Date(b.dataCriacao || '').getTime() - new Date(a.dataCriacao || '').getTime()
+        );
+        this.livroAtual = ordenados.find(l => l.status === 2) || null;
+        this.recomendados = ordenados.filter(l => l.status === 3).slice(0, 3).map(l => ({ ...l }));
+        this.ultimosAdicionados = ordenados.slice(0, 3);
+        this.carregando = false;
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        console.error('Erro ao carregar livros:', err);
+        this.carregando = false;
+      }
     });
   }
 
