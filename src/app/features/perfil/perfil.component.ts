@@ -201,4 +201,10 @@ export class PerfilComponent implements OnInit {
     localStorage.removeItem('usuario');
     this.router.navigate(['/']);
   }
+
+  limparArroba(): void {
+    if (this.usuarioEdit.nickname) {
+      this.usuarioEdit.nickname = this.usuarioEdit.nickname.replace(/@/g, '');
+    }
+  }
 }

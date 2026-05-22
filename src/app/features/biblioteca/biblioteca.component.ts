@@ -163,4 +163,37 @@ export class BibliotecaComponent implements OnInit {
     this.livroComentarioTitulo = livro.titulo;
     this.comentariosAberto = true;
   }
+
+  tirarFotoEdicao(): void {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.capture = 'environment';
+    input.onchange = (event: any) => {
+      const file = event.target.files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (this.livroEditando) {
+          this.livroEditando.imagem = reader.result as string;
+          this.cdr.markForCheck();
+        }
+      };
+      reader.readAsDataURL(file);
+    };
+    input.click();
+  }
+
+  onFileSelectedEdicao(event: Event): void {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (this.livroEditando) {
+        this.livroEditando.imagem = reader.result as string;
+        this.cdr.markForCheck();
+      }
+    };
+    reader.readAsDataURL(file);
+  }
 }
