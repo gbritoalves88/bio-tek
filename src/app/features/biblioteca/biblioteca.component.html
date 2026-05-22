@@ -12,53 +12,59 @@
     </button>
   </div>
 
-  <div class="search-box">
-    <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <circle cx="11" cy="11" r="8"/>
-      <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-    </svg>
-    <input type="text" placeholder="Buscar livro ou autor..." [(ngModel)]="termoBusca" class="search-input" />
-  </div>
+  <!-- Loading -->
+  <div class="loading" *ngIf="carregando">🔍 Carregando biblioteca...</div>
 
-  <div class="filtros">
-    <button class="filtro-btn" [class.active]="filtroStatus === null" (click)="filtroStatus = null">Todos</button>
-    <button class="filtro-btn" [class.active]="filtroStatus === 1" (click)="filtroStatus = 1">📕 Quero ler</button>
-    <button class="filtro-btn" [class.active]="filtroStatus === 2" (click)="filtroStatus = 2">📖 Lendo</button>
-    <button class="filtro-btn" [class.active]="filtroStatus === 3" (click)="filtroStatus = 3">✅ Lidos</button>
-    <button class="filtro-btn" [class.active]="filtroAvaliado" (click)="filtroAvaliado = !filtroAvaliado">⭐ Avaliados</button>
-    <button class="filtro-btn" [class.active]="filtroRecente" (click)="filtroRecente = !filtroRecente">🕐 Recentes</button>
-  </div>
+  <!-- Conteúdo carregado -->
+  <ng-container *ngIf="!carregando">
+    <div class="search-box">
+      <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"/>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" placeholder="Buscar livro ou autor..." [(ngModel)]="termoBusca" class="search-input" />
+    </div>
 
-  <div class="book-list">
-    <div class="book-item" *ngFor="let livro of livrosFiltrados">
-      <img [src]="livro.imagem || 'assets/capas/perfilSemFoto.png'" [alt]="livro.titulo" class="book-cover" />
-      <div class="book-info">
-        <h3 class="book-title">{{ livro.titulo || 'Sem título' }}</h3>
-        <p class="book-author">{{ livro.autor || 'Autor desconhecido' }}</p>
-        <span class="book-status" [class]="getStatusClass(livro.status)">{{ getStatusTexto(livro.status) }}</span>
-        <span class="book-stars" *ngIf="livro.estrelas">⭐ {{ livro.estrelas }}</span>
-      </div>
-      <div class="book-actions">
-        <button class="btn-icon-action btn-comentario" title="Comentários" *ngIf="livro.estrelas" (click)="abrirComentarios(livro)">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-        </button>
-        <button class="btn-icon-action" title="Editar" (click)="abrirEdicao(livro)">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-        </button>
-        <button class="btn-icon-action btn-delete" title="Remover" (click)="deletarLivro(livro.id)">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-        </button>
+    <div class="filtros">
+      <button class="filtro-btn" [class.active]="filtroStatus === null" (click)="filtroStatus = null">Todos</button>
+      <button class="filtro-btn" [class.active]="filtroStatus === 1" (click)="filtroStatus = 1">📕 Quero ler</button>
+      <button class="filtro-btn" [class.active]="filtroStatus === 2" (click)="filtroStatus = 2">📖 Lendo</button>
+      <button class="filtro-btn" [class.active]="filtroStatus === 3" (click)="filtroStatus = 3">✅ Lidos</button>
+      <button class="filtro-btn" [class.active]="filtroAvaliado" (click)="filtroAvaliado = !filtroAvaliado">⭐ Avaliados</button>
+      <button class="filtro-btn" [class.active]="filtroRecente" (click)="filtroRecente = !filtroRecente">🕐 Recentes</button>
+    </div>
+
+    <div class="book-list">
+      <div class="book-item" *ngFor="let livro of livrosFiltrados">
+        <img [src]="livro.imagem || 'assets/capas/perfilSemFoto.png'" [alt]="livro.titulo" class="book-cover" />
+        <div class="book-info">
+          <h3 class="book-title">{{ livro.titulo || 'Sem título' }}</h3>
+          <p class="book-author">{{ livro.autor || 'Autor desconhecido' }}</p>
+          <span class="book-status" [class]="getStatusClass(livro.status)">{{ getStatusTexto(livro.status) }}</span>
+          <span class="book-stars" *ngIf="livro.estrelas">⭐ {{ livro.estrelas }}</span>
+        </div>
+        <div class="book-actions">
+          <button class="btn-icon-action btn-comentario" title="Comentários" *ngIf="livro.estrelas" (click)="abrirComentarios(livro)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          </button>
+          <button class="btn-icon-action" title="Editar" (click)="abrirEdicao(livro)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
+          <button class="btn-icon-action btn-delete" title="Remover" (click)="deletarLivro(livro.id)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+          </button>
+        </div>
       </div>
     </div>
-  </div>
 
-  <button class="btn-add-full" (click)="abrirModal()">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <line x1="12" y1="5" x2="12" y2="19"/>
-      <line x1="5" y1="12" x2="19" y2="12"/>
-    </svg>
-    Adicionar novo livro
-  </button>
+    <button class="btn-add-full" (click)="abrirModal()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="12" y1="5" x2="12" y2="19"/>
+        <line x1="5" y1="12" x2="19" y2="12"/>
+      </svg>
+      Adicionar novo livro
+    </button>
+  </ng-container>
 </section>
 
 <app-add-book-modal *ngIf="modalAberto" (fechar)="modalAberto = false" (livroAdicionado)="onLivroAdicionado($event)"></app-add-book-modal>

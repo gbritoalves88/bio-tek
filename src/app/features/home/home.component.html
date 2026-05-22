@@ -17,69 +17,64 @@
     <span class="citacao-autor">— {{ citacao.autor }}</span>
   </div>
 
-  <!-- LENDO AGORA -->
-  <div class="reading-now" *ngIf="livroAtual; else semLeitura">
-    <h2>Lendo agora</h2>
-    <div class="book-info">
-      <img [src]="livroAtual.imagem || 'assets/capas/placeholder.jpg'" [alt]="livroAtual.titulo" class="book-cover" />
-      <div class="book-details">
-        <h3>{{ livroAtual.titulo }}</h3>
-        <p>{{ livroAtual.autor }}</p>
-      </div>
-    </div>
-    <div class="progress" *ngIf="livroAtual.progresso">
-      <div class="bar" [style.width.%]="livroAtual.progresso"></div>
-    </div>
-  </div>
-  <ng-template #semLeitura>
-    <div class="reading-now empty-state">
+  <!-- Loading -->
+  <div class="loading" *ngIf="carregando">🔍 Carregando...</div>
+
+  <!-- Conteúdo carregado -->
+  <ng-container *ngIf="!carregando">
+    <div class="reading-now" *ngIf="livroAtual; else semLeitura">
       <h2>Lendo agora</h2>
-      <p>Nenhum livro em leitura. Adicione um livro e marque como "Lendo"!</p>
-    </div>
-  </ng-template>
-
-  <div class="grid">
-    <!-- RECOMENDADOS -->
-    <div class="card-with-arrow" *ngIf="recomendados.length > 0">
-      <div class="card">
-        <h3>Recomendados</h3>
-        <div class="book-row">
-          <div class="book-item" *ngFor="let livro of recomendados">
-            <img [src]="livro.imagem || 'assets/capas/placeholder.jpg'" [alt]="livro.titulo" class="book-thumb" />
-            <span class="book-title">{{ livro.titulo }}</span>
-            <span class="book-stars">⭐</span>
-          </div>
+      <div class="book-info">
+        <img [src]="livroAtual.imagem || 'assets/capas/perfilSemFoto.png'" [alt]="livroAtual.titulo" class="book-cover" />
+        <div class="book-details">
+          <h3>{{ livroAtual.titulo }}</h3>
+          <p>{{ livroAtual.autor }}</p>
         </div>
       </div>
-      <a [routerLink]="['/inicio/biblioteca']" [queryParams]="{ filtro: 'avaliados' }" class="arrow-tab">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <polyline points="9 18 15 12 9 6"/>
-        </svg>
-      </a>
+      <div class="progress" *ngIf="livroAtual.progresso">
+        <div class="bar" [style.width.%]="livroAtual.progresso"></div>
+      </div>
     </div>
+    <ng-template #semLeitura>
+      <div class="reading-now empty-state">
+        <h2>Lendo agora</h2>
+        <p>Nenhum livro em leitura. Adicione um livro e marque como "Lendo"!</p>
+      </div>
+    </ng-template>
 
-    <!-- ÚLTIMOS ADICIONADOS -->
-    <div class="card-with-arrow" *ngIf="ultimosAdicionados.length > 0">
-      <div class="card">
-        <h3>Últimos adicionados</h3>
-        <div class="book-row">
-          <div class="book-item" *ngFor="let livro of ultimosAdicionados">
-            <img [src]="livro.imagem || 'assets/capas/placeholder.jpg'" [alt]="livro.titulo" class="book-thumb" />
-            <span class="book-title">{{ livro.titulo }}</span>
+    <div class="grid">
+      <div class="card-with-arrow" *ngIf="recomendados.length > 0">
+        <div class="card">
+          <h3>Recomendados</h3>
+          <div class="book-row">
+            <div class="book-item" *ngFor="let livro of recomendados">
+              <img [src]="livro.imagem || 'assets/capas/perfilSemFoto.png'" [alt]="livro.titulo" class="book-thumb" />
+              <span class="book-title">{{ livro.titulo }}</span>
+              <span class="book-stars">⭐</span>
+            </div>
           </div>
         </div>
+        <a [routerLink]="['/inicio/biblioteca']" [queryParams]="{ filtro: 'avaliados' }" class="arrow-tab">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </a>
       </div>
-      <a [routerLink]="['/inicio/biblioteca']" [queryParams]="{ filtro: 'recentes' }" class="arrow-tab">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <polyline points="9 18 15 12 9 6"/>
-        </svg>
-      </a>
-    </div>
-  </div>
 
-  <app-add-book-modal
-    *ngIf="modalAberto"
-    (fechar)="modalAberto = false"
-    (livroAdicionado)="onLivroAdicionado($event)">
-  </app-add-book-modal>
+      <div class="card-with-arrow" *ngIf="ultimosAdicionados.length > 0">
+        <div class="card">
+          <h3>Últimos adicionados</h3>
+          <div class="book-row">
+            <div class="book-item" *ngFor="let livro of ultimosAdicionados">
+              <img [src]="livro.imagem || 'assets/capas/perfilSemFoto.png'" [alt]="livro.titulo" class="book-thumb" />
+              <span class="book-title">{{ livro.titulo }}</span>
+            </div>
+          </div>
+        </div>
+        <a [routerLink]="['/inicio/biblioteca']" [queryParams]="{ filtro: 'recentes' }" class="arrow-tab">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </a>
+      </div>
+    </div>
+  </ng-container>
+
+  <app-add-book-modal *ngIf="modalAberto" (fechar)="modalAberto = false" (livroAdicionado)="onLivroAdicionado($event)"></app-add-book-modal>
 </section>

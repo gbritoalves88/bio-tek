@@ -18,8 +18,19 @@
 .loading { text-align: center; color: var(--accent); padding: 20px; }
 .empty { text-align: center; color: var(--text-secondary); padding: 20px; font-size: 13px; }
 .comentario-item {
-  padding: 10px; background: var(--bg-primary); border-radius: 8px; margin-bottom: 8px;
-  p { margin: 0; font-size: 13px; }
+  padding: 10px;
+  background: var(--bg-primary);
+  border-radius: 8px;
+  margin-bottom: 8px;
+
+  p {
+    margin: 0;
+    font-size: 13px;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: pre-wrap;
+  }
+
   .data { font-size: 11px; color: var(--text-secondary); }
 }
 .comentario-autor { font-weight: 600; color: var(--accent); margin-right: 4px; }
