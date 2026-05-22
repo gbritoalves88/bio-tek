@@ -35,16 +35,16 @@
         </div>
       </div>
 
-      <!--
+
       <div class="feed-rodape">
         <span class="feed-data">{{ item.data | date:'dd/MM/yyyy HH:mm' }}</span>
-        <button class="btn-seguir-feed"
+       <!-- <button class="btn-seguir-feed"
                 *ngIf="item.usuario.id !== meuId"
                 (click)="$event.stopPropagation(); estaSeguindo(item.usuario.id) ? deixarDeSeguirUsuario(item.usuario.id) : seguirUsuario(item.usuario.id)"
                 [class.seguindo]="estaSeguindo(item.usuario.id)">
           {{ estaSeguindo(item.usuario.id) ? 'Seguindo' : 'Seguir' }}
-        </button>
-      </div>-->
+        </button>-->
+      </div>
     </div>
 
     <div class="empty" *ngIf="atividades.length === 0">
