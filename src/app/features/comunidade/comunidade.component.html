@@ -35,7 +35,7 @@
         </div>
       </div>
 
-      <!-- Rodapé: Data + Botão Seguir -->
+      <!--
       <div class="feed-rodape">
         <span class="feed-data">{{ item.data | date:'dd/MM/yyyy HH:mm' }}</span>
         <button class="btn-seguir-feed"
@@ -44,7 +44,7 @@
                 [class.seguindo]="estaSeguindo(item.usuario.id)">
           {{ estaSeguindo(item.usuario.id) ? 'Seguindo' : 'Seguir' }}
         </button>
-      </div>
+      </div>-->
     </div>
 
     <div class="empty" *ngIf="atividades.length === 0">

@@ -29,6 +29,7 @@ export class BibliotecaComponent implements OnInit {
   comentariosAberto = false;
   livroComentarioId = '';
   livroComentarioTitulo = '';
+  carregando = true;
 
   constructor(
     private bibliotecaService: BibliotecaService,
@@ -51,16 +52,19 @@ export class BibliotecaComponent implements OnInit {
   }
 
   carregarLivros(): void {
-  this.bibliotecaService.getMeusLivrosComAvaliacoes().subscribe({
-    next: (livros) => {
-      this.livros = livros.sort((a, b) =>
-        new Date(b.dataCriacao || '').getTime() - new Date(a.dataCriacao || '').getTime()
-      );
-      this.cdr.markForCheck();
-    },
-    error: (err) => console.error('Erro ao carregar livros:', err)
-  });
-}
+    this.carregando = true; // ⬅️ Inicia o loading
+    this.bibliotecaService.getMeusLivrosComAvaliacoes().subscribe({
+      next: (livros) => {
+        this.livros = livros.sort((a, b) => new Date(b.dataCriacao || '').getTime() - new Date(a.dataCriacao || '').getTime());
+        this.carregando = false; // ⬅️ Finaliza o loading
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        console.error('Erro ao carregar livros:', err);
+        this.carregando = false; // ⬅️ Finaliza mesmo com erro
+      }
+    });
+  }
 
   getStatusTexto(status: number): string {
     switch (status) {

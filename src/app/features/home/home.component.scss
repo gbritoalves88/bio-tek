@@ -367,6 +367,13 @@
   }
 }
 
+.loading {
+  color: var(--accent);
+  padding: 40px;
+  text-align: center;
+}
+
+
 .empty-state {
   text-align: center;
   padding: 30px 20px;

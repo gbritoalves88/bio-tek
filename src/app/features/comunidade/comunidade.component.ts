@@ -5,6 +5,8 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ComunidadeService } from './comunidade.service';
 import { AtividadeComunidade, Comentario } from './comunidade.model';
+import { NavigationEnd, Router } from '@angular/router';
+import { filter } from 'rxjs/operators';
 
 @Component({
   selector: 'app-comunidade',
@@ -29,31 +31,42 @@ export class ComunidadeComponent implements OnInit {
   constructor(
     private comunidadeService: ComunidadeService,
     @Inject(PLATFORM_ID) private platformId: Object,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private router: Router
   ) {}
 
-  ngOnInit(): void {
-    if (isPlatformBrowser(this.platformId)) {
-      const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
-      this.meuId = usuario.id || '';
-      this.carregarFeed();
-      this.carregarSeguindo();
-    }
-  }
+ ngOnInit(): void {
+  if (isPlatformBrowser(this.platformId)) {
+    const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+    this.meuId = usuario.id || '';
+    this.carregarFeed();
+    this.carregarSeguindo();
 
-  carregarFeed(): void {
-    this.comunidadeService.getFeedComunidade(this.meuId).subscribe({
-      next: (data) => {
-        this.atividades = data;
-        this.carregando = false;
-        this.cdr.markForCheck();
-      },
-      error: (err) => {
-        console.error('Erro:', err);
-        this.carregando = false;
+    // Recarrega o feed sempre que navegar para a Comunidade
+    this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd)
+    ).subscribe((event: any) => {
+      if (event.url.includes('/comunidade')) {
+        this.carregarFeed();
+        this.carregarSeguindo();
       }
     });
   }
+}
+
+carregarFeed(): void {
+  this.comunidadeService.getFeedComunidade(this.meuId).subscribe({
+    next: (data) => {
+      this.atividades = data;
+      this.carregando = false;
+      this.cdr.markForCheck();
+    },
+    error: (err) => {
+      console.error('Erro:', err);
+      this.carregando = false;
+    }
+  });
+}
 
   abrirModal(item: AtividadeComunidade): void {
     this.itemSelecionado = item;
