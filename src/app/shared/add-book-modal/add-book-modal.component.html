@@ -1,3 +1,5 @@
+<!-- src/app/shared/add-book-modal/add-book-modal.component.html -->
+
 <div class="modal-overlay" (click)="fecharModal()">
   <div class="modal-content" (click)="$event.stopPropagation()">
 
@@ -11,25 +13,12 @@
       </button>
     </div>
 
-    <!-- ==================== ABA CÓDIGO DE BARRAS (SEMPRE VISÍVEL) ==================== -->
     <div class="tab-content">
 
       <!-- Estado inicial -->
       <p class="tab-placeholder" [hidden]="scannerAtivo || escaneando || buscandoInfo || livroEncontrado || livroNaoEncontrado">
         📷 Escaneie o código de barras do livro
       </p>
-
-      <!-- Scanner -->
-      <div class="scanner-container" [hidden]="!scannerAtivo">
-        <zxing-scanner
-          [formats]="allowedFormats"
-          [autostart]="true"
-          (scanSuccess)="onCodeResult($event)"
-          (camerasFound)="onHasDevices(true)"
-          (camerasNotFound)="onHasDevices(false)"
-          (scanError)="onScanError($event)">
-        </zxing-scanner>
-      </div>
 
       <!-- Código -->
       <div class="codigo-resultado" [hidden]="!(novoLivro.codigoBarras && !scannerAtivo && !livroEncontrado && !livroNaoEncontrado)">
@@ -39,9 +28,6 @@
       <!-- Botões ação -->
       <button class="btn-submit" [hidden]="scannerAtivo || buscandoInfo || livroEncontrado || livroNaoEncontrado" (click)="ativarScanner()">
         {{ novoLivro.codigoBarras ? 'Escanear novamente' : 'Escanear código' }}
-      </button>
-      <button class="btn-submit" [hidden]="!scannerAtivo" (click)="scannerAtivo = false; escaneando = false">
-        Cancelar escaneamento
       </button>
 
       <div class="manual-divider" [hidden]="!(novoLivro.codigoBarras && !livroEncontrado && !livroNaoEncontrado)">
@@ -70,16 +56,12 @@
             <polyline points="22 4 12 14.01 9 11.01"/>
           </svg>
         </div>
-
         <img [src]="novoLivro.capa || 'assets/capas/placeholder.jpg'" [alt]="novoLivro.titulo" class="capa-preview" />
-
         <div class="info-texto">
           <strong>{{ novoLivro.titulo }}</strong>
           <span>{{ novoLivro.autor }}</span>
           <span *ngIf="novoLivro.descricao" class="descricao">{{ novoLivro.descricao }}</span>
         </div>
-
-        <!-- Trocar capa -->
         <div class="upload-capa-simples">
           <button type="button" class="btn-upload-small" (click)="tirarFoto()">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
@@ -89,11 +71,10 @@
           </button>
           <input type="file" #fileInputEncontrado hidden (change)="onFileSelected($event)" accept="image/*">
         </div>
-
-        <button class="btn-submit" (click)="fazerUploadEFinalizar()">Adicionar à biblioteca</button>
+        <button class="btn-submit" (click)="adicionarLivroEncontrado()">Adicionar à biblioteca</button>
       </div>
 
-      <!-- ========== LIVRO NÃO ENCONTRADO (MANUAL) ========== -->
+      <!-- ========== LIVRO NÃO ENCONTRADO ========== -->
       <div class="livro-encontrado erro" [hidden]="!livroNaoEncontrado">
         <div class="status-icone erro-icone">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -103,12 +84,10 @@
           </svg>
         </div>
         <p>Livro não encontrado. Cadastre manualmente:</p>
-
         <div class="manual-fallback">
           <input type="text" placeholder="Título" [(ngModel)]="novoLivro.titulo" name="titulo_fallback">
           <input type="text" placeholder="Autor" [(ngModel)]="novoLivro.autor" name="autor_fallback">
           <input type="text" placeholder="Descrição (opcional)" [(ngModel)]="novoLivro.descricao" name="descricao_fallback">
-
           <div class="upload-capa">
             <div class="upload-opcoes">
               <button type="button" class="btn-upload" (click)="tirarFoto()">
@@ -121,17 +100,46 @@
               </button>
             </div>
             <input type="file" #fileInputFallback hidden (change)="onFileSelected($event)" accept="image/*">
-
             <img *ngIf="novoLivro.capa" [src]="novoLivro.capa" class="preview-mini" />
             <span *ngIf="!novoLivro.capa" class="upload-placeholder">Nenhuma capa</span>
           </div>
         </div>
-
-        <button class="btn-submit" (click)="fazerUploadEFinalizar()">Salvar manualmente</button>
+        <button class="btn-submit" (click)="adicionarLivroEncontrado()">Salvar manualmente</button>
         <button class="btn-submit btn-outline" (click)="tentarNovamente()">Buscar novamente</button>
       </div>
 
     </div>
+  </div>
+</div>
 
+<!-- Scanner em tela cheia -->
+<div class="scanner-fullscreen" *ngIf="scannerAtivo">
+  <div class="scanner-topbar">
+    <button class="scanner-close-btn" (click)="desativarScanner()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+        <line x1="18" y1="6" x2="6" y2="18"/>
+        <line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </button>
+    <span class="scanner-title">Escaneie o código de barras</span>
+    <button class="scanner-flash-btn" (click)="alternarFlash()" [class.ativo]="flashAtivo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+      </svg>
+    </button>
+  </div>
+  <zxing-scanner
+    class="scanner-full"
+    [formats]="allowedFormats"
+    [autostart]="true"
+    [torch]="flashAtivo"
+    [tryHarder]="true"
+    (scanSuccess)="onCodeResult($event)"
+    (camerasFound)="onHasDevices(true)"
+    (camerasNotFound)="onHasDevices(false)"
+    (scanError)="onScanError($event)">
+  </zxing-scanner>
+  <div class="scanner-guide">
+    <div class="guide-line"></div>
   </div>
 </div>

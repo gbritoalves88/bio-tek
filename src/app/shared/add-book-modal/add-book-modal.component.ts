@@ -1,10 +1,11 @@
+// src/app/shared/add-book-modal/add-book-modal.component.ts
+
 import { Component, EventEmitter, Output, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ZXingScannerModule } from '@zxing/ngx-scanner';
 import { BarcodeFormat } from '@zxing/library';
 import { AddBookModalService } from './add-book-modal.service';
-import { UploadService } from '../../shared/services/upload.service';
 
 @Component({
   selector: 'app-add-book-modal',
@@ -17,11 +18,12 @@ export class AddBookModalComponent {
   @Output() fechar = new EventEmitter<void>();
   @Output() livroAdicionado = new EventEmitter<any>();
 
-  abaAtiva: 'manual' | 'codigo' = 'manual';
+  abaAtiva: 'manual' | 'codigo' = 'codigo';
   escaneando = false;
   buscandoInfo = false;
   livroEncontrado = false;
   livroNaoEncontrado = false;
+  flashAtivo = false;
 
   novoLivro = {
     titulo: '',
@@ -37,12 +39,11 @@ export class AddBookModalComponent {
 
   constructor(
     private addBookService: AddBookModalService,
-    private cdr: ChangeDetectorRef,
-    private uploadService: UploadService
+    private cdr: ChangeDetectorRef
   ) {}
 
   fecharModal(): void {
-    this.scannerAtivo = false;
+    this.desativarScanner();
     this.novoLivro = { titulo: '', autor: '', descricao: '', codigoBarras: '', capa: '' };
     this.livroEncontrado = false;
     this.livroNaoEncontrado = false;
@@ -54,13 +55,24 @@ export class AddBookModalComponent {
   ativarScanner(): void {
     this.scannerAtivo = true;
     this.escaneando = true;
+    this.flashAtivo = false;
     this.cdr.markForCheck();
+  }
+
+  desativarScanner(): void {
+    this.scannerAtivo = false;
+    this.escaneando = false;
+    this.flashAtivo = false;
+    this.cdr.markForCheck();
+  }
+
+  alternarFlash(): void {
+    this.flashAtivo = !this.flashAtivo;
   }
 
   onCodeResult(result: string): void {
     this.novoLivro.codigoBarras = result;
-    this.scannerAtivo = false;
-    this.escaneando = false;
+    this.desativarScanner();
     this.cdr.markForCheck();
     this.buscarPorCodigo();
   }
@@ -106,9 +118,44 @@ export class AddBookModalComponent {
     });
   }
 
+  fazerUploadEFinalizar(): void {
+    if (!this.novoLivro.capa || !this.novoLivro.capa.startsWith('data:')) {
+      this.adicionarLivro();
+      return;
+    }
+    // Upload imgbb (já existente)
+    this.adicionarLivro();
+  }
+
+  private adicionarLivro(): void {
+    const dados = {
+      titulo: this.novoLivro.titulo,
+      autor: this.novoLivro.autor,
+      descricao: this.novoLivro.descricao,
+      imagem: this.novoLivro.capa || null,
+      codigoBarras: this.novoLivro.codigoBarras || null
+    };
+    this.addBookService.adicionarLivro(dados).subscribe({
+      next: (livro) => {
+        this.livroAdicionado.emit(livro);
+        this.fecharModal();
+      },
+      error: (err) => console.error('Erro:', err)
+    });
+  }
+
+  adicionarLivroEncontrado(): void {
+    this.fazerUploadEFinalizar();
+  }
+
   tentarNovamente(): void {
     this.novoLivro.codigoBarras = '';
+    this.novoLivro.titulo = '';
+    this.novoLivro.autor = '';
+    this.novoLivro.descricao = '';
+    this.novoLivro.capa = '';
     this.livroNaoEncontrado = false;
+    this.livroEncontrado = false;
     this.cdr.markForCheck();
   }
 
@@ -117,11 +164,9 @@ export class AddBookModalComponent {
     input.type = 'file';
     input.accept = 'image/*';
     input.capture = 'environment';
-
     input.onchange = (event: any) => {
       const file = event.target.files?.[0];
       if (!file) return;
-
       const reader = new FileReader();
       reader.onload = () => {
         this.novoLivro.capa = reader.result as string;
@@ -129,59 +174,17 @@ export class AddBookModalComponent {
       };
       reader.readAsDataURL(file);
     };
-
     input.click();
   }
 
   onFileSelected(event: Event): void {
     const file = (event.target as HTMLInputElement).files?.[0];
     if (!file) return;
-
     const reader = new FileReader();
     reader.onload = () => {
       this.novoLivro.capa = reader.result as string;
       this.cdr.markForCheck();
     };
     reader.readAsDataURL(file);
-  }
-
-  // ===== UPLOAD + SALVAR =====
-
-  fazerUploadEFinalizar(): void {
-
-    if (!this.novoLivro.capa || !this.novoLivro.capa.startsWith('data:')) {
-      this.salvarLivro();
-      return;
-    }
-
-    this.uploadService.uploadImagem(this.novoLivro.capa).subscribe({
-      next: (url) => {
-        this.novoLivro.capa = url;
-        this.salvarLivro();
-      },
-      error: (err) => {
-        this.salvarLivro(); // Salva mesmo com erro
-      }
-    });
-  }
-
-  private salvarLivro(): void {
-    const dados = {
-      titulo: this.novoLivro.titulo,
-      autor: this.novoLivro.autor,
-      descricao: this.novoLivro.descricao,
-      imagem: this.novoLivro.capa || null,
-      codigoBarras: this.novoLivro.codigoBarras || null
-    };
-
-    this.addBookService.adicionarLivro(dados).subscribe({
-      next: (livro) => {
-        this.livroAdicionado.emit(livro);
-        this.fecharModal();
-      },
-      error: (err) => {
-        console.error('❌ Erro ao salvar livro:', err);
-      }
-    });
   }
 }

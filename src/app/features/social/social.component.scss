@@ -12,7 +12,6 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 8px;
-
   h1 { margin: 0; font-size: 26px; font-weight: 700; }
 }
 
@@ -38,15 +37,15 @@
 .seguidor-card {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: 12px;
   padding: 14px;
 
   .avatar {
-    width: 48px;
-    height: 48px;
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
     object-fit: cover;
     flex-shrink: 0;
@@ -54,39 +53,35 @@
 
   .info {
     flex: 1;
+    min-width: 0;
     cursor: pointer;
     display: flex;
     flex-direction: column;
     gap: 2px;
-
     &:hover { opacity: 0.8; }
-
-    .nome { font-size: 15px; font-weight: 600; }
-    .nickname { font-size: 13px; color: var(--accent); }
-  }
-
-  .stats-mini {
-    display: flex;
-    gap: 8px;
-    font-size: 12px;
-    color: var(--text-secondary);
+    .nome { font-size: 14px; font-weight: 600; }
+    .nickname { font-size: 12px; color: var(--accent); }
+    .stats-mini {
+      display: flex;
+      gap: 8px;
+      font-size: 11px;
+      color: var(--text-secondary);
+      flex-wrap: wrap;
+    }
   }
 
   .btn-deixar {
-    padding: 6px 12px;
+    padding: 4px 10px;
     border: 1px solid #e74c3c;
-    border-radius: 16px;
+    border-radius: 14px;
     background: transparent;
     color: #e74c3c;
-    font-size: 11px;
+    font-size: 10px;
     cursor: pointer;
     white-space: nowrap;
+    flex-shrink: 0;
     transition: all 0.2s;
-
-    &:hover {
-      background: #e74c3c;
-      color: #ffffff;
-    }
+    &:hover { background: #e74c3c; color: #fff; }
   }
 }
 
@@ -94,34 +89,8 @@
   text-align: center;
   padding: 40px 20px;
   color: var(--text-secondary);
-
   p { margin: 4px 0; }
 }
-
-.mock-label {
-  font-size: 12px;
-  color: var(--text-secondary);
-  text-align: center;
-  margin: 8px 0 4px;
-}
-
-.btn-mock {
-  width: 100%;
-  padding: 10px;
-  border: 1px dashed var(--border-color);
-  border-radius: 10px;
-  background: transparent;
-  color: var(--text-secondary);
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.2s;
-
-  &:hover {
-    border-color: var(--accent);
-    color: var(--accent);
-  }
-}
-
 
 // ===== MODAL PERFIL =====
 .perfil-modal-overlay {
@@ -187,11 +156,14 @@
   margin-top: 12px;
   font-size: 13px;
   color: var(--text-secondary);
+  justify-content: flex-start;
+  width: 100%;
+  justify-content: center;
+  padding-left: 24px;
 }
 
 .livros-usuario {
   padding: 0 20px 20px;
-
   h3 { font-size: 14px; color: var(--text-secondary); margin-bottom: 12px; }
 }
 
@@ -215,6 +187,7 @@
     height: 50px;
     object-fit: cover;
     border-radius: 4px;
+    flex-shrink: 0;
   }
 
   .book-info {
@@ -224,16 +197,9 @@
     .book-author { font-size: 11px; color: var(--text-secondary); }
     .book-status { font-size: 10px; }
   }
+
+  .book-stars { font-size: 12px; color: var(--accent); }
 }
-
-.empty { text-align: center; color: var(--text-secondary); padding: 20px; font-size: 13px; }
-.loading { text-align: center; color: var(--accent); padding: 20px; }
-
-// Reaproveita classes de status
-.lendo { color: var(--accent); }
-.lido { color: #4caf50; }
-.quero-ler { color: var(--text-secondary); }
-
 
 .btn-comentario {
   width: 28px;
@@ -250,13 +216,12 @@
   transition: all 0.2s;
   flex-shrink: 0;
 
-  svg {
-    width: 14px;
-    height: 14px;
-  }
+  svg { width: 14px; height: 14px; }
 
-  &:hover {
-    border-color: var(--accent);
-    color: var(--accent);
-  }
+  &:hover { border-color: var(--accent); color: var(--accent); }
 }
+
+// ===== STATUS =====
+.lendo { color: var(--accent); }
+.lido { color: #4caf50; }
+.quero-ler { color: var(--text-secondary); }

@@ -52,8 +52,13 @@
       <input type="text" [(ngModel)]="usuarioEdit.nome" name="edit_nome">
 
       <label class="input-label">@ Nickname</label>
-      <input type="text" [(ngModel)]="usuarioEdit.nickname" name="edit_nickname"
-       placeholder="@seunickname (3 a 10 caracteres)">
+      <div class="nickname-input-wrapper">
+        <span class="nickname-prefix">@</span>
+        <input type="text" [(ngModel)]="usuarioEdit.nickname" name="edit_nickname"
+              placeholder="seunickname (3 a 10 caracteres)"
+              maxlength="10"
+              (input)="limparArroba()">
+      </div>
 
       <label class="input-label">Biografia</label>
       <textarea [(ngModel)]="usuarioEdit.descricao" name="edit_descricao" placeholder="Conte um pouco sobre você..." rows="3"></textarea>

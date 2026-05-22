@@ -233,3 +233,35 @@
 
   &:hover { color: var(--text-primary); }
 }
+
+.nickname-input-wrapper {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background: var(--bg-card);
+  overflow: hidden;
+
+  &:focus-within {
+    border-color: var(--accent);
+  }
+}
+
+.nickname-prefix {
+  padding: 10px 0 10px 14px;
+  font-size: 14px;
+  color: var(--text-secondary);
+  font-weight: 600;
+  user-select: none;
+}
+
+.nickname-input-wrapper input {
+  flex: 1;
+  padding: 10px 14px 10px 2px;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 14px;
+  outline: none;
+  font-family: inherit;
+}
