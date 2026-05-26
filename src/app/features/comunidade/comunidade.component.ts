@@ -5,8 +5,6 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ComunidadeService } from './comunidade.service';
 import { AtividadeComunidade, Comentario } from './comunidade.model';
-import { NavigationEnd, Router } from '@angular/router';
-import { filter } from 'rxjs/operators';
 
 @Component({
   selector: 'app-comunidade',
@@ -19,6 +17,8 @@ import { filter } from 'rxjs/operators';
 export class ComunidadeComponent implements OnInit {
   atividades: AtividadeComunidade[] = [];
   carregando = true;
+  atualizando = false;
+  pullParaAtualizar = false;
 
   modalAberto = false;
   itemSelecionado: AtividadeComunidade | null = null;
@@ -27,54 +27,94 @@ export class ComunidadeComponent implements OnInit {
   carregandoComentarios = false;
   seguindoIds: Set<string> = new Set();
   meuId = '';
+  livroComentarioProntos: any[] | null = null;
+
+  private touchStartY = 0;
+  private readonly pullThreshold = 80;
 
   constructor(
     private comunidadeService: ComunidadeService,
     @Inject(PLATFORM_ID) private platformId: Object,
-    private cdr: ChangeDetectorRef,
-    private router: Router
+    private cdr: ChangeDetectorRef
   ) {}
 
- ngOnInit(): void {
-  if (isPlatformBrowser(this.platformId)) {
-    const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
-    this.meuId = usuario.id || '';
-    this.carregarFeed();
-    this.carregarSeguindo();
+  ngOnInit(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+      this.meuId = usuario.id || '';
+      this.carregarFeed();
+      this.carregarSeguindo();
+    }
+  }
 
-    // Recarrega o feed sempre que navegar para a Comunidade
-    this.router.events.pipe(
-      filter(event => event instanceof NavigationEnd)
-    ).subscribe((event: any) => {
-      if (event.url.includes('/comunidade')) {
-        this.carregarFeed();
-        this.carregarSeguindo();
+  onTouchStart(event: TouchEvent): void {
+    if (window.scrollY === 0) {
+      this.touchStartY = event.touches[0].clientY;
+    }
+  }
+
+  onTouchMove(event: TouchEvent): void {
+    if (window.scrollY === 0) {
+      const delta = event.touches[0].clientY - this.touchStartY;
+      this.pullParaAtualizar = delta > this.pullThreshold;
+    }
+  }
+
+  onTouchEnd(): void {
+    if (this.pullParaAtualizar) {
+      this.pullParaAtualizar = false;
+      this.atualizarFeed();
+    }
+  }
+
+  carregarFeed(): void {
+    this.carregando = true;
+    this.comunidadeService.getFeedComunidade(this.meuId).subscribe({
+      next: (data) => {
+        this.atividades = data;
+        this.carregando = false;
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        console.error('Erro:', err);
+        this.carregando = false;
       }
     });
   }
-}
 
-carregarFeed(): void {
-  this.comunidadeService.getFeedComunidade(this.meuId).subscribe({
-    next: (data) => {
-      this.atividades = data;
-      this.carregando = false;
-      this.cdr.markForCheck();
-    },
-    error: (err) => {
-      console.error('Erro:', err);
-      this.carregando = false;
-    }
-  });
-}
+  atualizarFeed(): void {
+    this.atualizando = true;
+    this.comunidadeService.getFeedComunidade(this.meuId).subscribe({
+      next: (data) => {
+        this.atividades = data;
+        this.atualizando = false;
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        console.error('Erro:', err);
+        this.atualizando = false;
+      }
+    });
+  }
 
   abrirModal(item: AtividadeComunidade): void {
     this.itemSelecionado = item;
     this.modalAberto = true;
     this.novoComentario = '';
     this.comentarios = [];
+
     if (item.tipo === 'livro_avaliado') {
-      this.carregarComentarios(item.livro.id);
+      if ((item as any).comentarios) {
+        this.comentarios = (item as any).comentarios.map((c: any) => ({
+          id: c.id,
+          idUsuario: '',
+          usuarioNickname: c.usuario?.nickname || '@user',
+          comentario: c.comentario,
+          dataCriacao: c.dataCriacao
+        }));
+      } else {
+        this.carregarComentarios(item.livro.id);
+      }
     }
   }
 
@@ -120,25 +160,17 @@ carregarFeed(): void {
     });
   }
 
-  estaSeguindo(idUsuario: string): boolean {
-    return this.seguindoIds.has(idUsuario);
-  }
+  estaSeguindo(idUsuario: string): boolean { return this.seguindoIds.has(idUsuario); }
 
   seguirUsuario(idUsuario: string): void {
     this.comunidadeService.seguir(idUsuario).subscribe({
-      next: () => {
-        this.seguindoIds.add(idUsuario);
-        this.cdr.markForCheck();
-      }
+      next: () => { this.seguindoIds.add(idUsuario); this.cdr.markForCheck(); }
     });
   }
 
   deixarDeSeguirUsuario(idUsuario: string): void {
     this.comunidadeService.deixarDeSeguir(idUsuario).subscribe({
-      next: () => {
-        this.seguindoIds.delete(idUsuario);
-        this.cdr.markForCheck();
-      }
+      next: () => { this.seguindoIds.delete(idUsuario); this.cdr.markForCheck(); }
     });
   }
 
@@ -150,7 +182,5 @@ carregarFeed(): void {
     switch (tipo) { case 'livro_novo': return 'Adicionou um Livro'; case 'livro_lendo': return 'Está Lendo'; case 'livro_lido': return 'Terminou de Ler'; case 'livro_avaliado': return 'Avaliou'; default: return ''; }
   }
 
-  getEstrelas(nota: number): string {
-    return '⭐'.repeat(nota);
-  }
+  getEstrelas(nota: number): string { return '⭐'.repeat(nota); }
 }

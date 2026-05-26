@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, forkJoin } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Observable } from 'rxjs';
+import { map, shareReplay } from 'rxjs/operators';
 import { Usuario } from './perfil.model';
 import { environment } from '../../../environments/environment';
 
@@ -10,8 +10,9 @@ import { environment } from '../../../environments/environment';
 })
 export class PerfilService {
   private apiUrl = `${environment.apiUrl}/Usuario`;
-  private apiLivro = `${environment.apiUrl}/Livro`;
-  private apiAvaliacao = `${environment.apiUrl}/AvaliacaoLivro`;
+
+  private perfilCache$: Observable<Usuario> | null = null;
+  private cacheId = '';
 
   constructor(private http: HttpClient) {}
 
@@ -20,24 +21,41 @@ export class PerfilService {
   }
 
   getPerfilCompleto(id: string): Observable<Usuario> {
-    return forkJoin([
-      this.http.get<Usuario>(`${this.apiUrl}/${id}`),
-      this.http.get<any[]>(this.apiLivro),
-      this.http.get<any[]>(`${this.apiAvaliacao}/usuario`)
-    ]).pipe(
-      map(([perfil, livros, avaliacoes]) => {
-        const meusLivros = livros.filter(l => l.idUsuario === id);
-        const media = avaliacoes.length > 0
-          ? Math.round((avaliacoes.reduce((s, a) => s + a.nota, 0) / avaliacoes.length) * 10) / 10
-          : 0;
-        return {
-          ...perfil,
-          quantidadeLivros: meusLivros.length,
-          quantidadeLivrosLidos: meusLivros.filter(l => l.status === 3).length,
-          mediaAvaliacoes: media
-        };
-      })
-    );
+    // Limpa cache se mudou o usuário
+    if (this.cacheId !== id) {
+      this.perfilCache$ = null;
+      this.cacheId = id;
+    }
+
+    if (!this.perfilCache$) {
+      this.perfilCache$ = this.http.get<any>(`${this.apiUrl}/${id}/perfil-completo`).pipe(
+        map(data => ({
+          id: data.id,
+          idGoogle: data.idGoogle,
+          nome: data.nome,
+          nickname: data.nickname,
+          email: data.email,
+          descricao: data.descricao,
+          avatar: data.avatar,
+          tema: data.tema,
+          quantidadeLivros: data.quantidadeLivros,
+          quantidadeLivrosLidos: data.quantidadeLivrosLidos,
+          mediaAvaliacoes: data.mediaAvaliacoes,
+          adm: data.adm,
+          ativo: data.ativo,
+          dataCriacao: data.dataCriacao,
+          dataAtualizacao: data.dataAtualizacao
+        })),
+        shareReplay(1)
+      );
+    }
+
+    return this.perfilCache$;
+  }
+
+  limparCache(): void {
+    this.perfilCache$ = null;
+    this.cacheId = '';
   }
 
   atualizarPerfil(id: string, dados: Partial<Usuario>): Observable<any> {

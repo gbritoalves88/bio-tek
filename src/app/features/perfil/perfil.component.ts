@@ -177,6 +177,7 @@ export class PerfilComponent implements OnInit {
 
   this.perfilService.atualizarPerfil(this.usuario.id, dadosParaSalvar).subscribe({
     next: () => {
+      this.perfilService.limparCache();
       this.usuario = { ...dadosParaSalvar };
       const usuarioLogado = {
         ...JSON.parse(localStorage.getItem('usuario') || '{}'),

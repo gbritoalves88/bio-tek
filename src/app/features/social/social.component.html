@@ -79,4 +79,10 @@
   </div>
 </section>
 
-<app-comentarios-modal [aberto]="comentariosAberto" [livroId]="livroComentarioId" [livroTitulo]="livroComentarioTitulo" (fechar)="comentariosAberto = false"></app-comentarios-modal>
+<app-comentarios-modal
+  [aberto]="comentariosAberto"
+  [livroId]="livroComentarioId"
+  [livroTitulo]="livroComentarioTitulo"
+  [comentariosProntos]="livroComentarioProntos"
+  (fechar)="comentariosAberto = false">
+</app-comentarios-modal>
