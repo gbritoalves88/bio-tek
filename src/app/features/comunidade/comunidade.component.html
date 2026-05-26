@@ -1,21 +1,37 @@
-<section class="comunidade">
+<section class="comunidade"
+         (touchstart)="onTouchStart($event)"
+         (touchmove)="onTouchMove($event)"
+         (touchend)="onTouchEnd()">
+
   <div class="header-section">
     <h1>Comunidade</h1>
   </div>
-  <p class="descricao">Atualizações da comunidade</p>
-  <p class="aviso-geral">💡 Comentários só podem ser feitos por leitores que finalizaram e avaliaram o livro.</p>
+
+  <div class="pull-indicator" [class.visible]="pullParaAtualizar">
+    🔄 Solte para atualizar...
+  </div>
+
+  <div class="feed-header-actions">
+    <p class="descricao">Atualizações da comunidade</p>
+    <p class="aviso-geral">💡 Comentários só podem ser feitos por leitores que finalizaram e avaliaram o livro.</p>
+    <button class="btn-refresh" (click)="atualizarFeed()" [disabled]="atualizando">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" [class.spinning]="atualizando">
+        <polyline points="23 4 23 10 17 10"/>
+        <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+      </svg>
+      {{ atualizando ? 'Atualizando...' : 'Atualizar feed' }}
+    </button>
+  </div>
 
   <div class="loading" *ngIf="carregando">🔍 Carregando feed...</div>
 
-  <div class="feed" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
-
+  <div class="feed" *ngIf="!carregando">
     <div class="feed-item" *ngFor="let item of atividades"
-     (click)="abrirModal(item)"
-     [class.borda-novo]="item.tipo === 'livro_novo'"
-     [class.borda-lendo]="item.tipo === 'livro_lendo'"
-     [class.borda-lido]="item.tipo === 'livro_lido'"
-     [class.borda-avaliado]="item.tipo === 'livro_avaliado'">
-      <!-- Topo: Avatar + Nome -->
+         (click)="abrirModal(item)"
+         [class.borda-novo]="item.tipo === 'livro_novo'"
+         [class.borda-lendo]="item.tipo === 'livro_lendo'"
+         [class.borda-lido]="item.tipo === 'livro_lido'"
+         [class.borda-avaliado]="item.tipo === 'livro_avaliado'">
       <div class="feed-topo">
         <img [src]="item.usuario.avatar || 'assets/capas/perfilSemFoto.png'" [alt]="item.usuario.nome" class="avatar" />
         <div class="feed-header">
@@ -24,8 +40,6 @@
           <span class="feed-acao">{{ getTextoTipo(item.tipo) }}</span>
         </div>
       </div>
-
-      <!-- Meio: Capa + Info -->
       <div class="feed-livro">
         <img [src]="item.livro.imagem || 'assets/capas/perfilSemFoto.png'" [alt]="item.livro.titulo" class="livro-capa" />
         <div class="livro-info">
@@ -34,16 +48,8 @@
           <span class="estrelas" *ngIf="item.avaliacao">{{ '⭐'.repeat(item.avaliacao.nota) }}</span>
         </div>
       </div>
-
-
       <div class="feed-rodape">
         <span class="feed-data">{{ item.data | date:'dd/MM/yyyy HH:mm' }}</span>
-       <!-- <button class="btn-seguir-feed"
-                *ngIf="item.usuario.id !== meuId"
-                (click)="$event.stopPropagation(); estaSeguindo(item.usuario.id) ? deixarDeSeguirUsuario(item.usuario.id) : seguirUsuario(item.usuario.id)"
-                [class.seguindo]="estaSeguindo(item.usuario.id)">
-          {{ estaSeguindo(item.usuario.id) ? 'Seguindo' : 'Seguir' }}
-        </button>-->
       </div>
     </div>
 

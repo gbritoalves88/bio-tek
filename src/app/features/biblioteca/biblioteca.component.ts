@@ -6,6 +6,7 @@ import { BibliotecaService } from './biblioteca.service';
 import { AddBookModalComponent } from '../../shared/add-book-modal/add-book-modal.component';
 import { ComentariosModalComponent } from '../../shared/comentarios-modal/comentarios-modal.component';
 import { ActivatedRoute } from '@angular/router';
+import { Comentario } from '../../shared/comentarios-modal/comentarios-modal.model';
 
 @Component({
   selector: 'app-biblioteca',
@@ -30,6 +31,7 @@ export class BibliotecaComponent implements OnInit {
   livroComentarioId = '';
   livroComentarioTitulo = '';
   carregando = true;
+  livroComentarioProntos: Comentario[] | null = null;
 
   constructor(
     private bibliotecaService: BibliotecaService,
@@ -52,19 +54,21 @@ export class BibliotecaComponent implements OnInit {
   }
 
   carregarLivros(): void {
-    this.carregando = true; // ⬅️ Inicia o loading
-    this.bibliotecaService.getMeusLivrosComAvaliacoes().subscribe({
-      next: (livros) => {
-        this.livros = livros.sort((a, b) => new Date(b.dataCriacao || '').getTime() - new Date(a.dataCriacao || '').getTime());
-        this.carregando = false; // ⬅️ Finaliza o loading
-        this.cdr.markForCheck();
-      },
-      error: (err) => {
-        console.error('Erro ao carregar livros:', err);
-        this.carregando = false; // ⬅️ Finaliza mesmo com erro
-      }
-    });
-  }
+  this.carregando = true;
+  this.bibliotecaService.getBibliotecaCompleta().subscribe({
+    next: (livros) => {
+      this.livros = livros.sort((a, b) =>
+        new Date(b.dataCriacao || '').getTime() - new Date(a.dataCriacao || '').getTime()
+      );
+      this.carregando = false;
+      this.cdr.markForCheck();
+    },
+    error: (err) => {
+      console.error('Erro ao carregar livros:', err);
+      this.carregando = false;
+    }
+  });
+}
 
   getStatusTexto(status: number): string {
     switch (status) {
@@ -87,6 +91,7 @@ export class BibliotecaComponent implements OnInit {
   }
 
   onLivroAdicionado(livro: any): void {
+    this.bibliotecaService.limparCache();
     this.modalAberto = false;
     this.carregarLivros();
   }
@@ -94,8 +99,10 @@ export class BibliotecaComponent implements OnInit {
   deletarLivro(id: string): void {
     if (confirm('Tem certeza que deseja remover este livro?')) {
       this.bibliotecaService.deletarLivro(id).subscribe({
-        next: () => this.carregarLivros(),
-        error: (err) => console.error('Erro ao deletar:', err)
+        next: () => {
+          this.bibliotecaService.limparCache(); // ⬅️
+          this.carregarLivros();
+        }
       });
     }
   }
@@ -121,6 +128,7 @@ export class BibliotecaComponent implements OnInit {
 
     this.bibliotecaService.atualizarLivroComAvaliacao(this.livroEditando.id, livroParaSalvar).subscribe({
       next: (resultado) => {
+        this.bibliotecaService.limparCache();
         if (resultado) {
           console.log('✅ Avaliação salva:', resultado);
         }
@@ -165,6 +173,16 @@ export class BibliotecaComponent implements OnInit {
   abrirComentarios(livro: LivroBiblioteca): void {
     this.livroComentarioId = livro.id;
     this.livroComentarioTitulo = livro.titulo;
+
+    // Mapeia os comentários do endpoint para o formato do modal
+    this.livroComentarioProntos = livro.comentarios?.map(c => ({
+      id: c.id,
+      idUsuario: c.usuario?.id || '',
+      usuarioNickname: c.usuario?.nickname || '@user',
+      comentario: c.comentario,
+      dataCriacao: c.dataCriacao
+    })) || null;
+
     this.comentariosAberto = true;
   }
 

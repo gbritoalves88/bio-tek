@@ -41,12 +41,14 @@
           <h3 class="book-title">{{ livro.titulo || 'Sem título' }}</h3>
           <p class="book-author">{{ livro.autor || 'Autor desconhecido' }}</p>
           <span class="book-status" [class]="getStatusClass(livro.status)">{{ getStatusTexto(livro.status) }}</span>
-          <span class="book-stars" *ngIf="livro.estrelas">⭐ {{ livro.estrelas }}</span>
+          <span class="book-stars" *ngIf="livro.avaliacao">⭐ {{ livro.avaliacao.nota }}</span>
         </div>
         <div class="book-actions">
-          <button class="btn-icon-action btn-comentario" title="Comentários" *ngIf="livro.estrelas" (click)="abrirComentarios(livro)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-          </button>
+          <button class="btn-icon-action btn-comentario" title="Comentários"
+                *ngIf="livro.avaliacao"
+                (click)="abrirComentarios(livro)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        </button>
           <button class="btn-icon-action" title="Editar" (click)="abrirEdicao(livro)">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
           </button>
@@ -125,4 +127,10 @@
   </div>
 </div>
 
-<app-comentarios-modal [aberto]="comentariosAberto" [livroId]="livroComentarioId" [livroTitulo]="livroComentarioTitulo" (fechar)="comentariosAberto = false"></app-comentarios-modal>
+<app-comentarios-modal
+  [aberto]="comentariosAberto"
+  [livroId]="livroComentarioId"
+  [livroTitulo]="livroComentarioTitulo"
+  [comentariosProntos]="livroComentarioProntos"
+  (fechar)="comentariosAberto = false">
+</app-comentarios-modal>
