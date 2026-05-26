@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, forkJoin } from 'rxjs';
-import { switchMap, map } from 'rxjs/operators';
+import { Observable } from 'rxjs';
+import { switchMap, map, shareReplay } from 'rxjs/operators';
 import { LivroBiblioteca } from './biblioteca.model';
 import { environment } from '../../../environments/environment';
 
@@ -12,10 +12,26 @@ export class BibliotecaService {
   private apiUrl = `${environment.apiUrl}/Livro`;
   private apiAvaliacaoUrl = `${environment.apiUrl}/AvaliacaoLivro`;
 
+  // Cache
+  private bibliotecaCache$: Observable<LivroBiblioteca[]> | null = null;
+
   constructor(private http: HttpClient) {}
 
   getMeusLivros(): Observable<LivroBiblioteca[]> {
     return this.http.get<LivroBiblioteca[]>(this.apiUrl);
+  }
+
+  getBibliotecaCompleta(): Observable<LivroBiblioteca[]> {
+    if (!this.bibliotecaCache$) {
+      this.bibliotecaCache$ = this.http.get<LivroBiblioteca[]>(
+        `${this.apiUrl}/biblioteca`
+      ).pipe(shareReplay(1));
+    }
+    return this.bibliotecaCache$;
+  }
+
+  limparCache(): void {
+    this.bibliotecaCache$ = null;
   }
 
   deletarLivro(id: string): Observable<any> {
@@ -42,16 +58,17 @@ export class BibliotecaService {
   }
 
   getMeusLivrosComAvaliacoes(): Observable<LivroBiblioteca[]> {
-    return forkJoin([
-      this.http.get<LivroBiblioteca[]>(this.apiUrl),
-      this.http.get<any[]>(`${this.apiAvaliacaoUrl}/usuario`)
-    ]).pipe(
-      map(([livros, avaliacoes]) => {
-        return livros.map(livro => {
-          const avaliacao = avaliacoes.find(a => a.idLivro === livro.id);
-          return { ...livro, estrelas: avaliacao ? avaliacao.nota : undefined };
-        });
-      })
+    return this.http.get<LivroBiblioteca[]>(this.apiUrl).pipe(
+      switchMap(livros =>
+        this.http.get<any[]>(`${this.apiAvaliacaoUrl}/usuario`).pipe(
+          map(avaliacoes =>
+            livros.map(livro => {
+              const avaliacao = avaliacoes.find(a => a.idLivro === livro.id);
+              return { ...livro, estrelas: avaliacao ? avaliacao.nota : undefined };
+            })
+          )
+        )
+      )
     );
   }
 }

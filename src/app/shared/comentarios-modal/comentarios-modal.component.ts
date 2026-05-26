@@ -1,5 +1,3 @@
-// src/app/shared/comentarios-modal/comentarios-modal.component.ts
-
 import { Component, Input, Output, EventEmitter, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -17,6 +15,7 @@ export class ComentariosModalComponent {
   @Input() livroId: string = '';
   @Input() livroTitulo: string = '';
   @Input() aberto: boolean = false;
+  @Input() comentariosProntos: Comentario[] | null = null; // ⬅️ NOVO
   @Output() fechar = new EventEmitter<void>();
 
   comentarios: Comentario[] = [];
@@ -28,11 +27,22 @@ export class ComentariosModalComponent {
     private cdr: ChangeDetectorRef
   ) {}
 
-  ngOnChanges(): void {
-    if (this.aberto && this.livroId) {
+
+ ngOnChanges(): void {
+  console.log('🔄 ngOnChanges - aberto:', this.aberto, 'livroId:', this.livroId);
+  console.log('📦 comentariosProntos:', this.comentariosProntos);
+
+  if (this.aberto && this.livroId) {
+    if (this.comentariosProntos && this.comentariosProntos.length > 0) {
+      console.log('✅ Usando comentários prontos');
+      this.comentarios = this.comentariosProntos;
+      this.carregandoComentarios = false;
+    } else {
+      console.log('⚠️ Buscando via API');
       this.carregarComentarios();
     }
   }
+}
 
   carregarComentarios(): void {
     this.carregandoComentarios = true;

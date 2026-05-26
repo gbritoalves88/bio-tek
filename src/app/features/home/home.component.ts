@@ -93,6 +93,7 @@ export class HomeComponent implements OnInit {
   }
 
   onLivroAdicionado(livro: any): void {
+    this.homeService.limparCache();
     this.modalAberto = false;
     this.carregarLivros();
     this.cdr.markForCheck();  // ⬅️ Força atualização
