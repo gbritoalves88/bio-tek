@@ -7,6 +7,7 @@ import { AddBookModalComponent } from '../../shared/add-book-modal/add-book-moda
 import { ComentariosModalComponent } from '../../shared/comentarios-modal/comentarios-modal.component';
 import { ActivatedRoute } from '@angular/router';
 import { Comentario } from '../../shared/comentarios-modal/comentarios-modal.model';
+import { UploadService } from '../../shared/services/upload.service';
 
 @Component({
   selector: 'app-biblioteca',
@@ -32,12 +33,14 @@ export class BibliotecaComponent implements OnInit {
   livroComentarioTitulo = '';
   carregando = true;
   livroComentarioProntos: Comentario[] | null = null;
+  private readonly TAMANHO_MAXIMO = 2 * 1024 * 1024; // 2MB
 
   constructor(
     private bibliotecaService: BibliotecaService,
     @Inject(PLATFORM_ID) private platformId: Object,
     private cdr: ChangeDetectorRef,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private uploadService: UploadService
   ) {}
 
   ngOnInit(): void {
@@ -159,7 +162,7 @@ export class BibliotecaComponent implements OnInit {
 
     // Filtro avaliados
     if (this.filtroAvaliado) {
-      resultado = resultado.filter(l => l.estrelas && l.estrelas > 0);
+      resultado = resultado.filter(l => l.avaliacao && l.avaliacao != null);
     }
 
     // Ordenação
@@ -186,19 +189,46 @@ export class BibliotecaComponent implements OnInit {
     this.comentariosAberto = true;
   }
 
+  private comprimirImagem(base64: string, maxWidth: number = 800, qualidade: number = 0.7): Promise<string> {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.src = base64;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+        if (width > maxWidth) { height = (maxWidth / width) * height; width = maxWidth; }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d')!;
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL('image/jpeg', qualidade));
+      };
+    });
+  }
+
+
   tirarFotoEdicao(): void {
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = 'image/*';
     input.capture = 'environment';
-    input.onchange = (event: any) => {
+    input.onchange = async (event: any) => {
       const file = event.target.files?.[0];
       if (!file) return;
+
+      if (!file.type.startsWith('image/')) { console.warn('Apenas imagens'); return; }
+      if (file.size > this.TAMANHO_MAXIMO) { console.warn('Máximo 2MB'); return; }
+
       const reader = new FileReader();
-      reader.onload = () => {
+      reader.onload = async () => {
         if (this.livroEditando) {
-          this.livroEditando.imagem = reader.result as string;
-          this.cdr.markForCheck();
+          const base64 = reader.result as string;
+          const comprimida = await this.comprimirImagem(base64, 800, 0.6);
+          this.uploadService.uploadImagem(comprimida).subscribe({
+            next: (url) => { if (this.livroEditando) { this.livroEditando.imagem = url; this.cdr.markForCheck(); } },
+            error: (err) => console.error('Erro:', err)
+          });
         }
       };
       reader.readAsDataURL(file);
@@ -209,13 +239,23 @@ export class BibliotecaComponent implements OnInit {
   onFileSelectedEdicao(event: Event): void {
     const file = (event.target as HTMLInputElement).files?.[0];
     if (!file) return;
+
+    if (!file.type.startsWith('image/')) { console.warn('Apenas imagens'); return; }
+    if (file.size > this.TAMANHO_MAXIMO) { console.warn('Máximo 2MB'); return; }
+
     const reader = new FileReader();
-    reader.onload = () => {
+    reader.onload = async () => {
       if (this.livroEditando) {
-        this.livroEditando.imagem = reader.result as string;
-        this.cdr.markForCheck();
+        const base64 = reader.result as string;
+        const comprimida = await this.comprimirImagem(base64, 800, 0.6);
+        this.uploadService.uploadImagem(comprimida).subscribe({
+          next: (url) => { if (this.livroEditando) { this.livroEditando.imagem = url; this.cdr.markForCheck(); } },
+          error: (err) => console.error('Erro:', err)
+        });
       }
     };
     reader.readAsDataURL(file);
   }
+
+
 }

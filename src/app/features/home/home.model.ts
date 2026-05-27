@@ -9,6 +9,9 @@ export interface Livro {
   progresso?: number;
   estrelas?: number;       // Mock por enquanto
   dataCriacao?: string;
+  avaliacao?: {      // ⬅️ Adicione se não existir
+    nota: number;
+  };
 }
 
 export enum StatusLeitura {

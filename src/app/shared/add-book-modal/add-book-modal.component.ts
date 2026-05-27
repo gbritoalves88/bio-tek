@@ -6,6 +6,7 @@ import { FormsModule } from '@angular/forms';
 import { ZXingScannerModule } from '@zxing/ngx-scanner';
 import { BarcodeFormat } from '@zxing/library';
 import { AddBookModalService } from './add-book-modal.service';
+import { UploadService } from '../../shared/services/upload.service';
 
 @Component({
   selector: 'app-add-book-modal',
@@ -24,6 +25,7 @@ export class AddBookModalComponent {
   livroEncontrado = false;
   livroNaoEncontrado = false;
   flashAtivo = false;
+  private readonly TAMANHO_MAXIMO = 2 * 1024 * 1024; // 2MB
 
   novoLivro = {
     titulo: '',
@@ -39,6 +41,7 @@ export class AddBookModalComponent {
 
   constructor(
     private addBookService: AddBookModalService,
+    private uploadService: UploadService, // ⬅️ Upload compartilhado
     private cdr: ChangeDetectorRef
   ) {}
 
@@ -66,9 +69,7 @@ export class AddBookModalComponent {
     this.cdr.markForCheck();
   }
 
-  alternarFlash(): void {
-    this.flashAtivo = !this.flashAtivo;
-  }
+  alternarFlash(): void { this.flashAtivo = !this.flashAtivo; }
 
   onCodeResult(result: string): void {
     this.novoLivro.codigoBarras = result;
@@ -77,20 +78,11 @@ export class AddBookModalComponent {
     this.buscarPorCodigo();
   }
 
-  onHasDevices(hasDevices: boolean): void {
-    this.scannerDisponivel = hasDevices;
-    this.cdr.markForCheck();
-  }
-
-  onScanError(error: any): void {
-    console.error('Erro no scanner:', error);
-    this.escaneando = false;
-    this.cdr.markForCheck();
-  }
+  onHasDevices(hasDevices: boolean): void { this.scannerDisponivel = hasDevices; this.cdr.markForCheck(); }
+  onScanError(error: any): void { console.error('Erro no scanner:', error); this.escaneando = false; this.cdr.markForCheck(); }
 
   buscarPorCodigo(): void {
     if (!this.novoLivro.codigoBarras) return;
-
     this.buscandoInfo = true;
     this.livroEncontrado = false;
     this.livroNaoEncontrado = false;
@@ -110,21 +102,29 @@ export class AddBookModalComponent {
         }
         this.cdr.markForCheck();
       },
-      error: () => {
-        this.buscandoInfo = false;
-        this.livroNaoEncontrado = true;
-        this.cdr.markForCheck();
-      }
+      error: () => { this.buscandoInfo = false; this.livroNaoEncontrado = true; this.cdr.markForCheck(); }
     });
   }
 
-  fazerUploadEFinalizar(): void {
+  // ⬅️ NOVO: Comprime + Upload + Salva
+  async fazerUploadEFinalizar(): Promise<void> {
     if (!this.novoLivro.capa || !this.novoLivro.capa.startsWith('data:')) {
       this.adicionarLivro();
       return;
     }
-    // Upload imgbb (já existente)
-    this.adicionarLivro();
+
+    try {
+      const imagemComprimida = await this.comprimirImagem(this.novoLivro.capa, 800, 0.6);
+      this.uploadService.uploadImagem(imagemComprimida).subscribe({
+        next: (url) => {
+          this.novoLivro.capa = url;
+          this.adicionarLivro();
+        },
+        error: () => this.adicionarLivro()
+      });
+    } catch {
+      this.adicionarLivro();
+    }
   }
 
   private adicionarLivro(): void {
@@ -136,17 +136,12 @@ export class AddBookModalComponent {
       codigoBarras: this.novoLivro.codigoBarras || null
     };
     this.addBookService.adicionarLivro(dados).subscribe({
-      next: (livro) => {
-        this.livroAdicionado.emit(livro);
-        this.fecharModal();
-      },
+      next: (livro) => { this.livroAdicionado.emit(livro); this.fecharModal(); },
       error: (err) => console.error('Erro:', err)
     });
   }
 
-  adicionarLivroEncontrado(): void {
-    this.fazerUploadEFinalizar();
-  }
+  adicionarLivroEncontrado(): void { this.fazerUploadEFinalizar(); }
 
   tentarNovamente(): void {
     this.novoLivro.codigoBarras = '';
@@ -159,6 +154,24 @@ export class AddBookModalComponent {
     this.cdr.markForCheck();
   }
 
+  private comprimirImagem(base64: string, maxWidth: number = 800, qualidade: number = 0.7): Promise<string> {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.src = base64;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+        if (width > maxWidth) { height = (maxWidth / width) * height; width = maxWidth; }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d')!;
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL('image/jpeg', qualidade));
+      };
+    });
+  }
+
   tirarFoto(): void {
     const input = document.createElement('input');
     input.type = 'file';
@@ -167,11 +180,21 @@ export class AddBookModalComponent {
     input.onchange = (event: any) => {
       const file = event.target.files?.[0];
       if (!file) return;
+
+      // ⬅️ Valida tipo
+      if (!file.type.startsWith('image/')) {
+        console.warn('Apenas imagens são permitidas');
+        return;
+      }
+
+      // ⬅️ Valida tamanho
+      if (file.size > this.TAMANHO_MAXIMO) {
+        console.warn(`Imagem muito grande. Máximo: ${this.TAMANHO_MAXIMO / 1024 / 1024}MB`);
+        return;
+      }
+
       const reader = new FileReader();
-      reader.onload = () => {
-        this.novoLivro.capa = reader.result as string;
-        this.cdr.markForCheck();
-      };
+      reader.onload = () => { this.novoLivro.capa = reader.result as string; this.cdr.markForCheck(); };
       reader.readAsDataURL(file);
     };
     input.click();
@@ -180,11 +203,21 @@ export class AddBookModalComponent {
   onFileSelected(event: Event): void {
     const file = (event.target as HTMLInputElement).files?.[0];
     if (!file) return;
+
+    // ⬅️ Valida tipo
+    if (!file.type.startsWith('image/')) {
+      console.warn('Apenas imagens são permitidas');
+      return;
+    }
+
+    // ⬅️ Valida tamanho
+    if (file.size > this.TAMANHO_MAXIMO) {
+      console.warn(`Imagem muito grande. Máximo: ${this.TAMANHO_MAXIMO / 1024 / 1024}MB`);
+      return;
+    }
+
     const reader = new FileReader();
-    reader.onload = () => {
-      this.novoLivro.capa = reader.result as string;
-      this.cdr.markForCheck();
-    };
+    reader.onload = () => { this.novoLivro.capa = reader.result as string; this.cdr.markForCheck(); };
     reader.readAsDataURL(file);
   }
 }

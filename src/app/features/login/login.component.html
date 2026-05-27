@@ -57,3 +57,12 @@
     </p>
   </div>
 </section>
+
+<!-- Overlay de carregamento -->
+<div class="login-loading" *ngIf="carregando">
+  <svg class="logo-animado" viewBox="0 0 120 120" fill="none">
+    <path d="M20 102A10 10 0 0 1 30 92H80V8H30A10 10 0 0 0 20 18v84z"
+          stroke="currentColor" stroke-width="3" fill="none"/>
+  </svg>
+  <p>Entrando...</p>
+</div>
