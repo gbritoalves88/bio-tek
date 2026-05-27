@@ -25,6 +25,7 @@ export class HomeService {
     return this.homeCache$;
   }
 
+
   limparCache(): void {
     this.homeCache$ = null;
   }

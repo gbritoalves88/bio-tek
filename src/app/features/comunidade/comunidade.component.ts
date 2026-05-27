@@ -5,6 +5,7 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ComunidadeService } from './comunidade.service';
 import { AtividadeComunidade, Comentario } from './comunidade.model';
+import { SocialService } from '../social/social.service';
 
 @Component({
   selector: 'app-comunidade',
@@ -35,7 +36,8 @@ export class ComunidadeComponent implements OnInit {
   constructor(
     private comunidadeService: ComunidadeService,
     @Inject(PLATFORM_ID) private platformId: Object,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private socialService: SocialService
   ) {}
 
   ngOnInit(): void {
@@ -84,7 +86,7 @@ export class ComunidadeComponent implements OnInit {
 
   atualizarFeed(): void {
     this.atualizando = true;
-    this.comunidadeService.getFeedComunidade(this.meuId).subscribe({
+    this.comunidadeService.atualizarFeed(this.meuId).subscribe({
       next: (data) => {
         this.atividades = data;
         this.atualizando = false;
@@ -96,6 +98,7 @@ export class ComunidadeComponent implements OnInit {
       }
     });
   }
+
 
   abrirModal(item: AtividadeComunidade): void {
     this.itemSelecionado = item;
@@ -164,13 +167,20 @@ export class ComunidadeComponent implements OnInit {
 
   seguirUsuario(idUsuario: string): void {
     this.comunidadeService.seguir(idUsuario).subscribe({
-      next: () => { this.seguindoIds.add(idUsuario); this.cdr.markForCheck(); }
+      next: () => {
+        this.seguindoIds.add(idUsuario);
+        this.socialService.limparCacheSeguindo();
+        this.cdr.markForCheck(); }
     });
   }
 
   deixarDeSeguirUsuario(idUsuario: string): void {
     this.comunidadeService.deixarDeSeguir(idUsuario).subscribe({
-      next: () => { this.seguindoIds.delete(idUsuario); this.cdr.markForCheck(); }
+      next: () => {
+        this.seguindoIds.delete(idUsuario);
+        this.socialService.limparCacheSeguindo();
+         this.cdr.markForCheck();
+         }
     });
   }
 

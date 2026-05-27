@@ -76,7 +76,10 @@ export class HomeComponent implements OnInit {
           new Date(b.dataCriacao || '').getTime() - new Date(a.dataCriacao || '').getTime()
         );
         this.livroAtual = ordenados.find(l => l.status === 2) || null;
-        this.recomendados = ordenados.filter(l => l.status === 3).slice(0, 3).map(l => ({ ...l }));
+        this.recomendados = ordenados
+  .filter(l => l.avaliacao) // ⬅️ Livros que têm avaliação
+  .slice(0, 3)
+  .map(l => ({ ...l, estrelas: l.avaliacao?.nota }));
         this.ultimosAdicionados = ordenados.slice(0, 3);
         this.carregando = false;
         this.cdr.markForCheck();

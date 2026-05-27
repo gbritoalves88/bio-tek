@@ -3,7 +3,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, forkJoin, of } from 'rxjs';
-import { map, switchMap } from 'rxjs/operators';
+import { map, switchMap, shareReplay } from 'rxjs/operators';
 import { AtividadeComunidade, Comentario } from './comunidade.model';
 import { environment } from '../../../environments/environment';
 
@@ -17,12 +17,30 @@ export class ComunidadeService {
   private apiComentario = `${this.api}/ComentarioLivro`;
   private apiSeguidor = `${this.api}/Seguidor`;
 
+  // Cache
+  private feedCache$: Observable<AtividadeComunidade[]> | null = null;
+  private cacheKey = '';
+
   constructor(private http: HttpClient) {}
 
   getFeedComunidade(meuId: string): Observable<AtividadeComunidade[]> {
-    return this.http.get<AtividadeComunidade[]>(
-      `${this.apiComunidade}/feed?meuId=${meuId}&limite=30`
-    );
+    if (this.cacheKey !== meuId) {
+      this.feedCache$ = null;
+      this.cacheKey = meuId;
+    }
+
+    if (!this.feedCache$) {
+      this.feedCache$ = this.http.get<AtividadeComunidade[]>(
+        `${this.apiComunidade}/feed?meuId=${meuId}&limite=30`
+      ).pipe(shareReplay(1));
+    }
+
+    return this.feedCache$;
+  }
+
+  atualizarFeed(meuId: string): Observable<AtividadeComunidade[]> {
+    this.feedCache$ = null;
+    return this.getFeedComunidade(meuId);
   }
 
   getComentariosDoLivro(idLivro: string): Observable<Comentario[]> {
