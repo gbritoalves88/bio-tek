@@ -1,6 +1,8 @@
-import { Component } from '@angular/core';
+// src/app/features/login/login.component.ts
+
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { LoginService } from './login.service';
 import { environment } from '../../../environments/environment';
 
@@ -13,26 +15,49 @@ declare const google: any;
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss'
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
 
   constructor(
     private router: Router,
+    private route: ActivatedRoute,
     private loginService: LoginService
   ) {}
 
   carregando = false;
+  mensagemErro = '';
+  mostrarModalErro = false;
 
+  ngOnInit(): void {
+    // Verifica se veio mensagem de erro na URL
+    this.route.queryParams.subscribe(params => {
+      if (params['erro']) {
+        this.mensagemErro = decodeURIComponent(params['erro']);
+        this.mostrarModalErro = true;
+        // Limpa a URL
+        window.history.replaceState({}, '', '/');
+      }
+    });
+  }
 
+  fecharModalErro(): void {
+    this.mostrarModalErro = false;
+    this.mensagemErro = '';
+  }
 
   entrarComGoogle(): void {
-  this.carregando = true; // ⬅️ Ativa a animação
+    this.carregando = true;
 
-  const client = google.accounts.oauth2.initCodeClient({
-    client_id: environment.google.clientId,
-    scope: 'email profile openid',
-    ux_mode: 'popup',
-    callback: (response: any) => {
-      if (response.code) {
+    const client = google.accounts.oauth2.initCodeClient({
+      client_id: environment.google.clientId,
+      scope: 'email profile openid',
+      ux_mode: 'popup',
+      callback: (response: any) => {
+        if (!response || !response.code) {
+          this.carregando = false;
+          window.location.href = '/?erro=' + encodeURIComponent('Login cancelado. Tente novamente.');
+          return;
+        }
+
         fetch('https://oauth2.googleapis.com/token', {
           method: 'POST',
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -46,13 +71,16 @@ export class LoginComponent {
         })
         .then(res => res.json())
         .then(data => {
-          const idToken = data.id_token;
-          const payload = JSON.parse(atob(idToken.split('.')[1]));
+          if (!data.id_token) {
+            window.location.href = '/?erro=' + encodeURIComponent('Erro ao obter token do Google.');
+            return;
+          }
 
-          this.loginService.loginComGoogle(idToken, payload.sub, payload.name, payload.email)
+          const payload = JSON.parse(atob(data.id_token.split('.')[1]));
+
+          this.loginService.loginComGoogle(data.id_token, payload.sub, payload.name, payload.email)
             .subscribe({
               next: (response) => {
-                this.carregando = false; // ⬅️ Desativa
                 if (response.novoUsuario) {
                   this.router.navigate(['/inicio/perfil'], { queryParams: { novo: true } });
                 } else {
@@ -60,34 +88,27 @@ export class LoginComponent {
                 }
               },
               error: (err) => {
-                this.carregando = false; // ⬅️ Desativa com erro
-                console.error('Erro ao logar:', err);
+                const msg = err.status === 401 && err.error?.mensagem
+                  ? err.error.mensagem
+                  : 'Erro ao fazer login. Tente novamente.';
+                window.location.href = '/?erro=' + encodeURIComponent(msg);
               }
             });
         })
         .catch(() => {
-          this.carregando = false; // ⬅️ Desativa se falhar
+          window.location.href = '/?erro=' + encodeURIComponent('Erro ao conectar com o Google.');
         });
-      } else {
-        this.carregando = false; // ⬅️ Desativa se não tiver code
       }
-    }
-  });
-  client.requestCode();
-}
-
+    });
+    client.requestCode();
+  }
 
   entrarComoConvidado(): void {
-    console.log('Facebook login não implementado');
-  }
+    this.carregando = true;
+    const nome = 'Leitor Convidado';
+    const email = 'convidado' + Date.now() + '@mock.com';
 
-  entrarMock(nome: string, nickname: string): void {
-    const email = nickname.replace('@', '') + '@mock.com';
-    this.fazerLoginMock(nome, email, nickname);
-  }
-
-  private fazerLoginMock(nome: string, email: string, nickname?: string): void {
-    this.loginService.loginMock(nome, email, nickname).subscribe({
+    this.loginService.loginMock(nome, email).subscribe({
       next: (response) => {
         if (response.novoUsuario) {
           this.router.navigate(['/inicio/perfil'], { queryParams: { novo: true } });
@@ -95,7 +116,12 @@ export class LoginComponent {
           this.router.navigate(['/inicio']);
         }
       },
-      error: (err) => console.error('Erro ao logar:', err)
+      error: (err) => {
+        const msg = err.status === 401 && err.error?.mensagem
+          ? err.error.mensagem
+          : 'Erro ao fazer login. Tente novamente.';
+        window.location.href = '/?erro=' + encodeURIComponent(msg);
+      }
     });
   }
 
