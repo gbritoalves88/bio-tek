@@ -43,6 +43,8 @@ export class PerfilService {
           mediaAvaliacoes: data.mediaAvaliacoes,
           adm: data.adm,
           ativo: data.ativo,
+          aceitouTermos: data.aceitouTermos,        // ⬅️ NOVO
+          dataAceiteTermos: data.dataAceiteTermos,
           dataCriacao: data.dataCriacao,
           dataAtualizacao: data.dataAtualizacao
         })),
@@ -60,5 +62,9 @@ export class PerfilService {
 
   atualizarPerfil(id: string, dados: Partial<Usuario>): Observable<any> {
     return this.http.put(`${this.apiUrl}/${id}`, dados);
+  }
+
+  aceitarTermos(): Observable<any> {
+    return this.http.put(`${this.apiUrl}/aceitar-termos`, {});
   }
 }
