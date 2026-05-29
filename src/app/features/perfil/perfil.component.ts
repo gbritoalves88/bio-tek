@@ -20,6 +20,8 @@ export class PerfilComponent implements OnInit {
   usuarioEdit: Partial<Usuario> = {};
   carregando = true;
   uploadErro = '';
+  mostrarTermos = false;
+  podeAceitar = false;
 
   private readonly TAMANHO_MAXIMO = 2 * 1024 * 1024;
 
@@ -36,21 +38,40 @@ export class PerfilComponent implements OnInit {
     if (isPlatformBrowser(this.platformId)) {
       this.carregarPerfil();
     }
-    this.route.queryParams.subscribe(params => {
-      if (params['novo'] === 'true') {
-        setTimeout(() => this.abrirEdicao(), 500);
-      }
-    });
   }
 
   carregarPerfil(): void {
     const usuarioLogado = JSON.parse(localStorage.getItem('usuario') || '{}');
     const id = usuarioLogado.id;
-    if (!id) { this.router.navigate(['/']); return; }
+
+    if (!id) {
+      this.router.navigate(['/']);
+      return;
+    }
 
     this.perfilService.getPerfilCompleto(id).subscribe({
-      next: (data) => { this.usuario = data; this.carregando = false; this.cdr.markForCheck(); },
-      error: (err) => { console.error('Erro:', err); this.carregando = false; }
+      next: (data) => {
+        this.usuario = data;
+        this.carregando = false;
+        this.cdr.markForCheck();
+
+        // ⬅️ Verifica se precisa mostrar termos após carregar
+        this.route.queryParams.subscribe(params => {
+          if (params['novo'] === 'true' && !data.aceitouTermos) {
+            setTimeout(() => {
+              //this.mostrarTermos = true;
+              this.abrirTermos()
+              this.cdr.markForCheck();
+            }, 800);
+          } else if (params['novo'] === 'true' && data.aceitouTermos) {
+            setTimeout(() => this.abrirEdicao(), 800);
+          }
+        });
+      },
+      error: (err) => {
+        console.error('Erro ao carregar perfil:', err);
+        this.carregando = false;
+      }
     });
   }
 
@@ -129,7 +150,10 @@ export class PerfilComponent implements OnInit {
 
   sair(): void
   {
-     localStorage.removeItem('token'); localStorage.removeItem('usuario'); this.router.navigate(['/']);
+    this.fecharTermos();
+    localStorage.removeItem('token');
+    localStorage.removeItem('usuario');
+    this.router.navigate(['/']);
 
   }
 
@@ -151,5 +175,62 @@ export class PerfilComponent implements OnInit {
         resolve(canvas.toDataURL('image/jpeg', qualidade));
       };
     });
+  }
+
+  verificarScroll(): void {
+    const el = document.querySelector('.termos-texto') as HTMLElement;
+    if (el) {
+      // Verifica se rolou até o final (com margem de 10px)
+      const scrolledToBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 10;
+      if (scrolledToBottom) {
+        this.podeAceitar = true;
+      }
+    }
+  }
+
+  aceitarTermos(): void {
+    if (!this.usuario) return;
+
+    this.perfilService.aceitarTermos().subscribe({  // ⬅️ Sem parâmetro
+      next: () => {
+        this.fecharTermos();
+        this.cdr.markForCheck();
+        this.abrirEdicao();
+      },
+      error: (err) => {
+        console.error('Erro ao aceitar termos:', err);
+      }
+    });
+  }
+
+  recusarTermos(): void {
+    this.fecharTermos();
+    localStorage.removeItem('token');
+    localStorage.removeItem('usuario');
+    this.router.navigate(['/']);
+  }
+
+  abrirTermos(): void {
+    this.mostrarTermos = true;
+    // Esconde elementos do shell
+    const header = document.querySelector('.header') as HTMLElement;
+    const bottomNav = document.querySelector('.bottom-nav') as HTMLElement;
+    const sidebar = document.querySelector('.sidebar') as HTMLElement;
+    if (header) header.style.display = 'none';
+    if (bottomNav) bottomNav.style.display = 'none';
+    if (sidebar) sidebar.style.display = 'none';
+  }
+
+  // Quando fechar o modal, restaura
+  fecharTermos(): void {
+    this.mostrarTermos = false;
+    this.podeAceitar = false; // ⬅️ Reseta o scroll
+    const header = document.querySelector('.header') as HTMLElement;
+    const bottomNav = document.querySelector('.bottom-nav') as HTMLElement;
+    const sidebar = document.querySelector('.sidebar') as HTMLElement;
+    if (header) header.style.display = '';
+    if (bottomNav) bottomNav.style.display = '';
+    if (sidebar) sidebar.style.display = '';
+    this.cdr.markForCheck(); // ⬅️ Força atualização
   }
 }

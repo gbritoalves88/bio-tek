@@ -11,4 +11,11 @@ export interface Usuario {
   quantidadeLivros: number;
   quantidadeLivrosLidos: number;
   mediaAvaliacoes: number;
+  aceitouTermos?: boolean;       // ⬅️ NOVO
+  dataAceiteTermos?: string;     // ⬅️ NOVO
+  idGoogle?: string;
+  adm?: boolean;
+  ativo?: boolean;
+  dataCriacao?: string;
+  dataAtualizacao?: string;
 }

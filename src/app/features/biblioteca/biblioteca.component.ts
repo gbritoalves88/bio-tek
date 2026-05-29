@@ -33,7 +33,7 @@ export class BibliotecaComponent implements OnInit {
   livroComentarioTitulo = '';
   carregando = true;
   livroComentarioProntos: Comentario[] | null = null;
-  private readonly TAMANHO_MAXIMO = 2 * 1024 * 1024; // 2MB
+  private readonly TAMANHO_MAXIMO = 2 * 1024 * 1024;
 
   constructor(
     private bibliotecaService: BibliotecaService,
@@ -46,52 +46,34 @@ export class BibliotecaComponent implements OnInit {
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
       this.route.queryParams.subscribe(params => {
-        if (params['filtro'] === 'avaliados') {
-          this.filtroAvaliado = true;
-        } else if (params['filtro'] === 'recentes') {
-          this.filtroRecente = true;
-        }
+        if (params['filtro'] === 'avaliados') this.filtroAvaliado = true;
+        else if (params['filtro'] === 'recentes') this.filtroRecente = true;
       });
       this.carregarLivros();
     }
   }
 
   carregarLivros(): void {
-  this.carregando = true;
-  this.bibliotecaService.getBibliotecaCompleta().subscribe({
-    next: (livros) => {
-      this.livros = livros.sort((a, b) =>
-        new Date(b.dataCriacao || '').getTime() - new Date(a.dataCriacao || '').getTime()
-      );
-      this.carregando = false;
-      this.cdr.markForCheck();
-    },
-    error: (err) => {
-      console.error('Erro ao carregar livros:', err);
-      this.carregando = false;
-    }
-  });
-}
+    this.carregando = true;
+    this.bibliotecaService.getBibliotecaCompleta().subscribe({
+      next: (livros) => {
+        this.livros = livros.sort((a, b) => new Date(b.dataCriacao || '').getTime() - new Date(a.dataCriacao || '').getTime());
+        this.carregando = false;
+        this.cdr.markForCheck();
+      },
+      error: (err) => { console.error('Erro:', err); this.carregando = false; }
+    });
+  }
 
   getStatusTexto(status: number): string {
-    switch (status) {
-      case 2: return '📖 Lendo';
-      case 3: return '✅ Lido';
-      default: return '📕 Quero ler';
-    }
+    switch (status) { case 2: return '📖 Lendo'; case 3: return '✅ Lido'; default: return '📕 Quero ler'; }
   }
 
   getStatusClass(status: number): string {
-    switch (status) {
-      case 2: return 'lendo';
-      case 3: return 'lido';
-      default: return 'nao-lido';
-    }
+    switch (status) { case 2: return 'lendo'; case 3: return 'lido'; default: return 'nao-lido'; }
   }
 
-  abrirModal(): void {
-    this.modalAberto = true;
-  }
+  abrirModal(): void { this.modalAberto = true; }
 
   onLivroAdicionado(livro: any): void {
     this.bibliotecaService.limparCache();
@@ -102,10 +84,7 @@ export class BibliotecaComponent implements OnInit {
   deletarLivro(id: string): void {
     if (confirm('Tem certeza que deseja remover este livro?')) {
       this.bibliotecaService.deletarLivro(id).subscribe({
-        next: () => {
-          this.bibliotecaService.limparCache(); // ⬅️
-          this.carregarLivros();
-        }
+        next: () => { this.bibliotecaService.limparCache(); this.carregarLivros(); }
       });
     }
   }
@@ -120,9 +99,25 @@ export class BibliotecaComponent implements OnInit {
     this.livroEditando = null;
   }
 
-  salvarEdicao(): void {
+  // ⬅️ NOVO: Upload + Salvar
+  async salvarEdicao(): Promise<void> {
     if (!this.livroEditando) return;
 
+    if (this.livroEditando.imagem?.startsWith('data:')) {
+      try {
+        const comprimida = await this.comprimirImagem(this.livroEditando.imagem, 800, 0.6);
+        this.uploadService.uploadImagem(comprimida).subscribe({
+          next: (url) => { this.livroEditando!.imagem = url; this.salvarLivro(); },
+          error: () => this.salvarLivro()
+        });
+      } catch { this.salvarLivro(); }
+    } else {
+      this.salvarLivro();
+    }
+  }
+
+  private salvarLivro(): void {
+    if (!this.livroEditando) return;
     const livroParaSalvar = {
       ...this.livroEditando,
       status: Number(this.livroEditando.status),
@@ -131,61 +126,35 @@ export class BibliotecaComponent implements OnInit {
 
     this.bibliotecaService.atualizarLivroComAvaliacao(this.livroEditando.id, livroParaSalvar).subscribe({
       next: (resultado) => {
+        if (resultado) console.log('✅ Avaliação salva:', resultado);
         this.bibliotecaService.limparCache();
-        if (resultado) {
-          console.log('✅ Avaliação salva:', resultado);
-        }
         this.fecharEdicao();
         this.carregarLivros();
       },
-      error: (err) => console.error('Erro ao atualizar:', err)
+      error: (err) => console.error('Erro:', err)
     });
   }
 
-
-
   get livrosFiltrados(): LivroBiblioteca[] {
     let resultado = [...this.livros];
-
-    // Filtro por busca
     if (this.termoBusca.trim()) {
       const termo = this.termoBusca.toLowerCase();
-      resultado = resultado.filter(
-        l => l.titulo.toLowerCase().includes(termo) || l.autor.toLowerCase().includes(termo)
-      );
+      resultado = resultado.filter(l => l.titulo.toLowerCase().includes(termo) || l.autor.toLowerCase().includes(termo));
     }
-
-    // Filtro por status
-    if (this.filtroStatus !== null) {
-      resultado = resultado.filter(l => l.status === this.filtroStatus);
-    }
-
-    // Filtro avaliados
-    if (this.filtroAvaliado) {
-      resultado = resultado.filter(l => l.avaliacao && l.avaliacao != null);
-    }
-
-    // Ordenação
-    if (this.filtroRecente) {
-      resultado.sort((a, b) => new Date(b.dataCriacao || '').getTime() - new Date(a.dataCriacao || '').getTime());
-    }
-
+    if (this.filtroStatus !== null) resultado = resultado.filter(l => l.status === this.filtroStatus);
+    if (this.filtroAvaliado) resultado = resultado.filter(l => l.avaliacao);
+    resultado.sort((a, b) => new Date(b.dataCriacao || '').getTime() - new Date(a.dataCriacao || '').getTime());
     return resultado;
   }
 
   abrirComentarios(livro: LivroBiblioteca): void {
     this.livroComentarioId = livro.id;
     this.livroComentarioTitulo = livro.titulo;
-
-    // Mapeia os comentários do endpoint para o formato do modal
     this.livroComentarioProntos = livro.comentarios?.map(c => ({
-      id: c.id,
-      idUsuario: c.usuario?.id || '',
+      id: c.id, idUsuario: c.usuario?.id || '',
       usuarioNickname: c.usuario?.nickname || '@user',
-      comentario: c.comentario,
-      dataCriacao: c.dataCriacao
+      comentario: c.comentario, dataCriacao: c.dataCriacao
     })) || null;
-
     this.comentariosAberto = true;
   }
 
@@ -195,40 +164,32 @@ export class BibliotecaComponent implements OnInit {
       img.src = base64;
       img.onload = () => {
         const canvas = document.createElement('canvas');
-        let width = img.width;
-        let height = img.height;
+        let width = img.width, height = img.height;
         if (width > maxWidth) { height = (maxWidth / width) * height; width = maxWidth; }
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext('2d')!;
-        ctx.drawImage(img, 0, 0, width, height);
+        canvas.width = width; canvas.height = height;
+        canvas.getContext('2d')!.drawImage(img, 0, 0, width, height);
         resolve(canvas.toDataURL('image/jpeg', qualidade));
       };
     });
   }
 
-
+  // ⬅️ Preview primeiro, upload no salvar
   tirarFotoEdicao(): void {
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = 'image/*';
     input.capture = 'environment';
-    input.onchange = async (event: any) => {
+    input.onchange = (event: any) => {
       const file = event.target.files?.[0];
       if (!file) return;
-
       if (!file.type.startsWith('image/')) { console.warn('Apenas imagens'); return; }
       if (file.size > this.TAMANHO_MAXIMO) { console.warn('Máximo 2MB'); return; }
 
       const reader = new FileReader();
-      reader.onload = async () => {
+      reader.onload = () => {
         if (this.livroEditando) {
-          const base64 = reader.result as string;
-          const comprimida = await this.comprimirImagem(base64, 800, 0.6);
-          this.uploadService.uploadImagem(comprimida).subscribe({
-            next: (url) => { if (this.livroEditando) { this.livroEditando.imagem = url; this.cdr.markForCheck(); } },
-            error: (err) => console.error('Erro:', err)
-          });
+          this.livroEditando.imagem = reader.result as string; // ⬅️ Preview
+          this.cdr.markForCheck();
         }
       };
       reader.readAsDataURL(file);
@@ -239,23 +200,16 @@ export class BibliotecaComponent implements OnInit {
   onFileSelectedEdicao(event: Event): void {
     const file = (event.target as HTMLInputElement).files?.[0];
     if (!file) return;
-
     if (!file.type.startsWith('image/')) { console.warn('Apenas imagens'); return; }
     if (file.size > this.TAMANHO_MAXIMO) { console.warn('Máximo 2MB'); return; }
 
     const reader = new FileReader();
-    reader.onload = async () => {
+    reader.onload = () => {
       if (this.livroEditando) {
-        const base64 = reader.result as string;
-        const comprimida = await this.comprimirImagem(base64, 800, 0.6);
-        this.uploadService.uploadImagem(comprimida).subscribe({
-          next: (url) => { if (this.livroEditando) { this.livroEditando.imagem = url; this.cdr.markForCheck(); } },
-          error: (err) => console.error('Erro:', err)
-        });
+        this.livroEditando.imagem = reader.result as string; // ⬅️ Preview
+        this.cdr.markForCheck();
       }
     };
     reader.readAsDataURL(file);
   }
-
-
 }

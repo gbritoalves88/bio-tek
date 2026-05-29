@@ -76,3 +76,62 @@
     </div>
   </div>
 </section>
+
+<!-- Modal de Termos de Uso -->
+<div class="termos-modal-overlay" *ngIf="mostrarTermos">
+  <div class="termos-modal-content">
+    <h2>Termos de Uso – BioTek</h2>
+    <p class="termos-data">Última atualização: 2026</p>
+
+    <div class="termos-texto" #textoTermos (scroll)="verificarScroll()">
+      <p>Ao utilizar o BioTek, você concorda com os termos descritos abaixo. Caso não concorde com qualquer parte destes termos, recomendamos não utilizar a plataforma.</p>
+
+      <h3>1. Sobre o BioTek</h3>
+      <p>O BioTek é uma plataforma voltada para organização de leituras, avaliações de livros e interação entre leitores através de comentários, atividades e recursos sociais. O aplicativo está em constante evolução e novas funcionalidades poderão ser adicionadas, alteradas ou removidas ao longo do tempo.</p>
+
+      <h3>2. Conta do Usuário</h3>
+      <p>O usuário é responsável pelas informações fornecidas em sua conta e pela segurança de seu acesso. O login poderá ser realizado através de provedores externos, como Google, seguindo também os termos e políticas desses serviços.</p>
+
+      <h3>3. Conteúdo Publicado</h3>
+      <p>Ao utilizar a plataforma, você concorda em não publicar:</p>
+      <ul>
+        <li>Conteúdo ofensivo, discriminatório ou ilegal;</li>
+        <li>Spam ou publicidade não autorizada;</li>
+        <li>Conteúdo que viole direitos autorais ou direitos de terceiros;</li>
+        <li>Comentários com discurso de ódio, ameaças ou assédio.</li>
+      </ul>
+      <p>O usuário é integralmente responsável pelos comentários, avaliações e publicações realizadas em sua conta. A plataforma reserva-se o direito de remover conteúdos inadequados e suspender contas que violem estes termos.</p>
+
+      <h3>4. Direitos Autorais</h3>
+      <p>As capas, títulos e informações dos livros exibidos no BioTek podem ser obtidos através de APIs públicas. Todos os direitos relacionados às obras, capas e autores pertencem aos seus respectivos detentores legais.</p>
+
+      <h3>5. Política de Dados e Privacidade</h3>
+      <p>O BioTek coleta apenas os dados necessários para funcionamento da plataforma. Os dados não são vendidos ou compartilhados para fins comerciais.</p>
+
+      <h3>6. Exclusão de Conta</h3>
+      <p>O usuário poderá solicitar a exclusão de sua conta através das configurações da plataforma.</p>
+
+      <h3>7. Disponibilidade do Serviço</h3>
+      <p>O BioTek é fornecido "como está", sem garantias de funcionamento ininterrupto. A plataforma poderá passar por manutenções ou instabilidades ocasionais.</p>
+
+      <h3>8. Limitação de Responsabilidade</h3>
+      <p>O BioTek não se responsabiliza por conteúdo publicado por usuários, perda de dados causada por terceiros ou instabilidades de serviços externos.</p>
+
+      <h3>9. Menores de Idade</h3>
+      <p>Usuários menores de 18 anos devem utilizar a plataforma com supervisão de um responsável legal.</p>
+
+      <h3>10. Alterações nos Termos</h3>
+      <p>Os presentes termos poderão ser atualizados periodicamente. O uso contínuo da plataforma após alterações implica concordância com os novos termos.</p>
+
+      <h3>11. Contato</h3>
+      <p>Em caso de dúvidas, entre em contato através dos canais oficiais disponibilizados no aplicativo.</p>
+    </div>
+
+    <div class="termos-acoes">
+      <button class="btn-recusar" (click)="recusarTermos()">Recusar</button>
+      <button class="btn-aceitar" [disabled]="!podeAceitar" (click)="aceitarTermos()">
+        {{ podeAceitar ? 'Aceitar Termos' : 'Leia até o final' }}
+      </button>
+    </div>
+  </div>
+</div>
