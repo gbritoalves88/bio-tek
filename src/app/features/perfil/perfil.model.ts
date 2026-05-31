@@ -1,5 +1,36 @@
 // src/app/features/perfil/perfil.model.ts
 
+export interface Avaliacao {
+  id: string;
+  nota: number;
+  dataCriacao: string;
+}
+
+export interface ComentarioUsuario {
+  id: string;
+  nickname: string;
+}
+
+export interface Comentario {
+  id: string;
+  comentario: string;
+  dataCriacao: string;
+  usuario: ComentarioUsuario;
+}
+
+export interface LivroDoUsuario {
+  id: string;
+  titulo: string;
+  autor: string;
+  descricao?: string;           // ⬅️ ADICIONADO
+  imagem?: string;
+  status: number;
+  estrelas?: number;            // ⬅️ ADICIONADO (para edição)
+  dataCriacao: string;
+  avaliacao?: Avaliacao | null;
+  comentarios?: Comentario[];
+}
+
 export interface Usuario {
   id: string;
   nome: string;
@@ -11,11 +42,12 @@ export interface Usuario {
   quantidadeLivros: number;
   quantidadeLivrosLidos: number;
   mediaAvaliacoes: number;
-  aceitouTermos?: boolean;       // ⬅️ NOVO
-  dataAceiteTermos?: string;     // ⬅️ NOVO
+  aceitouTermos?: boolean;
+  dataAceiteTermos?: string;
   idGoogle?: string;
   adm?: boolean;
   ativo?: boolean;
   dataCriacao?: string;
   dataAtualizacao?: string;
+  livros?: LivroDoUsuario[];
 }
