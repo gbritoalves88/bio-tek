@@ -1,8 +1,10 @@
+// perfil.service.ts - CORRIGIDO
+
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map, shareReplay } from 'rxjs/operators';
-import { Usuario } from './perfil.model';
+import { Usuario, LivroDoUsuario } from './perfil.model';
 import { environment } from '../../../environments/environment';
 
 @Injectable({
@@ -43,10 +45,11 @@ export class PerfilService {
           mediaAvaliacoes: data.mediaAvaliacoes,
           adm: data.adm,
           ativo: data.ativo,
-          aceitouTermos: data.aceitouTermos,        // ⬅️ NOVO
+          aceitouTermos: data.aceitouTermos,
           dataAceiteTermos: data.dataAceiteTermos,
           dataCriacao: data.dataCriacao,
-          dataAtualizacao: data.dataAtualizacao
+          dataAtualizacao: data.dataAtualizacao,
+          livros: data.livros || []  // ⬅️ ESSENCIAL: incluir os livros!
         })),
         shareReplay(1)
       );
@@ -66,5 +69,18 @@ export class PerfilService {
 
   aceitarTermos(): Observable<any> {
     return this.http.put(`${this.apiUrl}/aceitar-termos`, {});
+  }
+
+  // Métodos para livros
+  criarLivro(livro: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/livro`, livro);
+  }
+
+  atualizarLivro(id: string, livro: any): Observable<any> {
+    return this.http.put(`${this.apiUrl}/livro/${id}`, livro);
+  }
+
+  deletarLivro(id: string): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/livro/${id}`);
   }
 }
