@@ -1,5 +1,4 @@
 import { Routes } from '@angular/router';
-
 import { ShellComponent } from './layout/shell/shell.component';
 import { HomeComponent } from './features/home/home.component';
 import { BibliotecaComponent } from './features/biblioteca/biblioteca.component';
@@ -12,7 +11,7 @@ export const routes: Routes = [
   // Tela inicial → Login
   { path: '', component: LoginComponent },
 
-  // App interno (SEM /app)
+  // App interno
   {
     path: 'inicio',
     component: ShellComponent,
@@ -21,12 +20,8 @@ export const routes: Routes = [
       { path: 'biblioteca', component: BibliotecaComponent },
       { path: 'comunidade', component: ComunidadeComponent },
       { path: 'social', component: SocialComponent },
-<<<<<<< HEAD
-      { path: 'perfil/:id', component: PerfilComponent, data: { renderMode: 'client' } },
-=======
       { path: 'perfil', component: PerfilComponent },
-       { path: 'perfil/:id', component: PerfilComponent, data: { renderMode: 'client' } },
->>>>>>> c3bcdb5ab20073fcca745860f985fbfd5b325cf8
+      { path: 'perfil/:id', component: PerfilComponent }, // ← Sem renderMode
     ]
   },
 
