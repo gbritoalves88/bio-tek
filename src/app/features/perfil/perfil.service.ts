@@ -12,6 +12,7 @@ import { environment } from '../../../environments/environment';
 })
 export class PerfilService {
   private apiUrl = `${environment.apiUrl}/Usuario`;
+  private apiLivroUrl = `${environment.apiUrl}/Livro`;
 
   private perfilCache$: Observable<Usuario> | null = null;
   private cacheId = '';
@@ -76,11 +77,18 @@ export class PerfilService {
     return this.http.post(`${this.apiUrl}/livro`, livro);
   }
 
-  atualizarLivro(id: string, livro: any): Observable<any> {
-    return this.http.put(`${this.apiUrl}/livro/${id}`, livro);
+  deletarLivro(id: string): Observable<any> {
+    return this.http.delete(`${this.apiLivroUrl}/${id}`);
   }
 
-  deletarLivro(id: string): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/livro/${id}`);
+  atualizarLivro(id: string, livro: Partial<LivroDoUsuario>): Observable<any> {
+    return this.http.put(`${this.apiLivroUrl}/${id}`, livro);
   }
+
+  recarregarPerfilCompleto(id: string): Observable<Usuario> {
+    // Força uma nova requisição sem cache
+    this.limparCache();
+    return this.getPerfilCompleto(id);
+  }
+
 }
