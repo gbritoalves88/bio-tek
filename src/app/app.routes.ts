@@ -21,7 +21,7 @@ export const routes: Routes = [
       { path: 'biblioteca', component: BibliotecaComponent },
       { path: 'comunidade', component: ComunidadeComponent },
       { path: 'social', component: SocialComponent },
-      { path: 'perfil', component: PerfilComponent }
+      { path: 'perfil/:id', component: PerfilComponent, data: { renderMode: 'client' } },
     ]
   },
 
