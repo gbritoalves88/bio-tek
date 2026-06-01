@@ -3,7 +3,6 @@
   background: var(--bg-primary);
   color: var(--text-primary);
   min-height: 100%;
-  transition: background 0.3s, color 0.3s;
 }
 
 .hero {
@@ -19,248 +18,13 @@
   }
 }
 
-// ===== LEITURA ATUAL =====
-.reading-now {
-  background: var(--bg-card);
-  padding: 20px;
-  border-radius: 14px;
-  margin-bottom: 20px;
-  border: 1px solid var(--border-color);
-  transition: background 0.3s, border-color 0.3s;
-
-  h2 {
-    margin: 0 0 14px;
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    color: var(--accent);
-    font-weight: 600;
-  }
-}
-
-.book-info {
-  display: flex;
-  gap: 14px;
-  align-items: center;
-
-  .book-cover {
-    width: 104px;  // ⬅️ Era 56px
-    height: 142px; // ⬅️ Era 80px
-    object-fit: cover;
-    border-radius: 6px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-  }
-
-  .book-details {
-    h3 {
-      margin: 0 0 4px;
-      font-size: 20px;
-      font-weight: 600;
-    }
-
-    p {
-      margin: 0;
-      font-size: 13px;
-      color: var(--text-secondary);
-    }
-  }
-}
-
-.progress {
-  height: 4px;
-  background: var(--border-color);
-  border-radius: 999px;
-  margin-top: 16px;
-  overflow: hidden;
-}
-
-.bar {
-  height: 100%;
-  background: var(--accent);
-  border-radius: 999px;
-  transition: width 0.5s ease;
-}
-
-// ===== GRID =====
-.grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 12px;
-}
-
-.card {
-  background: var(--bg-card);
-  padding: 20px;
-  border-radius: 14px;
-  border: 1px solid var(--border-color);
-  transition: background 0.3s, border-color 0.3s;
-
-  h3 {
-    margin: 0 0 14px;
-    font-size: 15px;
-    font-weight: 600;
-  }
-}
-
-// ===== ADICIONAR LIVRO =====
-.add-card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  gap: 12px;
-
-  h3 {
-    margin: 0;
-  }
-}
-
-.btn-accent {
-  padding: 12px 28px;
-  border: none;
-  border-radius: 24px;
-  cursor: pointer;
-  background: var(--accent);
-  color: #ffffff;
-  font-weight: 600;
-  font-size: 14px;
-  transition: opacity 0.2s;
-
-  &:hover {
-    opacity: 0.85;
-  }
-}
-
-// ===== LISTA DE LIVROS =====
-.book-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.book-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-
- .book-thumb {
-      width: 104px;  // ⬅️ Era 60px
-      height: 140px; // ⬅️ Era 85px
-      object-fit: cover;
-      border-radius: 6px;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-    }
-
-  .book-item-info {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-  }
-
-    .book-title {
-      font-size: 13px; // ⬅️ Era 12px
-      max-width: 90px; // ⬅️ Era 80px
-    }
-
-  .book-stars {
-    font-size: 12px;
-    color: var(--accent);
-  }
-}
-
-// ===== RESPONSIVO =====
-@media (min-width: 600px) {
-  .grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (min-width: 900px) {
-  .book-row .book-item .book-thumb {
-    width: 104px;
-    height: 140px;
-  }
-  .book-row .book-item .book-title {
-    font-size: 13px;
-    max-width: 100px;
-  }
-}
-
-
-
-.btn-accent-full {
-  width: 100%;
-  max-width: 450px; // ⬅️ Adicione esta linha (ajuste o valor como quiser)
-  padding: 14px 16px; // ⬅️ Diminuí o padding
-  border: none;
-  border-radius: 14px;
-  cursor: pointer;
-  background: var(--accent);
-  color: #ffffff;
-  font-weight: 600;
-  font-size: 15px;
-  transition: opacity 0.2s;
-  grid-column: 1 / -1;
-
-  &:hover {
-    opacity: 0.85;
-  }
-}
-
-// ===== LINHA DE LIVROS (horizontal) =====
-.book-row {
-  display: flex;
-  gap: 12px;
-  overflow-x: auto;
-  padding-bottom: 4px;
-  scroll-snap-type: x proximity;
-  -webkit-overflow-scrolling: touch;
-
-  .book-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
-    min-width: 80px; // Reduzido
-    scroll-snap-align: start;
-    text-align: center;
-    flex-shrink: 0;
-
-    .book-thumb {
-      width: 80px;  // Reduzido no mobile
-      height: 112px; // Reduzido no mobile
-      object-fit: cover;
-      border-radius: 6px;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-    }
-
-    .book-title {
-      font-size: 12px;
-      font-weight: 500;
-      color: var(--text-primary);
-      max-width: 80px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .book-stars {
-      font-size: 11px;
-      color: var(--accent);
-      white-space: nowrap;
-    }
-  }
-}
-
-
 .btn-circle {
   height: 44px;
   min-width: 44px;
   border-radius: 22px;
   border: none;
   background: var(--accent);
-  color: #ffffff;
+  color: #fff;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -287,12 +51,9 @@
     transition: all 0.3s ease;
   }
 
-  &:hover,
-  &:active {
+  &:hover {
     gap: 6px;
     padding: 10px 16px;
-    border-radius: 22px;
-
     .btn-label {
       max-width: 40px;
       opacity: 1;
@@ -300,8 +61,6 @@
   }
 }
 
-
-// ===== CITAÇÃO =====
 .citacao {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
@@ -309,11 +68,10 @@
   border-radius: 0 12px 12px 0;
   padding: 18px 20px;
   margin-bottom: 24px;
-  transition: background 0.3s, border-color 0.3s;
 
   .citacao-texto {
     margin: 0 0 8px;
-    font-family: 'Caveat', cursive;
+     font-family: 'Caveat', cursive;
     font-size: 20px;
     font-weight: 400;
     color: var(--text-primary);
@@ -322,65 +80,192 @@
   }
 
   .citacao-autor {
-    font-family: 'Caveat', cursive;
     font-size: 16px;
+    font-family: 'Caveat', cursive;
     color: var(--accent);
     font-weight: 600;
   }
 }
 
-// ===== CARD COM SETA LATERAL =====
-.card-with-arrow {
-  display: flex;
-  align-items: stretch;
-  gap: 0;
+.reading-now {
+  background: var(--bg-card);
+  padding: 20px;
+  border-radius: 14px;
+  margin-bottom: 24px;
+  border: 1px solid var(--border-color);
 
-  .card {
-    flex: 1;
-    border-radius: 14px 0 0 14px; // cantos arredondados só na esquerda
-    border-right: none;
-  }
-
-  .arrow-tab {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 15px;
-    min-width: 15px;
-    background: var(--bg-card);
-    border: 1px solid var(--border-color);
-    border-left: none;
-    border-radius: 0 14px 14px 0;
+  h2 {
+    margin: 0 0 14px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
     color: var(--accent);
-    cursor: pointer;
-    transition: background 0.2s;
+    font-weight: 600;
+  }
+}
 
-    svg {
-      width: 18px;
-      height: 18px;
+.book-info {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+
+  .book-cover {
+    width: 150px;
+    height: 192px;
+    object-fit: cover;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  }
+
+  .book-details {
+    h3 {
+      margin: 0 0 4px;
+      font-size: 18px;
+      font-weight: 600;
     }
-
-    &:hover {
-      background: var(--accent);
-      color: #ffffff;
+    p {
+      margin: 0;
+      font-size: 13px;
+      color: var(--text-secondary);
     }
   }
 }
 
-.loading {
-  color: var(--accent);
-  padding: 40px;
-  text-align: center;
+.progress {
+  height: 4px;
+  background: var(--border-color);
+  border-radius: 999px;
+  margin-top: 16px;
+  overflow: hidden;
 }
 
+.bar {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 999px;
+  transition: width 0.5s ease;
+}
 
 .empty-state {
   text-align: center;
   padding: 30px 20px;
-
   p {
     color: var(--text-secondary);
     font-size: 14px;
     margin: 0;
+  }
+}
+
+.loading {
+  text-align: center;
+  padding: 40px;
+  color: var(--accent);
+}
+
+// ===== SCROLL HORIZONTAL =====
+.scroll-horizontal {
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+
+  &::-webkit-scrollbar {
+    height: 3px;
+  }
+  &::-webkit-scrollbar-track {
+    background: var(--border-color);
+    border-radius: 3px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: var(--accent);
+    border-radius: 3px;
+  }
+}
+
+.scroll-track {
+  display: flex;
+  gap: 16px;
+  width: fit-content;
+}
+
+.livro-card {
+  width: 100px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.livro-capa {
+  width: 100px;
+  height: 142px;
+  object-fit: cover;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s;
+
+  &:hover {
+    transform: scale(1.02);
+  }
+}
+
+.livro-titulo {
+  font-size: 11px;
+  font-weight: 600;
+  margin-top: 6px;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  display: block;
+}
+
+.livro-autor {
+  font-size: 9px;
+  color: var(--text-secondary);
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  display: block;
+}
+
+.livro-rating {
+  font-size: 9px;
+  color: var(--accent);
+  margin-top: 2px;
+  display: block;
+  white-space: nowrap;
+}
+
+// Responsivo
+@media (max-width: 600px) {
+  .livro-card {
+    width: 85px;
+  }
+  .livro-capa {
+    width: 85px;
+    height: 120px;
+  }
+  .livro-titulo {
+    font-size: 10px;
+  }
+  .livro-autor, .livro-rating {
+    font-size: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .scroll-track {
+    gap: 12px;
+  }
+  .livro-card {
+    width: 75px;
+  }
+  .livro-capa {
+    width: 75px;
+    height: 106px;
   }
 }

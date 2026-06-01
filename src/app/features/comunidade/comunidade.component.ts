@@ -107,14 +107,9 @@ export class ComunidadeComponent implements OnInit {
     this.comentarios = [];
 
     if (item.tipo === 'livro_avaliado') {
-      if ((item as any).comentarios) {
-        this.comentarios = (item as any).comentarios.map((c: any) => ({
-          id: c.id,
-          idUsuario: '',
-          usuarioNickname: c.usuario?.nickname || '@user',
-          comentario: c.comentario,
-          dataCriacao: c.dataCriacao
-        }));
+      // Verifica se já tem comentários no item (vindo do backend)
+      if (item.comentarios && item.comentarios.length > 0) {
+        this.comentarios = item.comentarios;
       } else {
         this.carregarComentarios(item.livro.id);
       }
