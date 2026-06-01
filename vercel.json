@@ -5,12 +5,14 @@
       "src": "package.json",
       "use": "@vercel/static-build",
       "config": {
-        "distDir": "dist/bio-tek/browser"
+        "distDir": "dist/bio-tek/browser",
+        "buildCommand": "ng build --configuration production"
       }
     }
   ],
   "routes": [
-    { "handle": "filesystem" },
+    { "src": "/assets/(.*)", "dest": "/assets/$1" },
+    { "src": "/favicon.svg", "dest": "/favicon.svg" },
     { "src": "/(.*)", "dest": "/index.html" }
   ]
 }
