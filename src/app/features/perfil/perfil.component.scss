@@ -230,6 +230,7 @@
 // BIBLIOTECA PESSOAL
 .biblioteca-pessoal {
   margin-top: 24px;
+  width: 100%;
 
   h3 {
     font-size: 16px;
@@ -241,43 +242,59 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
+  padding: 0 4px;
+
+  h3 {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0;
+    color: var(--text-primary);
+  }
 }
 
-.btn-add-livro {
+.btn-circle {
+  height: 44px;
+  min-width: 44px;
+  border-radius: 22px;
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  cursor: pointer;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0;
-  padding: 6px 12px;
-  background: var(--accent);
-  border: none;
-  border-radius: 20px;
-  color: white;
-  font-size: 12px;
-  cursor: pointer;
-  transition: all 0.3s;
+  padding: 10px;
+  transition: all 0.3s ease;
   overflow: hidden;
+  white-space: nowrap;
 
-  svg {
-    width: 14px;
-    height: 14px;
+  .btn-icon {
+    width: 20px;
+    height: 20px;
+    min-width: 20px;
+    flex-shrink: 0;
     stroke: white;
   }
 
-  span {
+  .btn-label {
+    font-size: 14px;
+    font-weight: 600;
     max-width: 0;
     opacity: 0;
     overflow: hidden;
-    transition: all 0.3s;
+    transition: all 0.3s ease;
   }
 
   &:hover {
     gap: 6px;
-    padding: 6px 14px;
-    span {
-      max-width: 100px;
+    padding: 10px 16px;
+    border-radius: 22px;
+
+    .btn-label {
+      max-width: 40px;
       opacity: 1;
-      margin-left: 4px;
     }
   }
 }
@@ -309,10 +326,8 @@
 .book-list {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
+  gap: 12px;
   width: 100%;
-  overflow: visible;
-  box-sizing: border-box;
 }
 
 .book-item {
@@ -320,19 +335,25 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
-  background: transparent;
-  min-width: 0;
-  width: 100%;
-  box-sizing: border-box;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 12px 8px;
+  transition: transform 0.2s, box-shadow 0.2s;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
 
   .book-cover {
     width: 100%;
-    max-width: 150px;
+    max-width: 100px;
     aspect-ratio: 2 / 3;
     object-fit: cover;
-    border-radius: 6px;
-    margin-bottom: 4px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    margin-bottom: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
   }
 
   .book-info {
@@ -341,19 +362,24 @@
     display: flex;
     flex-direction: column;
     gap: 2px;
-    min-height: 52px;
+    margin-bottom: 8px;
 
     .book-title {
-      font-size: 10px;
+      font-size: 11px;
       font-weight: 600;
       margin: 0;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+      line-height: 1.3;
+      word-wrap: break-word;
+      word-break: break-word;
+      white-space: normal; // ⬅️ Permite quebrar linha
+      overflow-wrap: break-word;
+      display: -webkit-box;
+      -webkit-line-clamp: 2; // ⬅️ Limita a 2 linhas
+      -webkit-box-orient: vertical;
     }
 
     .book-author {
-      font-size: 8px;
+      font-size: 9px;
       color: var(--text-secondary);
       margin: 0;
       overflow: hidden;
@@ -362,12 +388,12 @@
     }
 
     .book-status {
-      font-size: 8px;
+      font-size: 9px;
       margin: 0;
     }
 
     .book-stars {
-      font-size: 8px;
+      font-size: 9px;
       color: var(--accent);
       margin: 0;
 
@@ -380,9 +406,8 @@
 
   .book-actions {
     display: flex;
-    gap: 6px;
+    gap: 8px;
     justify-content: center;
-    margin-top: 4px;
     width: 100%;
   }
 }
@@ -649,38 +674,53 @@
 }
 
 // RESPONSIVO
-@media (max-width: 480px) {
-  .perfil {
-    padding: 12px 8px;
+@media (max-width: 600px) {
+  .book-list {
+    gap: 8px;
   }
 
+  .book-item {
+    padding: 8px 4px;
+
+    .book-cover {
+      max-width: 80px;
+    }
+
+    .book-info .book-title {
+      font-size: 10px;
+      -webkit-line-clamp: 2;
+    }
+
+    .book-info .book-author {
+      font-size: 8px;
+    }
+  }
+}
+
+@media (max-width: 480px) {
   .book-list {
     gap: 6px;
   }
 
-  .book-item .book-cover {
-    max-width: 100px;
-  }
+  .book-item {
+    padding: 6px 4px;
 
-  .btn-icon-action {
-    max-width: 26px;
-    min-width: 24px;
-    height: 26px;
-    svg {
-      width: 10px;
-      height: 10px;
+    .book-cover {
+      max-width: 70px;
     }
-  }
 
-  .book-item .book-info {
-    min-height: 48px;
-    .book-title { font-size: 9px; }
-    .book-author { font-size: 7px; }
-    .book-status, .book-stars { font-size: 7px; }
-  }
+    .book-info .book-title {
+      font-size: 9px;
+      -webkit-line-clamp: 2;
+    }
 
-  .modal-content {
-    max-width: 95%;
+    .book-info .book-author {
+      font-size: 7px;
+    }
+
+    .book-status, .book-stars {
+      font-size: 8px;
+    }
   }
 }
 
@@ -816,4 +856,32 @@
   gap: 12px;
   width: 100%;
   margin-bottom: 20px;
+}
+
+
+// BOTÃO VOLTAR
+.btn-voltar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--border-color);
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+
+  svg {
+    width: 18px;
+    height: 18px;
+    stroke: var(--text-secondary);
+  }
+
+  &:hover {
+    border-color: var(--accent);
+    svg {
+      stroke: var(--accent);
+    }
+  }
 }

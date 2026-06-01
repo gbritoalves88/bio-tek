@@ -7,9 +7,9 @@
 
   <!-- Dados do perfil - Modo visualização -->
   <div class="perfil-container" *ngIf="usuario && !editando">
-    <!-- LINHA 1: FOTO, INFORMAÇÕES E BOTÃO ENGREMAGEM -->
+    <!-- LINHA 1: FOTO, INFORMAÇÕES E BOTÃO (VOLTAR ou ENGREMAGEM) -->
     <div class="perfil-header-row">
-      <!-- FOTO - ESQUERDA (menor) -->
+      <!-- FOTO - ESQUERDA -->
       <div class="perfil-avatar">
         <div class="avatar-pequeno">
           <img [src]="usuario.avatar || 'assets/capas/perfilSemFoto.png'" [alt]="usuario.nome" />
@@ -23,33 +23,43 @@
         <p class="bio" *ngIf="usuario.descricao">{{ usuario.descricao }}</p>
       </div>
 
-      <!-- BOTÃO ENGREMAGEM - DIREITA -->
+      <!-- BOTÃO (VOLTAR ou ENGREMAGEM) - DIREITA -->
       <div class="perfil-actions">
-        <button class="btn-config" (click)="toggleMenuConfig()" [class.active]="menuConfigAberto">
+        <!-- Botão Voltar (modo visualização) -->
+        <button class="btn-voltar" *ngIf="modoVisualizacao" (click)="voltar()" title="Voltar">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="3"/>
-            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
           </svg>
         </button>
 
-        <!-- Menu de configuração (editar e sair) -->
-        <div class="menu-config" *ngIf="menuConfigAberto">
-          <button class="menu-item" (click)="abrirEdicao()">
+        <!-- Botão Engrenagem (modo meu perfil) -->
+        <ng-container *ngIf="!modoVisualizacao">
+          <button class="btn-config" (click)="toggleMenuConfig()" [class.active]="menuConfigAberto">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
             </svg>
-            Editar perfil
           </button>
-          <button class="menu-item sair" (click)="sair()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-              <polyline points="16 17 21 12 16 7"/>
-              <line x1="21" y1="12" x2="9" y2="12"/>
-            </svg>
-            Sair
-          </button>
-        </div>
+
+          <!-- Menu de configuração (só meu perfil) -->
+          <div class="menu-config" *ngIf="menuConfigAberto">
+            <button class="menu-item" (click)="abrirEdicao()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+              </svg>
+              Editar perfil
+            </button>
+            <button class="menu-item sair" (click)="sair()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                <polyline points="16 17 21 12 16 7"/>
+                <line x1="21" y1="12" x2="9" y2="12"/>
+              </svg>
+              Sair
+            </button>
+          </div>
+        </ng-container>
       </div>
     </div>
 
@@ -71,66 +81,67 @@
   </div>
 
   <!-- Edição do perfil - Modo edição -->
-<div class="perfil-container" *ngIf="editando && usuarioEdit">
-  <!-- Linha 1: Foto + Formulário (horizontal) -->
-  <div class="perfil-edicao-row">
-    <!-- FOTO EDITÁVEL -->
-    <div class="perfil-avatar">
-      <div class="avatar-pequeno editavel" (click)="fileInput.click()">
-        <img [src]="usuarioEdit.avatar || 'assets/capas/perfilSemFoto.png'" [alt]="usuarioEdit.nome" />
-        <div class="avatar-overlay">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-            <circle cx="12" cy="13" r="4"/>
-          </svg>
+  <div class="perfil-container" *ngIf="editando && usuarioEdit">
+    <!-- Linha 1: Foto + Formulário (horizontal) -->
+    <div class="perfil-edicao-row">
+      <!-- FOTO EDITÁVEL -->
+      <div class="perfil-avatar">
+        <div class="avatar-pequeno editavel" (click)="fileInput.click()">
+          <img [src]="usuarioEdit.avatar || 'assets/capas/perfilSemFoto.png'" [alt]="usuarioEdit.nome" />
+          <div class="avatar-overlay">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+              <circle cx="12" cy="13" r="4"/>
+            </svg>
+          </div>
+          <input type="file" #fileInput hidden (change)="onAvatarSelected($event)" accept="image/*">
         </div>
-        <input type="file" #fileInput hidden (change)="onAvatarSelected($event)" accept="image/*">
+        <p class="upload-erro" *ngIf="uploadErro">{{ uploadErro }}</p>
       </div>
-      <p class="upload-erro" *ngIf="uploadErro">{{ uploadErro }}</p>
+
+      <!-- FORMULÁRIO DE EDIÇÃO -->
+      <div class="perfil-info-edicao">
+        <div class="form-edicao">
+          <label class="input-label">Nome</label>
+          <input type="text" [(ngModel)]="usuarioEdit.nome">
+
+          <label class="input-label">@ Nickname</label>
+          <div class="nickname-input-wrapper">
+            <span class="nickname-prefix">@</span>
+            <input type="text" [(ngModel)]="usuarioEdit.nickname" placeholder="seunickname (3 a 10 caracteres)" maxlength="10" (input)="limparArroba()">
+          </div>
+
+          <label class="input-label">Biografia</label>
+          <textarea [(ngModel)]="usuarioEdit.descricao" placeholder="Conte um pouco sobre você..." rows="3"></textarea>
+
+          <label class="input-label">Tema</label>
+          <select [(ngModel)]="usuarioEdit.tema" class="select-status">
+            <option [ngValue]="2">☀️ Claro</option>
+            <option [ngValue]="1">🌙 Escuro</option>
+          </select>
+        </div>
+      </div>
     </div>
 
-    <!-- FORMULÁRIO DE EDIÇÃO -->
-    <div class="perfil-info-edicao">
-      <div class="form-edicao">
-        <label class="input-label">Nome</label>
-        <input type="text" [(ngModel)]="usuarioEdit.nome">
-
-        <label class="input-label">@ Nickname</label>
-        <div class="nickname-input-wrapper">
-          <span class="nickname-prefix">@</span>
-          <input type="text" [(ngModel)]="usuarioEdit.nickname" placeholder="seunickname (3 a 10 caracteres)" maxlength="10" (input)="limparArroba()">
-        </div>
-
-        <label class="input-label">Biografia</label>
-        <textarea [(ngModel)]="usuarioEdit.descricao" placeholder="Conte um pouco sobre você..." rows="3"></textarea>
-
-        <label class="input-label">Tema</label>
-        <select [(ngModel)]="usuarioEdit.tema" class="select-status">
-          <option [ngValue]="2">☀️ Claro</option>
-          <option [ngValue]="1">🌙 Escuro</option>
-        </select>
-      </div>
+    <!-- Linha 2: Botões (centralizados, abaixo) -->
+    <div class="perfil-actions-edicao">
+      <button class="btn-cancelar" (click)="fecharEdicao()">Cancelar</button>
+      <button class="btn-salvar" (click)="salvarPerfil()">Salvar</button>
     </div>
   </div>
-
-  <!-- Linha 2: Botões (centralizados, abaixo) -->
-  <div class="perfil-actions-edicao">
-    <button class="btn-cancelar" (click)="fecharEdicao()">Cancelar</button>
-    <button class="btn-salvar" (click)="salvarPerfil()">Salvar</button>
-  </div>
-</div>
 
   <!-- Biblioteca Pessoal -->
   <div class="biblioteca-pessoal" *ngIf="usuario && !editando">
     <div class="biblioteca-header">
-      <h3>Minha Biblioteca</h3>
-      <button class="btn-add-livro" (click)="abrirModalAdicionarLivro()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <line x1="12" y1="5" x2="12" y2="19"/>
-          <line x1="5" y1="12" x2="19" y2="12"/>
-        </svg>
-        <span>Adicionar livro</span>
-      </button>
+      <h3>Biblioteca</h3>
+      <!-- Botão Adicionar livro (só no modo meu perfil) -->
+       <button class="btn-circle" *ngIf="!modoVisualizacao" title="Adicionar livro" (click)="abrirModalAdicionarLivro()">
+      <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+        <line x1="12" y1="5" x2="12" y2="19"/>
+        <line x1="5" y1="12" x2="19" y2="12"/>
+      </svg>
+      <span class="btn-label">Novo</span>
+    </button>
     </div>
 
     <!-- Filtros -->
@@ -151,28 +162,33 @@
           <span class="book-author">{{ livro.autor || 'Autor desconhecido' }}</span>
           <span class="book-status" [class]="getStatusClass(livro.status)">{{ getStatusTexto(livro.status) }}</span>
           <span class="book-stars" *ngIf="livro.avaliacao">⭐ {{ livro.avaliacao.nota }}</span>
+          <span class="book-stars vazio" *ngIf="!livro.avaliacao">⭐ --</span>
         </div>
         <div class="book-actions">
+          <!-- Botão Comentários (sempre visível, se tiver avaliação) -->
           <button class="btn-icon-action btn-comentario" title="Comentários" *ngIf="livro.avaliacao" (click)="abrirComentarios(livro)">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
             </svg>
           </button>
-          <button class="btn-icon-action" title="Editar" (click)="abrirEdicaoLivro(livro)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-            </svg>
-          </button>
-          <button class="btn-icon-action btn-delete" title="Remover" (click)="deletarLivro(livro.id)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="3 6 5 6 21 6"/>
-              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-            </svg>
-          </button>
+          <!-- Botões Editar e Deletar (só no modo meu perfil) -->
+          <ng-container *ngIf="!modoVisualizacao">
+            <button class="btn-icon-action" title="Editar" (click)="abrirEdicaoLivro(livro)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+              </svg>
+            </button>
+            <button class="btn-icon-action btn-delete" title="Remover" (click)="deletarLivro(livro.id)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="3 6 5 6 21 6"/>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+              </svg>
+            </button>
+          </ng-container>
         </div>
       </div>
-      <p class="empty" *ngIf="livros.length === 0">Nenhum livro na sua biblioteca.</p>
+      <p class="empty" *ngIf="livros.length === 0">Nenhum livro na biblioteca.</p>
     </div>
   </div>
 </section>

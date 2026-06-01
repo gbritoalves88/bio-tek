@@ -1,5 +1,5 @@
 import { Component, OnInit, Inject, PLATFORM_ID, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
-import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { CommonModule, isPlatformBrowser, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Usuario, LivroDoUsuario } from './perfil.model';
@@ -51,6 +51,10 @@ export class PerfilComponent implements OnInit {
   private readonly TAMANHO_MAXIMO = 2 * 1024 * 1024;
   menuConfigAberto = false;
 
+  // Modo visualização
+  modoVisualizacao = false;
+  usuarioIdVisualizado: string | null = null;
+
   @ViewChild('textoTermos') textoTermosRef!: ElementRef;
   @ViewChild('fileInputLivro') fileInputLivro!: ElementRef;
   @ViewChild('fileInputEdicaoLivro') fileInputEdicaoLivro!: ElementRef;
@@ -60,61 +64,100 @@ export class PerfilComponent implements OnInit {
     private uploadService: UploadService,
     private router: Router,
     private route: ActivatedRoute,
+    private location: Location,
     @Inject(PLATFORM_ID) private platformId: Object,
     private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
-      this.carregarPerfil();
+      this.route.params.subscribe(params => {
+        console.log('📌 PARAMS RECEBIDOS:', params);
+        const idVisualizado = params['id'];
+        console.log('🆔 ID visualizado:', idVisualizado);
+
+        if (idVisualizado) {
+          this.modoVisualizacao = true;
+          this.usuarioIdVisualizado = idVisualizado;
+          this.carregarPerfilVisualizacao(idVisualizado);
+        } else {
+          this.modoVisualizacao = false;
+          this.usuarioIdVisualizado = null;
+          this.carregarMeuPerfil(); // 👈 Esta linha deve estar sendo chamada
+        }
+      });
     }
   }
 
-  // ==================== PERFIL ====================
+  // ==================== MEU PERFIL ====================
 
-  carregarPerfil(): void {
+  carregarMeuPerfil(): void {
     const usuarioLogado = JSON.parse(localStorage.getItem('usuario') || '{}');
     const id = usuarioLogado.id;
 
-    console.log('🔍 Carregando perfil do usuário:', id);
-
     if (!id) {
-      console.error('❌ Usuário não encontrado no localStorage');
       this.router.navigate(['/']);
       return;
     }
 
-    this.perfilService.getPerfilCompleto(id).subscribe({
-      next: (data: Usuario) => {
-        console.log('✅ Dados recebidos do backend:', data);
-        console.log('📚 Livros recebidos:', data.livros);
-        console.log('📊 Quantidade de livros:', data.livros?.length || 0);
+    // Pequeno delay para o Angular completar o ciclo
+    setTimeout(() => {
+      this.carregando = true;
+      this.cdr.markForCheck();
 
-        this.usuario = data;
-        this.livros = data.livros || [];
-
-        console.log('🎯 Array livros após atribuição:', this.livros);
-        console.log('🔢 Tamanho do array:', this.livros.length);
-
-        this.carregando = false;
-        this.cdr.markForCheck();
-
-        this.route.queryParams.subscribe(params => {
-          if (params['novo'] === 'true' && !data.aceitouTermos) {
-            setTimeout(() => {
-              this.abrirTermos();
-              this.cdr.markForCheck();
-            }, 800);
-          } else if (params['novo'] === 'true' && data.aceitouTermos) {
-            setTimeout(() => this.abrirEdicao(), 800);
-          }
-        });
-      },
-      error: (err) => {
-        console.error('❌ Erro ao carregar perfil:', err);
-        this.carregando = false;
-      }
+      this.perfilService.getPerfilCompleto(id).subscribe({
+        next: (data: Usuario) => {
+          this.usuario = data;
+          this.livros = data.livros || [];
+          this.carregando = false;
+          this.cdr.markForCheck();
+        },
+        error: (err) => {
+          console.error('❌ Erro:', err);
+          this.carregando = false;
+          this.cdr.markForCheck();
+        }
+      });
     });
+  }
+
+  // ==================== PERFIL VISUALIZAÇÃO ====================
+
+  carregarPerfilVisualizacao(id: string): void {
+    console.log('🚀 MÉTODO CHAMADO! ID:', id);
+
+    // Pequeno delay para o Angular completar o ciclo atual
+    setTimeout(() => {
+      this.carregando = true;
+      this.cdr.markForCheck();
+
+      this.perfilService.getPerfilCompleto(id).subscribe({
+        next: (data: Usuario) => {
+          this.usuario = data;
+          this.livros = data.livros || [];
+          this.carregando = false;
+          this.cdr.markForCheck();
+        },
+        error: (err) => {
+          console.error('❌ Erro:', err);
+          this.carregando = false;
+          this.cdr.markForCheck();
+        }
+      });
+    });
+  }
+  // ==================== MÉTODOS GERAIS ====================
+
+  voltar(): void {
+    this.location.back();
+  }
+
+  carregarPerfil(): void {
+    if (this.modoVisualizacao && this.usuarioIdVisualizado) {
+      this.carregarPerfilVisualizacao(this.usuarioIdVisualizado);
+    } else {
+      this.carregarMeuPerfil();
+    }
   }
 
   abrirEdicao(): void {
@@ -305,7 +348,6 @@ export class PerfilComponent implements OnInit {
   // ==================== LIVROS ====================
 
   get livrosFiltrados(): LivroDoUsuario[] {
-    console.log('🔍 Filtrando livros. Total:', this.livros.length);
     let resultado = [...this.livros];
     if (this.filtroStatus !== null) {
       resultado = resultado.filter(l => l.status === this.filtroStatus);
@@ -314,7 +356,6 @@ export class PerfilComponent implements OnInit {
       resultado = resultado.filter(l => l.avaliacao !== null && l.avaliacao !== undefined);
     }
     resultado.sort((a, b) => new Date(b.dataCriacao).getTime() - new Date(a.dataCriacao).getTime());
-    console.log('📚 Resultado filtrado:', resultado.length);
     return resultado;
   }
 
@@ -336,26 +377,14 @@ export class PerfilComponent implements OnInit {
 
   // ===== Modal Adicionar Livro =====
 
-  abrirModalAdicionarLivroold(): void {
-    this.novoLivro = {
-      status: 1,
-      titulo: '',
-      autor: '',
-      descricao: ''
-    };
-    this.novaCapaPreview = null;
-    this.modalAdicionarAberto = true;
-  }
-
   abrirModalAdicionarLivro(): void {
     this.modalAdicionarAberto = true;
   }
 
   onLivroAdicionado(livro: any): void {
     this.modalAdicionarAberto = false;
-    this.carregarPerfil(); // Recarrega os dados do perfil
+    this.carregarPerfil();
   }
-
 
   fecharModalAdicionar(): void {
     this.modalAdicionarAberto = false;
@@ -517,17 +546,11 @@ export class PerfilComponent implements OnInit {
     }
 
     this.perfilService.atualizarLivro(this.livroEditando.id, dadosParaEnviar).subscribe({
-      next: (response) => {
-        console.log('✅ Livro atualizado com sucesso:', response);
+      next: () => {
         this.fecharEdicaoLivro();
-        // Força a limpeza do cache ANTES de recarregar
-        this.perfilService.limparCache();
         this.carregarPerfil();
       },
-      error: (err) => {
-        console.error('❌ Erro ao editar livro:', err);
-        alert('Erro ao salvar alterações. Tente novamente.');
-      }
+      error: (err) => console.error('Erro ao editar livro:', err)
     });
   }
 
@@ -537,15 +560,9 @@ export class PerfilComponent implements OnInit {
     if (confirm('Tem certeza que deseja remover este livro?')) {
       this.perfilService.deletarLivro(id).subscribe({
         next: () => {
-          console.log('✅ Livro deletado com sucesso');
-          // Força a limpeza do cache ANTES de recarregar
-          this.perfilService.limparCache();
           this.carregarPerfil();
         },
-        error: (err) => {
-          console.error('❌ Erro ao deletar livro:', err);
-          alert('Erro ao remover livro. Tente novamente.');
-        }
+        error: (err) => console.error('Erro ao deletar livro:', err)
       });
     }
   }
@@ -565,12 +582,12 @@ export class PerfilComponent implements OnInit {
     this.comentariosAberto = true;
   }
 
-  // Adicione este método
+  // ===== Menu Configuração =====
+
   toggleMenuConfig(): void {
     this.menuConfigAberto = !this.menuConfigAberto;
   }
 
-  // Feche o menu quando clicar fora (opcional)
   fecharMenuConfig(): void {
     this.menuConfigAberto = false;
   }

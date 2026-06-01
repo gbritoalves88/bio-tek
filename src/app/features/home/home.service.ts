@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { shareReplay } from 'rxjs/operators';
-import { Livro } from './home.model';
+import { Livro, DashboardData } from './home.model';
 import { environment } from '../../../environments/environment';
 
 @Injectable({
@@ -10,9 +10,11 @@ import { environment } from '../../../environments/environment';
 })
 export class HomeService {
   private apiUrl = `${environment.apiUrl}/Livro`;
+  private homeApiUrl = `${environment.apiUrl}/Home`;
 
   // Cache
   private homeCache$: Observable<Livro[]> | null = null;
+  private dashboardCache$: Observable<DashboardData> | null = null;
 
   constructor(private http: HttpClient) {}
 
@@ -25,8 +27,17 @@ export class HomeService {
     return this.homeCache$;
   }
 
+  getDashboard(): Observable<DashboardData> {
+    if (!this.dashboardCache$) {
+      this.dashboardCache$ = this.http.get<DashboardData>(`${this.homeApiUrl}/dashboard`).pipe(
+        shareReplay(1)
+      );
+    }
+    return this.dashboardCache$;
+  }
 
   limparCache(): void {
     this.homeCache$ = null;
+    this.dashboardCache$ = null;
   }
 }
