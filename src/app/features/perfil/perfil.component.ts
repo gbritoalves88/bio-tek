@@ -49,6 +49,7 @@ export class PerfilComponent implements OnInit {
 
   // Upload
   private readonly TAMANHO_MAXIMO = 2 * 1024 * 1024;
+  menuConfigAberto = false;
 
   @ViewChild('textoTermos') textoTermosRef!: ElementRef;
   @ViewChild('fileInputLivro') fileInputLivro!: ElementRef;
@@ -516,11 +517,17 @@ export class PerfilComponent implements OnInit {
     }
 
     this.perfilService.atualizarLivro(this.livroEditando.id, dadosParaEnviar).subscribe({
-      next: () => {
+      next: (response) => {
+        console.log('✅ Livro atualizado com sucesso:', response);
         this.fecharEdicaoLivro();
+        // Força a limpeza do cache ANTES de recarregar
+        this.perfilService.limparCache();
         this.carregarPerfil();
       },
-      error: (err) => console.error('Erro ao editar livro:', err)
+      error: (err) => {
+        console.error('❌ Erro ao editar livro:', err);
+        alert('Erro ao salvar alterações. Tente novamente.');
+      }
     });
   }
 
@@ -530,9 +537,15 @@ export class PerfilComponent implements OnInit {
     if (confirm('Tem certeza que deseja remover este livro?')) {
       this.perfilService.deletarLivro(id).subscribe({
         next: () => {
+          console.log('✅ Livro deletado com sucesso');
+          // Força a limpeza do cache ANTES de recarregar
+          this.perfilService.limparCache();
           this.carregarPerfil();
         },
-        error: (err) => console.error('Erro ao deletar livro:', err)
+        error: (err) => {
+          console.error('❌ Erro ao deletar livro:', err);
+          alert('Erro ao remover livro. Tente novamente.');
+        }
       });
     }
   }
@@ -550,5 +563,15 @@ export class PerfilComponent implements OnInit {
       dataCriacao: c.dataCriacao
     })) || null;
     this.comentariosAberto = true;
+  }
+
+  // Adicione este método
+  toggleMenuConfig(): void {
+    this.menuConfigAberto = !this.menuConfigAberto;
+  }
+
+  // Feche o menu quando clicar fora (opcional)
+  fecharMenuConfig(): void {
+    this.menuConfigAberto = false;
   }
 }
