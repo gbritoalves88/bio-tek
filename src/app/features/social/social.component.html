@@ -13,15 +13,15 @@
     <div class="seguindo-list" *ngIf="seguindo.length > 0">
       <div class="seguidor-card" *ngFor="let usuario of seguindo">
         <img [src]="usuario.avatar || 'assets/capas/perfilSemFoto.png'" [alt]="usuario.nome" class="avatar" />
-        <div class="info" (click)="verPerfil(usuario)">
-          <span class="nome">{{ usuario.nome }}</span>
-          <span class="nickname">{{ usuario.nickname || '@sem-nickname' }}</span>
-          <div class="stats-mini">
-            <span>📚 {{ usuario.quantidadeLivros || 0 }}</span>
-            <span>✅ {{ usuario.quantidadeLivrosLidos || 0 }}</span>
-            <span>⭐ {{ usuario.mediaAvaliacoes || 0 }}</span>
+        <div class="info" (click)="irParaPerfil(usuario.id)">
+            <span class="nome">{{ usuario.nome }}</span>
+            <span class="nickname">{{ usuario.nickname || '@sem-nickname' }}</span>
+            <div class="stats-mini">
+              <span>📚 {{ usuario.quantidadeLivros || 0 }}</span>
+              <span>✅ {{ usuario.quantidadeLivrosLidos || 0 }}</span>
+              <span>⭐ {{ usuario.mediaAvaliacoes || 0 }}</span>
+            </div>
           </div>
-        </div>
         <button class="btn-deixar" (click)="deixarDeSeguir(usuario.id)">Deixar de seguir</button>
       </div>
     </div>

@@ -1,17 +1,40 @@
 export interface Livro {
-  id: string;              // Era number, agora string (GUID)
+  id: string;
   titulo: string;
   autor: string;
-  imagem?: string;         // URL da capa (ImgBB ou placeholder)
+  imagem?: string;
   codigoBarras?: string;
   descricao?: string;
-  status: StatusLeitura;   // Enum numérico
+  status: StatusLeitura;
   progresso?: number;
-  estrelas?: number;       // Mock por enquanto
+  estrelas?: number;
   dataCriacao?: string;
-  avaliacao?: {      // ⬅️ Adicione se não existir
+  avaliacao?: {
     nota: number;
   };
+}
+
+export interface LivroLeitura {
+  id: string;
+  titulo: string;
+  autor: string;
+  imagem?: string;
+  status: number;
+  dataCriacao?: string;
+}
+
+export interface LivroTop {
+  id: string;
+  titulo: string;
+  autor: string;
+  imagem?: string;
+  media: number;
+  totalAvaliacoes: number;
+}
+
+export interface DashboardData {
+  listaLeitura: LivroLeitura[];
+  topAvaliados: LivroTop[];
 }
 
 export enum StatusLeitura {

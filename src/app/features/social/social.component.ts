@@ -5,6 +5,7 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { SocialService } from './social.service';
 import { UsuarioSocial, LivroSocial } from './social.model';
 import { ComentariosModalComponent } from '../../shared/comentarios-modal/comentarios-modal.component';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-social',
@@ -28,6 +29,7 @@ export class SocialComponent implements OnInit {
   constructor(
     private socialService: SocialService,
     @Inject(PLATFORM_ID) private platformId: Object,
+    private router: Router,
     private cdr: ChangeDetectorRef
   ) {}
 
@@ -97,6 +99,10 @@ export class SocialComponent implements OnInit {
     this.livrosUsuario = [];
   }
 
+  irParaPerfil(id: string): void {
+    console.log('🔍 Navegando para perfil do usuário:', id);
+    this.router.navigate(['/inicio/perfil', id]);
+  }
 
   abrirComentarios(livro: any): void {
     console.log('📖 Livro clicado:', livro);
