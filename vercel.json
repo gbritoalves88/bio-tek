@@ -1,26 +1,10 @@
 {
   "version": 2,
-<<<<<<< HEAD
   "buildCommand": "ng build --configuration production",
   "outputDirectory": "dist/bio-tek/browser",
   "routes": [
     { "src": "/assets/(.*)", "dest": "/assets/$1" },
     { "src": "/(.*)\\.(js|css|png|jpg|jpeg|gif|ico|svg|woff2?|ttf|eot)", "dest": "/$1.$2" },
-=======
-  "builds": [
-    {
-      "src": "package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "dist/bio-tek/browser",
-        "buildCommand": "ng build --configuration production"
-      }
-    }
-  ],
-  "routes": [
-    { "src": "/assets/(.*)", "dest": "/assets/$1" },
-    { "src": "/favicon.svg", "dest": "/favicon.svg" },
->>>>>>> c3bcdb5ab20073fcca745860f985fbfd5b325cf8
     { "src": "/(.*)", "dest": "/index.html" }
   ]
 }
