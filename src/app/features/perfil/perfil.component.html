@@ -1,20 +1,69 @@
 <section class="perfil">
   <!-- Loading -->
   <div class="loading" *ngIf="carregando">
-    🔍 Carregando perfil...
+    <div class="spinner"></div>
+    <p>Carregando perfil...</p>
   </div>
 
-  <!-- Dados do perfil -->
+  <!-- Dados do perfil - Modo visualização -->
   <div class="perfil-container" *ngIf="usuario && !editando">
-    <div class="perfil-header">
-      <div class="avatar-grande">
-        <img [src]="usuario.avatar || 'assets/capas/perfilSemFoto.png'" [alt]="usuario.nome" />
+    <!-- LINHA 1: FOTO, INFORMAÇÕES E BOTÃO (VOLTAR ou ENGREMAGEM) -->
+    <div class="perfil-header-row">
+      <!-- FOTO - ESQUERDA -->
+      <div class="perfil-avatar">
+        <div class="avatar-pequeno">
+          <img [src]="usuario.avatar || 'assets/capas/perfilSemFoto.png'" [alt]="usuario.nome" />
+        </div>
       </div>
-      <h1 class="nome">{{ usuario.nome }}</h1>
-      <span class="nickname">{{ usuario.nickname || '@sem-nickname' }}</span>
-      <p class="bio" *ngIf="usuario.descricao">{{ usuario.descricao }}</p>
+
+      <!-- INFORMAÇÕES - CENTRO -->
+      <div class="perfil-info">
+        <h2 class="nome">{{ usuario.nome }}</h2>
+        <span class="nickname">{{ usuario.nickname || '@sem-nickname' }}</span>
+        <p class="bio" *ngIf="usuario.descricao">{{ usuario.descricao }}</p>
+      </div>
+
+      <!-- BOTÃO (VOLTAR ou ENGREMAGEM) - DIREITA -->
+      <div class="perfil-actions">
+        <!-- Botão Voltar (modo visualização) -->
+        <button class="btn-voltar" *ngIf="modoVisualizacao" (click)="voltar()" title="Voltar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+          </svg>
+        </button>
+
+        <!-- Botão Engrenagem (modo meu perfil) -->
+        <ng-container *ngIf="!modoVisualizacao">
+          <button class="btn-config" (click)="toggleMenuConfig()" [class.active]="menuConfigAberto">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+            </svg>
+          </button>
+
+          <!-- Menu de configuração (só meu perfil) -->
+          <div class="menu-config" *ngIf="menuConfigAberto">
+            <button class="menu-item" (click)="abrirEdicao()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+              </svg>
+              Editar perfil
+            </button>
+            <button class="menu-item sair" (click)="sair()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                <polyline points="16 17 21 12 16 7"/>
+                <line x1="21" y1="12" x2="9" y2="12"/>
+              </svg>
+              Sair
+            </button>
+          </div>
+        </ng-container>
+      </div>
     </div>
 
+    <!-- Estatísticas do usuário -->
     <div class="stats">
       <div class="stat-item">
         <span class="stat-valor">{{ usuario.quantidadeLivros || 0 }}</span>
@@ -29,39 +78,228 @@
         <span class="stat-label">Média</span>
       </div>
     </div>
-
-    <button class="btn-editar" (click)="abrirEdicao()">Editar perfil</button>
-    <button class="btn-sair" (click)="sair()">Sair</button>
   </div>
 
-  <!-- Edição do perfil -->
+  <!-- Edição do perfil - Modo edição -->
   <div class="perfil-container" *ngIf="editando && usuarioEdit">
-    <div class="perfil-header">
-      <div class="avatar-grande editavel" (click)="fileInput.click()">
-        <img [src]="usuarioEdit.avatar || 'assets/capas/placeholder.jpg'" [alt]="usuarioEdit.nome" />
-        <div class="avatar-overlay">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+    <!-- Linha 1: Foto + Formulário (horizontal) -->
+    <div class="perfil-edicao-row">
+      <!-- FOTO EDITÁVEL -->
+      <div class="perfil-avatar">
+        <div class="avatar-pequeno editavel" (click)="fileInput.click()">
+          <img [src]="usuarioEdit.avatar || 'assets/capas/perfilSemFoto.png'" [alt]="usuarioEdit.nome" />
+          <div class="avatar-overlay">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+              <circle cx="12" cy="13" r="4"/>
+            </svg>
+          </div>
+          <input type="file" #fileInput hidden (change)="onAvatarSelected($event)" accept="image/*">
         </div>
-        <input type="file" #fileInput hidden (change)="onAvatarSelected($event)" accept="image/*">
+        <p class="upload-erro" *ngIf="uploadErro">{{ uploadErro }}</p>
       </div>
-      <p class="upload-erro" *ngIf="uploadErro">{{ uploadErro }}</p>
+
+      <!-- FORMULÁRIO DE EDIÇÃO -->
+      <div class="perfil-info-edicao">
+        <div class="form-edicao">
+          <label class="input-label">Nome</label>
+          <input type="text" [(ngModel)]="usuarioEdit.nome">
+
+          <label class="input-label">@ Nickname</label>
+          <div class="nickname-input-wrapper">
+            <span class="nickname-prefix">@</span>
+            <input type="text" [(ngModel)]="usuarioEdit.nickname" placeholder="seunickname (3 a 10 caracteres)" maxlength="10" (input)="limparArroba()">
+          </div>
+
+          <label class="input-label">Biografia</label>
+          <textarea [(ngModel)]="usuarioEdit.descricao" placeholder="Conte um pouco sobre você..." rows="3"></textarea>
+
+          <label class="input-label">Tema</label>
+          <select [(ngModel)]="usuarioEdit.tema" class="select-status">
+            <option [ngValue]="2">☀️ Claro</option>
+            <option [ngValue]="1">🌙 Escuro</option>
+          </select>
+        </div>
+      </div>
     </div>
 
-    <div class="form-edicao">
-      <label class="input-label">Nome</label>
-      <input type="text" [(ngModel)]="usuarioEdit.nome" name="edit_nome">
-
-      <label class="input-label">@ Nickname</label>
-      <input type="text" [(ngModel)]="usuarioEdit.nickname" name="edit_nickname"
-       placeholder="@seunickname (3 a 10 caracteres)">
-
-      <label class="input-label">Biografia</label>
-      <textarea [(ngModel)]="usuarioEdit.descricao" name="edit_descricao" placeholder="Conte um pouco sobre você..." rows="3"></textarea>
-    </div>
-
-    <div class="botoes-edicao">
-      <button class="btn-salvar" (click)="salvarPerfil()">Salvar</button>
+    <!-- Linha 2: Botões (centralizados, abaixo) -->
+    <div class="perfil-actions-edicao">
       <button class="btn-cancelar" (click)="fecharEdicao()">Cancelar</button>
+      <button class="btn-salvar" (click)="salvarPerfil()">Salvar</button>
+    </div>
+  </div>
+
+  <!-- Biblioteca Pessoal -->
+  <div class="biblioteca-pessoal" *ngIf="usuario && !editando">
+    <div class="biblioteca-header">
+      <h3>Biblioteca</h3>
+      <!-- Botão Adicionar livro (só no modo meu perfil) -->
+       <button class="btn-circle" *ngIf="!modoVisualizacao" title="Adicionar livro" (click)="abrirModalAdicionarLivro()">
+      <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+        <line x1="12" y1="5" x2="12" y2="19"/>
+        <line x1="5" y1="12" x2="19" y2="12"/>
+      </svg>
+      <span class="btn-label">Novo</span>
+    </button>
+    </div>
+
+    <!-- Filtros -->
+    <div class="filtros">
+      <button class="filtro-btn" [class.active]="filtroStatus === null" (click)="filtroStatus = null">Todos</button>
+      <button class="filtro-btn" [class.active]="filtroStatus === 1" (click)="filtroStatus = 1">📕 Quero ler</button>
+      <button class="filtro-btn" [class.active]="filtroStatus === 2" (click)="filtroStatus = 2">📖 Lendo</button>
+      <button class="filtro-btn" [class.active]="filtroStatus === 3" (click)="filtroStatus = 3">✅ Lidos</button>
+      <button class="filtro-btn" [class.active]="filtroAvaliado" (click)="filtroAvaliado = !filtroAvaliado">⭐ Avaliados</button>
+    </div>
+
+    <!-- Lista de livros em grid -->
+    <div class="book-list">
+      <div class="book-item" *ngFor="let livro of livrosFiltrados">
+        <img [src]="livro.imagem || 'assets/capas/perfilSemFoto.png'" [alt]="livro.titulo" class="book-cover" />
+        <div class="book-info">
+          <span class="book-title">{{ livro.titulo || 'Sem título' }}</span>
+          <span class="book-author">{{ livro.autor || 'Autor desconhecido' }}</span>
+          <span class="book-status" [class]="getStatusClass(livro.status)">{{ getStatusTexto(livro.status) }}</span>
+          <span class="book-stars" *ngIf="livro.avaliacao">⭐ {{ livro.avaliacao.nota }}</span>
+          <span class="book-stars vazio" *ngIf="!livro.avaliacao">⭐ --</span>
+        </div>
+        <div class="book-actions">
+          <!-- Botão Comentários (sempre visível, se tiver avaliação) -->
+          <button class="btn-icon-action btn-comentario" title="Comentários" *ngIf="livro.avaliacao" (click)="abrirComentarios(livro)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </svg>
+          </button>
+          <!-- Botões Editar e Deletar (só no modo meu perfil) -->
+          <ng-container *ngIf="!modoVisualizacao">
+            <button class="btn-icon-action" title="Editar" (click)="abrirEdicaoLivro(livro)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+              </svg>
+            </button>
+            <button class="btn-icon-action btn-delete" title="Remover" (click)="deletarLivro(livro.id)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="3 6 5 6 21 6"/>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+              </svg>
+            </button>
+          </ng-container>
+        </div>
+      </div>
+      <p class="empty" *ngIf="livros.length === 0">Nenhum livro na biblioteca.</p>
     </div>
   </div>
 </section>
+
+<!-- Modal de Adicionar Livro (COMPARTILHADO) -->
+<app-add-book-modal *ngIf="modalAdicionarAberto" (fechar)="modalAdicionarAberto = false" (livroAdicionado)="onLivroAdicionado($event)"></app-add-book-modal>
+
+<!-- Modal de Editar Livro -->
+<div class="modal-overlay" *ngIf="modalEdicaoLivroAberto" (click)="fecharEdicaoLivro()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Editar Livro</h2>
+      <button class="modal-close" (click)="fecharEdicaoLivro()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+    <div class="modal-body" *ngIf="livroEditando">
+      <label class="input-label">Título</label>
+      <input type="text" [(ngModel)]="livroEditando.titulo">
+      <label class="input-label">Autor</label>
+      <input type="text" [(ngModel)]="livroEditando.autor">
+      <label class="input-label">Descrição</label>
+      <input type="text" [(ngModel)]="livroEditando.descricao">
+      <label class="input-label">Capa do Livro</label>
+      <div class="upload-capa-simples">
+        <button type="button" class="btn-upload-small" (click)="tirarFotoEdicaoLivro()" title="Tirar foto">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+            <circle cx="12" cy="13" r="4"/>
+          </svg>
+        </button>
+        <button type="button" class="btn-upload-small" (click)="fileInputEdicaoLivro.click()" title="Escolher imagem">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+            <circle cx="8.5" cy="8.5" r="1.5"/>
+            <polyline points="21 15 16 10 5 21"/>
+          </svg>
+        </button>
+        <input type="file" #fileInputEdicaoLivro hidden (change)="onFileSelectedEdicaoLivro($event)" accept="image/*">
+      </div>
+      <img *ngIf="edicaoCapaPreview" [src]="edicaoCapaPreview" class="preview-capa" />
+      <label class="input-label">Status</label>
+      <select [(ngModel)]="livroEditando.status" class="select-status">
+        <option [ngValue]="1">📕 Quero ler</option>
+        <option [ngValue]="2">📖 Lendo</option>
+        <option [ngValue]="3">✅ Lido</option>
+      </select>
+      <div *ngIf="livroEditando.status === 3" class="avaliacao-box">
+        <label class="input-label">Avaliação</label>
+        <select [(ngModel)]="livroEditando.estrelas" class="select-status">
+          <option [ngValue]="1">⭐ Muito Ruim</option>
+          <option [ngValue]="2">⭐⭐ Ruim</option>
+          <option [ngValue]="3">⭐⭐⭐ Regular</option>
+          <option [ngValue]="4">⭐⭐⭐⭐ Bom</option>
+          <option [ngValue]="5">⭐⭐⭐⭐⭐ Excelente</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancelar" (click)="fecharEdicaoLivro()">Cancelar</button>
+      <button class="btn-salvar" (click)="salvarEdicaoLivro()">Salvar alterações</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Comentários -->
+<app-comentarios-modal [aberto]="comentariosAberto" [livroId]="livroComentarioId" [livroTitulo]="livroComentarioTitulo" [comentariosProntos]="livroComentarioProntos" (fechar)="comentariosAberto = false"></app-comentarios-modal>
+
+<!-- Modal de Termos de Uso -->
+<div class="termos-modal-overlay" *ngIf="mostrarTermos">
+  <div class="termos-modal-content">
+    <h2>Termos de Uso – BioTek</h2>
+    <p class="termos-data">Última atualização: 2026</p>
+    <div class="termos-texto" #textoTermos (scroll)="verificarScroll()">
+      <p>Ao utilizar o BioTek, você concorda com os termos descritos abaixo. Caso não concorde com qualquer parte destes termos, recomendamos não utilizar a plataforma.</p>
+      <h3>1. Sobre o BioTek</h3>
+      <p>O BioTek é uma plataforma voltada para organização de leituras, avaliações de livros e interação entre leitores através de comentários, atividades e recursos sociais. O aplicativo está em constante evolução e novas funcionalidades poderão ser adicionadas, alteradas ou removidas ao longo do tempo.</p>
+      <h3>2. Conta do Usuário</h3>
+      <p>O usuário é responsável pelas informações fornecidas em sua conta e pela segurança de seu acesso. O login poderá ser realizado através de provedores externos, como Google, seguindo também os termos e políticas desses serviços.</p>
+      <h3>3. Conteúdo Publicado</h3>
+      <p>Ao utilizar a plataforma, você concorda em não publicar:</p>
+      <ul>
+        <li>Conteúdo ofensivo, discriminatório ou ilegal;</li>
+        <li>Spam ou publicidade não autorizada;</li>
+        <li>Conteúdo que viole direitos autorais ou direitos de terceiros;</li>
+        <li>Comentários com discurso de ódio, ameaças ou assédio.</li>
+      </ul>
+      <p>O usuário é integralmente responsável pelos comentários, avaliações e publicações realizadas em sua conta. A plataforma reserva-se o direito de remover conteúdos inadequados e suspender contas que violem estes termos.</p>
+      <h3>4. Direitos Autorais</h3>
+      <p>As capas, títulos e informações dos livros exibidos no BioTek podem ser obtidos através de APIs públicas. Todos os direitos relacionados às obras, capas e autores pertencem aos seus respectivos detentores legais.</p>
+      <h3>5. Política de Dados e Privacidade</h3>
+      <p>O BioTek coleta apenas os dados necessários para funcionamento da plataforma. Os dados não são vendidos ou compartilhados para fins comerciais.</p>
+      <h3>6. Exclusão de Conta</h3>
+      <p>O usuário poderá solicitar a exclusão de sua conta através das configurações da plataforma.</p>
+      <h3>7. Disponibilidade do Serviço</h3>
+      <p>O BioTek é fornecido "como está", sem garantias de funcionamento ininterrupto. A plataforma poderá passar por manutenções ou instabilidades ocasionais.</p>
+      <h3>8. Limitação de Responsabilidade</h3>
+      <p>O BioTek não se responsabiliza por conteúdo publicado por usuários, perda de dados causada por terceiros ou instabilidades de serviços externos.</p>
+      <h3>9. Menores de Idade</h3>
+      <p>Usuários menores de 18 anos devem utilizar a plataforma com supervisão de um responsável legal.</p>
+      <h3>10. Alterações nos Termos</h3>
+      <p>Os presentes termos poderão ser atualizados periodicamente. O uso contínuo da plataforma após alterações implica concordância com os novos termos.</p>
+      <h3>11. Contato</h3>
+      <p>Em caso de dúvidas, entre em contato através dos canais oficiais disponibilizados no aplicativo.</p>
+    </div>
+    <div class="termos-acoes">
+      <button class="btn-recusar" (click)="recusarTermos()">Recusar</button>
+      <button class="btn-aceitar" [disabled]="!podeAceitar" (click)="aceitarTermos()">{{ podeAceitar ? 'Aceitar Termos' : 'Leia até o final' }}</button>
+    </div>
+  </div>
+</div>

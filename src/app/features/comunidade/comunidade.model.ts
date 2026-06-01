@@ -2,7 +2,7 @@ export interface Comentario {
   id: string;
   idUsuario: string;
   usuarioNome?: string;
-  usuarioNickname?: string;
+  usuarioNickname?: string;  // ⬅️ Use esta propriedade
   comentario: string;
   dataCriacao: string;
 }

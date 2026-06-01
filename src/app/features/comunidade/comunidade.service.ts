@@ -3,7 +3,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, forkJoin, of } from 'rxjs';
-import { map, switchMap } from 'rxjs/operators';
+import { map, switchMap, shareReplay } from 'rxjs/operators';
 import { AtividadeComunidade, Comentario } from './comunidade.model';
 import { environment } from '../../../environments/environment';
 
@@ -11,56 +11,36 @@ import { environment } from '../../../environments/environment';
   providedIn: 'root'
 })
 export class ComunidadeService {
-  private apiLivro = `${environment.apiUrl}/Livro`;
-  private apiAvaliacao = `${environment.apiUrl}/AvaliacaoLivro`;
-  private apiUsuario = `${environment.apiUrl}/Usuario`;
-  private apiComentario = `${environment.apiUrl}/ComentarioLivro`;
-  private apiSeguidor = `${environment.apiUrl}/Seguidor`;
+  private api = environment.apiUrl;
+  private apiComunidade = `${this.api}/Comunidade`;
+  private apiUsuario = `${this.api}/Usuario`;
+  private apiComentario = `${this.api}/ComentarioLivro`;
+  private apiSeguidor = `${this.api}/Seguidor`;
+
+  // Cache
+  private feedCache$: Observable<AtividadeComunidade[]> | null = null;
+  private cacheKey = '';
 
   constructor(private http: HttpClient) {}
 
   getFeedComunidade(meuId: string): Observable<AtividadeComunidade[]> {
-    return forkJoin([
-      this.http.get<any[]>(`${this.apiLivro}/todos`),
-      this.http.get<any[]>(`${this.apiAvaliacao}/todas`)
-    ]).pipe(
-      switchMap(([livros, avaliacoes]) => {
-        const livrosFiltrados = livros.filter(l => l.idUsuario !== meuId);
-        const avaliacoesFiltradas = avaliacoes.filter(a => a.idUsuario !== meuId);
-        const idsUsuarios = new Set<string>();
-        livrosFiltrados.forEach(l => { if (l.idUsuario) idsUsuarios.add(l.idUsuario); });
-        avaliacoesFiltradas.forEach(a => { if (a.idUsuario) idsUsuarios.add(a.idUsuario); });
-        const idsArray = Array.from(idsUsuarios);
-        if (idsArray.length === 0) return of([]);
+    if (this.cacheKey !== meuId) {
+      this.feedCache$ = null;
+      this.cacheKey = meuId;
+    }
 
-        return forkJoin(idsArray.map(id => this.http.get<any>(`${this.apiUsuario}/${id}`))).pipe(
-          map(usuarios => {
-            const usuarioMap = new Map(usuarios.map(u => [u.id, u]));
-            const atividades: AtividadeComunidade[] = [];
-            livrosFiltrados.slice(0, 10).forEach(livro => {
-              const u = usuarioMap.get(livro.idUsuario);
-              atividades.push({
-                id: 'livro-' + livro.id,
-                tipo: livro.status === 2 ? 'livro_lendo' : livro.status === 3 ? 'livro_lido' : 'livro_novo',
-                usuario: { id: u?.id, nome: u?.nome || 'Desconhecido', nickname: u?.nickname || '@desconhecido', avatar: u?.avatar || 'assets/capas/perfilSemFoto.png' },
-                livro: { id: livro.id, titulo: livro.titulo, autor: livro.autor, imagem: livro.imagem || 'assets/capas/perfilSemFoto.png' },
-                data: livro.dataCriacao
-              });
-            });
-            avaliacoesFiltradas.slice(0, 10).forEach(av => {
-              const u = usuarioMap.get(av.idUsuario);
-              atividades.push({
-                id: 'av-' + av.id, tipo: 'livro_avaliado',
-                usuario: { id: u?.id, nome: u?.nome || 'Desconhecido', nickname: u?.nickname || '@desconhecido', avatar: u?.avatar || 'assets/capas/perfilSemFoto.png' },
-                livro: { id: av.idLivro, titulo: 'Livro avaliado', autor: '', imagem: '' },
-                avaliacao: { nota: av.nota }, data: av.dataCriacao
-              });
-            });
-            return atividades.sort((a, b) => new Date(b.data).getTime() - new Date(a.data).getTime()).slice(0, 20);
-          })
-        );
-      })
-    );
+    if (!this.feedCache$) {
+      this.feedCache$ = this.http.get<AtividadeComunidade[]>(
+        `${this.apiComunidade}/feed?meuId=${meuId}&limite=30`
+      ).pipe(shareReplay(1));
+    }
+
+    return this.feedCache$;
+  }
+
+  atualizarFeed(meuId: string): Observable<AtividadeComunidade[]> {
+    this.feedCache$ = null;
+    return this.getFeedComunidade(meuId);
   }
 
   getComentariosDoLivro(idLivro: string): Observable<Comentario[]> {

@@ -5,6 +5,7 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ComunidadeService } from './comunidade.service';
 import { AtividadeComunidade, Comentario } from './comunidade.model';
+import { SocialService } from '../social/social.service';
 
 @Component({
   selector: 'app-comunidade',
@@ -17,6 +18,8 @@ import { AtividadeComunidade, Comentario } from './comunidade.model';
 export class ComunidadeComponent implements OnInit {
   atividades: AtividadeComunidade[] = [];
   carregando = true;
+  atualizando = false;
+  pullParaAtualizar = false;
 
   modalAberto = false;
   itemSelecionado: AtividadeComunidade | null = null;
@@ -25,11 +28,16 @@ export class ComunidadeComponent implements OnInit {
   carregandoComentarios = false;
   seguindoIds: Set<string> = new Set();
   meuId = '';
+  livroComentarioProntos: any[] | null = null;
+
+  private touchStartY = 0;
+  private readonly pullThreshold = 80;
 
   constructor(
     private comunidadeService: ComunidadeService,
     @Inject(PLATFORM_ID) private platformId: Object,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private socialService: SocialService
   ) {}
 
   ngOnInit(): void {
@@ -41,7 +49,28 @@ export class ComunidadeComponent implements OnInit {
     }
   }
 
+  onTouchStart(event: TouchEvent): void {
+    if (window.scrollY === 0) {
+      this.touchStartY = event.touches[0].clientY;
+    }
+  }
+
+  onTouchMove(event: TouchEvent): void {
+    if (window.scrollY === 0) {
+      const delta = event.touches[0].clientY - this.touchStartY;
+      this.pullParaAtualizar = delta > this.pullThreshold;
+    }
+  }
+
+  onTouchEnd(): void {
+    if (this.pullParaAtualizar) {
+      this.pullParaAtualizar = false;
+      this.atualizarFeed();
+    }
+  }
+
   carregarFeed(): void {
+    this.carregando = true;
     this.comunidadeService.getFeedComunidade(this.meuId).subscribe({
       next: (data) => {
         this.atividades = data;
@@ -55,13 +84,35 @@ export class ComunidadeComponent implements OnInit {
     });
   }
 
+  atualizarFeed(): void {
+    this.atualizando = true;
+    this.comunidadeService.atualizarFeed(this.meuId).subscribe({
+      next: (data) => {
+        this.atividades = data;
+        this.atualizando = false;
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        console.error('Erro:', err);
+        this.atualizando = false;
+      }
+    });
+  }
+
+
   abrirModal(item: AtividadeComunidade): void {
     this.itemSelecionado = item;
     this.modalAberto = true;
     this.novoComentario = '';
     this.comentarios = [];
+
     if (item.tipo === 'livro_avaliado') {
-      this.carregarComentarios(item.livro.id);
+      // Verifica se já tem comentários no item (vindo do backend)
+      if (item.comentarios && item.comentarios.length > 0) {
+        this.comentarios = item.comentarios;
+      } else {
+        this.carregarComentarios(item.livro.id);
+      }
     }
   }
 
@@ -107,16 +158,14 @@ export class ComunidadeComponent implements OnInit {
     });
   }
 
-  estaSeguindo(idUsuario: string): boolean {
-    return this.seguindoIds.has(idUsuario);
-  }
+  estaSeguindo(idUsuario: string): boolean { return this.seguindoIds.has(idUsuario); }
 
   seguirUsuario(idUsuario: string): void {
     this.comunidadeService.seguir(idUsuario).subscribe({
       next: () => {
         this.seguindoIds.add(idUsuario);
-        this.cdr.markForCheck();
-      }
+        this.socialService.limparCacheSeguindo();
+        this.cdr.markForCheck(); }
     });
   }
 
@@ -124,8 +173,9 @@ export class ComunidadeComponent implements OnInit {
     this.comunidadeService.deixarDeSeguir(idUsuario).subscribe({
       next: () => {
         this.seguindoIds.delete(idUsuario);
-        this.cdr.markForCheck();
-      }
+        this.socialService.limparCacheSeguindo();
+         this.cdr.markForCheck();
+         }
     });
   }
 
@@ -137,7 +187,5 @@ export class ComunidadeComponent implements OnInit {
     switch (tipo) { case 'livro_novo': return 'Adicionou um Livro'; case 'livro_lendo': return 'Está Lendo'; case 'livro_lido': return 'Terminou de Ler'; case 'livro_avaliado': return 'Avaliou'; default: return ''; }
   }
 
-  getEstrelas(nota: number): string {
-    return '⭐'.repeat(nota);
-  }
+  getEstrelas(nota: number): string { return '⭐'.repeat(nota); }
 }

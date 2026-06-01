@@ -5,6 +5,7 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { SocialService } from './social.service';
 import { UsuarioSocial, LivroSocial } from './social.model';
 import { ComentariosModalComponent } from '../../shared/comentarios-modal/comentarios-modal.component';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-social',
@@ -23,10 +24,12 @@ export class SocialComponent implements OnInit {
   comentariosAberto = false;
   livroComentarioId = '';
   livroComentarioTitulo = '';
+  livroComentarioProntos: any[] | null = null;
 
   constructor(
     private socialService: SocialService,
     @Inject(PLATFORM_ID) private platformId: Object,
+    private router: Router,
     private cdr: ChangeDetectorRef
   ) {}
 
@@ -37,7 +40,7 @@ export class SocialComponent implements OnInit {
   }
 
   carregarSeguindo(): void {
-    this.socialService.getSeguindoComDados().subscribe({
+    this.socialService.getSeguindoCompleto().subscribe({
       next: (usuarios) => {
         this.seguindo = usuarios;
         this.carregando = false;
@@ -52,10 +55,34 @@ export class SocialComponent implements OnInit {
 
   verPerfil(usuario: UsuarioSocial): void {
     this.carregandoPerfil = true;
-    this.socialService.getPerfilCompletoComLivros(usuario.id).subscribe({
-      next: ({ perfil, livros }) => {
-        this.perfilSelecionado = perfil;
-        this.livrosUsuario = livros;
+
+    // ⬅️ Use o novo endpoint
+    this.socialService.getPerfilCompleto(usuario.id).subscribe({
+      next: (data) => {
+        console.log('📦 Dados do perfil:', data); // Debug
+
+        this.perfilSelecionado = {
+          id: data.id,
+          nome: data.nome,
+          nickname: data.nickname,
+          avatar: data.avatar,
+          descricao: data.descricao,
+          quantidadeLivros: data.quantidadeLivros,
+          quantidadeLivrosLidos: data.quantidadeLivrosLidos,
+          mediaAvaliacoes: data.mediaAvaliacoes
+        };
+
+        this.livrosUsuario = data.livros.map((l: any) => ({
+          id: l.id,
+          titulo: l.titulo,
+          autor: l.autor,
+          imagem: l.imagem,
+          status: l.status,
+          dataCriacao: l.dataCriacao,
+          estrelas: l.avaliacao?.nota,
+          comentarios: l.comentarios // ⬅️ Preserva os comentários
+        }));
+
         this.carregandoPerfil = false;
         this.cdr.markForCheck();
       },
@@ -72,12 +99,29 @@ export class SocialComponent implements OnInit {
     this.livrosUsuario = [];
   }
 
-  abrirComentarios(livro: LivroSocial): void {
-    this.livroComentarioId = livro.id;
-    this.livroComentarioTitulo = livro.titulo;
-    this.comentariosAberto = true;
+  irParaPerfil(id: string): void {
+    console.log('🔍 Navegando para perfil do usuário:', id);
+    this.router.navigate(['/inicio/perfil', id]);
   }
 
+  abrirComentarios(livro: any): void {
+    console.log('📖 Livro clicado:', livro);
+    console.log('💬 Comentários do livro:', livro.comentarios);
+
+    this.livroComentarioId = livro.id;
+    this.livroComentarioTitulo = livro.titulo;
+
+    this.livroComentarioProntos = livro.comentarios?.map((c: any) => ({
+      id: c.id,
+      idUsuario: '',
+      usuarioNickname: c.usuario?.nickname || '@user',
+      comentario: c.comentario,
+      dataCriacao: c.dataCriacao
+    })) || null;
+
+    console.log('📦 comentariosProntos mapeado:', this.livroComentarioProntos);
+    this.comentariosAberto = true;
+  }
   getStatusTexto(status: number): string {
     switch (status) { case 2: return '📖 Lendo'; case 3: return '✅ Lido'; default: return '📕 Quero ler'; }
   }
@@ -89,7 +133,10 @@ export class SocialComponent implements OnInit {
   deixarDeSeguir(idUsuario: string): void {
     if (confirm('Deixar de seguir?')) {
       this.socialService.deixarDeSeguir(idUsuario).subscribe({
-        next: () => this.carregarSeguindo(),
+        next: () => {
+          this.socialService.limparCacheSeguindo(); // ⬅️ Limpa cache
+          this.carregarSeguindo();
+        },
         error: (err) => console.error('Erro:', err)
       });
     }

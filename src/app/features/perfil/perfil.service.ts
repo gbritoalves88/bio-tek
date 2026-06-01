@@ -1,10 +1,8 @@
-// src/app/features/perfil/perfil.service.ts
-
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, forkJoin } from 'rxjs';
+import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { Usuario } from './perfil.model';
+import { Usuario, LivroDoUsuario } from './perfil.model';
 import { environment } from '../../../environments/environment';
 
 @Injectable({
@@ -12,8 +10,7 @@ import { environment } from '../../../environments/environment';
 })
 export class PerfilService {
   private apiUrl = `${environment.apiUrl}/Usuario`;
-  private apiLivro = `${environment.apiUrl}/Livro`;
-  private apiAvaliacao = `${environment.apiUrl}/AvaliacaoLivro`;
+  private apiLivroUrl = `${environment.apiUrl}/Livro`;
 
   constructor(private http: HttpClient) {}
 
@@ -22,27 +19,51 @@ export class PerfilService {
   }
 
   getPerfilCompleto(id: string): Observable<Usuario> {
-    return forkJoin([
-      this.http.get<Usuario>(`${this.apiUrl}/${id}`),
-      this.http.get<any[]>(this.apiLivro),
-      this.http.get<any[]>(`${this.apiAvaliacao}/usuario`)
-    ]).pipe(
-      map(([perfil, livros, avaliacoes]) => {
-        const meusLivros = livros.filter(l => l.idUsuario === id);
-        const media = avaliacoes.length > 0
-          ? Math.round((avaliacoes.reduce((s, a) => s + a.nota, 0) / avaliacoes.length) * 10) / 10
-          : 0;
-        return {
-          ...perfil,
-          quantidadeLivros: meusLivros.length,
-          quantidadeLivrosLidos: meusLivros.filter(l => l.status === 3).length,
-          mediaAvaliacoes: media
-        };
-      })
+    return this.http.get<any>(`${this.apiUrl}/${id}/perfil-completo`).pipe(
+      map(data => ({
+        id: data.id,
+        idGoogle: data.idGoogle,
+        nome: data.nome,
+        nickname: data.nickname,
+        email: data.email,
+        descricao: data.descricao,
+        avatar: data.avatar,
+        tema: data.tema,
+        quantidadeLivros: data.quantidadeLivros,
+        quantidadeLivrosLidos: data.quantidadeLivrosLidos,
+        mediaAvaliacoes: data.mediaAvaliacoes,
+        adm: data.adm,
+        ativo: data.ativo,
+        aceitouTermos: data.aceitouTermos,
+        dataAceiteTermos: data.dataAceiteTermos,
+        dataCriacao: data.dataCriacao,
+        dataAtualizacao: data.dataAtualizacao,
+        livros: data.livros || []
+      }))
     );
+  }
+
+  limparCache(): void {
+    // Não há cache
   }
 
   atualizarPerfil(id: string, dados: Partial<Usuario>): Observable<any> {
     return this.http.put(`${this.apiUrl}/${id}`, dados);
+  }
+
+  aceitarTermos(): Observable<any> {
+    return this.http.put(`${this.apiUrl}/aceitar-termos`, {});
+  }
+
+  criarLivro(livro: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/livro`, livro);
+  }
+
+  deletarLivro(id: string): Observable<any> {
+    return this.http.delete(`${this.apiLivroUrl}/${id}`);
+  }
+
+  atualizarLivro(id: string, livro: Partial<LivroDoUsuario>): Observable<any> {
+    return this.http.put(`${this.apiLivroUrl}/${id}`, livro);
   }
 }

@@ -1,49 +1,129 @@
-<section class="comunidade">
+<section class="comunidade"
+         (touchstart)="onTouchStart($event)"
+         (touchmove)="onTouchMove($event)"
+         (touchend)="onTouchEnd()">
+
   <div class="header-section">
     <h1>Comunidade</h1>
   </div>
-  <p class="descricao">Atualizações da comunidade</p>
-  <p class="aviso-geral">💡 Comentários só podem ser feitos por leitores que finalizaram e avaliaram o livro.</p>
+
+  <div class="feed-header-actions">
+    <p class="descricao">Atualizações da comunidade</p>
+    <p class="aviso-geral">💡 Comentários só podem ser feitos por leitores que finalizaram e avaliaram o livro.</p>
+    <button class="btn-refresh" (click)="atualizarFeed()" [disabled]="atualizando">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" [class.spinning]="atualizando">
+        <polyline points="23 4 23 10 17 10"/>
+        <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+      </svg>
+      {{ atualizando ? 'Atualizando...' : 'Atualizar feed' }}
+    </button>
+  </div>
 
   <div class="loading" *ngIf="carregando">🔍 Carregando feed...</div>
 
-  <div class="feed" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
+  <!-- FEED EM LISTA VERTICAL -->
+  <div class="feed-lista" *ngIf="!carregando">
+    <div class="feed-item"
+        *ngFor="let item of atividades"
+        (click)="abrirModal(item)"
+        [class.tipo-novo]="item.tipo === 'livro_novo'"
+        [class.tipo-lendo]="item.tipo === 'livro_lendo'"
+        [class.tipo-lido]="item.tipo === 'livro_lido'"
+        [class.tipo-avaliado]="item.tipo === 'livro_avaliado'">
 
-    <div class="feed-item" *ngFor="let item of atividades"
-     (click)="abrirModal(item)"
-     [class.borda-novo]="item.tipo === 'livro_novo'"
-     [class.borda-lendo]="item.tipo === 'livro_lendo'"
-     [class.borda-lido]="item.tipo === 'livro_lido'"
-     [class.borda-avaliado]="item.tipo === 'livro_avaliado'">
-      <!-- Topo: Avatar + Nome -->
+
+
       <div class="feed-topo">
         <img [src]="item.usuario.avatar || 'assets/capas/perfilSemFoto.png'" [alt]="item.usuario.nome" class="avatar" />
         <div class="feed-header">
-          <span class="usuario-nome">{{ item.usuario.nome }}</span>
-          <span class="usuario-nickname">{{ item.usuario.nickname || '@user' }}</span>
+          <div class="usuario-info">
+            <span class="usuario-nome">{{ item.usuario.nome }}</span>
+            <span class="usuario-nickname">{{ item.usuario.nickname || '@user' }}</span>
+          </div>
           <span class="feed-acao">{{ getTextoTipo(item.tipo) }}</span>
         </div>
       </div>
 
-      <!-- Meio: Capa + Info -->
-      <div class="feed-livro">
-        <img [src]="item.livro.imagem || 'assets/capas/perfilSemFoto.png'" [alt]="item.livro.titulo" class="livro-capa" />
-        <div class="livro-info">
-          <strong>{{ item.livro.titulo || 'Sem título' }}</strong>
-          <span>{{ item.livro.autor }}</span>
-          <span class="estrelas" *ngIf="item.avaliacao">{{ '⭐'.repeat(item.avaliacao.nota) }}</span>
-        </div>
-      </div>
+      <!-- CONTEÚDO POR TIPO -->
+      <ng-container [ngSwitch]="item.tipo">
 
-      <!-- Rodapé: Data + Botão Seguir -->
+        <!-- TIPO: ADICIONOU UM LIVRO (capa grande em destaque) -->
+        <div class="feed-conteudo" *ngSwitchCase="'livro_novo'">
+          <div class="livro-destaque">
+            <img [src]="item.livro.imagem || 'assets/capas/perfilSemFoto.png'"
+                 [alt]="item.livro.titulo"
+                 class="capa-destaque" />
+            <div class="livro-info-destaque">
+              <strong class="titulo-destaque">{{ item.livro.titulo || 'Sem título' }}</strong>
+              <span class="autor-destaque">{{ item.livro.autor }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- TIPO: ESTÁ LENDO (padrão) -->
+        <div class="feed-conteudo" *ngSwitchCase="'livro_lendo'">
+          <div class="livro-padrao">
+            <img [src]="item.livro.imagem || 'assets/capas/perfilSemFoto.png'"
+                 [alt]="item.livro.titulo"
+                 class="capa-padrao" />
+            <div class="livro-info-padrao">
+              <strong class="titulo-padrao">{{ item.livro.titulo || 'Sem título' }}</strong>
+              <span class="autor-padrao">{{ item.livro.autor }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- TIPO: TERMINOU DE LER (com palmas em destaque) -->
+        <div class="feed-conteudo" *ngSwitchCase="'livro_lido'">
+          <div class="livro-concluido">
+            <img [src]="item.livro.imagem || 'assets/capas/perfilSemFoto.png'"
+                 [alt]="item.livro.titulo"
+                 class="capa-concluido" />
+            <div class="livro-info-concluido">
+              <strong class="titulo-concluido">{{ item.livro.titulo || 'Sem título' }}</strong>
+              <span class="autor-concluido">{{ item.livro.autor }}</span>
+              <div class="palmas-destaque">
+                <span class="palmas-icon">👏</span>
+                <span class="palmas-icon">👏</span>
+                <span class="palmas-icon">👏</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TIPO: AVALIOU (com estrelas e comentários) -->
+        <div class="feed-conteudo" *ngSwitchCase="'livro_avaliado'">
+          <div class="livro-avaliado">
+            <img [src]="item.livro.imagem || 'assets/capas/perfilSemFoto.png'"
+                 [alt]="item.livro.titulo"
+                 class="capa-avaliado" />
+            <div class="livro-info-avaliado">
+              <strong class="titulo-avaliado">{{ item.livro.titulo || 'Sem título' }}</strong>
+              <span class="autor-avaliado">{{ item.livro.autor }}</span>
+              <div class="estrelas-destaque">
+                <div class="estrelas-grandes">
+                  {{ '⭐'.repeat(item.avaliacao?.nota || 0) }}
+                </div>
+                <span class="avaliacao-nota">{{ item.avaliacao?.nota || 0 }}/5</span>
+              </div>
+              <div class="ultimo-comentario" *ngIf="item.comentarios && item.comentarios.length > 0">
+                <div class="comentario-destaque">
+                  <span class="aspas">“</span>
+                  <span class="comentario-texto">{{ item.comentarios[0].comentario | slice:0:80 }}{{ item.comentarios[0].comentario.length > 80 ? '...' : '' }}</span>
+                  <span class="aspas">”</span>
+                </div>
+                <div class="comentario-autor-destaque">
+                  — {{ item.comentarios[0].usuarioNickname || '@user' }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </ng-container>
+
       <div class="feed-rodape">
         <span class="feed-data">{{ item.data | date:'dd/MM/yyyy HH:mm' }}</span>
-        <button class="btn-seguir-feed"
-                *ngIf="item.usuario.id !== meuId"
-                (click)="$event.stopPropagation(); estaSeguindo(item.usuario.id) ? deixarDeSeguirUsuario(item.usuario.id) : seguirUsuario(item.usuario.id)"
-                [class.seguindo]="estaSeguindo(item.usuario.id)">
-          {{ estaSeguindo(item.usuario.id) ? 'Seguindo' : 'Seguir' }}
-        </button>
       </div>
     </div>
 
@@ -54,7 +134,7 @@
   </div>
 </section>
 
-<!-- Modal de detalhes -->
+<!-- Modal de detalhes (mantido igual) -->
 <div class="comunidade-modal-overlay" *ngIf="modalAberto && itemSelecionado" (click)="fecharModal()">
   <div class="comunidade-modal-content" (click)="$event.stopPropagation()">
 

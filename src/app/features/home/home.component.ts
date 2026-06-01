@@ -1,24 +1,23 @@
 import { Component, OnInit, Inject, PLATFORM_ID, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { RouterLink } from '@angular/router';
-import { Livro } from './home.model';
+import { Livro, LivroLeitura, LivroTop, DashboardData } from './home.model';
 import { HomeService } from './home.service';
 import { AddBookModalComponent } from '../../shared/add-book-modal/add-book-modal.component';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, RouterLink, AddBookModalComponent],
+  imports: [CommonModule, AddBookModalComponent],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss',
   host: { 'ngSkipHydration': 'true' }
 })
 export class HomeComponent implements OnInit {
   modalAberto = false;
-
   livroAtual: Livro | null = null;
-  recomendados: Livro[] = [];
-  ultimosAdicionados: Livro[] = [];
+  listaLeitura: LivroLeitura[] = [];
+  topAvaliados: LivroTop[] = [];
+  carregando = true;
 
   citacao = {
     texto: 'Um leitor vive mil vidas antes de morrer. O homem que nunca lê vive apenas uma.',
@@ -28,42 +27,49 @@ export class HomeComponent implements OnInit {
   constructor(
     private homeService: HomeService,
     @Inject(PLATFORM_ID) private platformId: Object,
-    private cdr: ChangeDetectorRef  // ⬅️ ADICIONE
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
-      this.carregarLivros();
+      this.carregarDashboard();
     }
   }
 
   get saudacao(): string {
     if (typeof localStorage === 'undefined') return 'Olá, Leitor 👋';
-
     const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
     const nickname = usuario?.nickname;
-    return nickname ? `Olá, ${nickname}👋` : 'Olá, Leitor 👋';
+    return nickname ? `Olá, ${nickname} 👋` : 'Olá, Leitor 👋';
   }
 
-  carregarLivros(): void {
+  carregarDashboard(): void {
+    this.carregando = true;
+
+    this.homeService.getDashboard().subscribe({
+      next: (data: DashboardData) => {
+        this.listaLeitura = data.listaLeitura || [];
+        this.topAvaliados = data.topAvaliados || [];
+        this.carregarLivrosDoUsuario();
+      },
+      error: (err) => {
+        console.error('Erro ao carregar dashboard:', err);
+        this.carregando = false;
+      }
+    });
+  }
+
+  carregarLivrosDoUsuario(): void {
     this.homeService.getMeusLivros().subscribe({
       next: (livros) => {
-        const ordenados = livros.sort((a, b) =>
-          new Date(b.dataCriacao || '').getTime() - new Date(a.dataCriacao || '').getTime()
-        );
-
-        this.livroAtual = ordenados.find(l => l.status === 2) || null;
-
-        this.recomendados = ordenados
-          .filter(l => l.status === 3)
-          .slice(0, 3)
-          .map(l => ({ ...l}));
-
-        this.ultimosAdicionados = ordenados.slice(0, 3);
-
-        this.cdr.markForCheck();  // ⬅️ Força atualização
+        this.livroAtual = livros.find(l => l.status === 2) || null;
+        this.carregando = false;
+        this.cdr.markForCheck();
       },
-      error: (err) => console.error('Erro ao carregar livros:', err)
+      error: (err) => {
+        console.error('Erro ao carregar livros:', err);
+        this.carregando = false;
+      }
     });
   }
 
@@ -72,8 +78,8 @@ export class HomeComponent implements OnInit {
   }
 
   onLivroAdicionado(livro: any): void {
+    this.homeService.limparCache();
     this.modalAberto = false;
-    this.carregarLivros();
-    this.cdr.markForCheck();  // ⬅️ Força atualização
+    this.carregarDashboard();
   }
 }

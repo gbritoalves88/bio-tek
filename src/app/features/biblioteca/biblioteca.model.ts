@@ -1,3 +1,17 @@
+// src/app/features/biblioteca/biblioteca.model.ts
+
+export interface ComentarioLivro {
+  id: string;
+  comentario: string;
+  dataCriacao: string;
+  usuario: {
+    id: string;
+    nome: string;
+    nickname: string;
+    avatar?: string;
+  };
+}
+
 export interface LivroBiblioteca {
   id: string;
   titulo: string;
@@ -5,10 +19,17 @@ export interface LivroBiblioteca {
   descricao?: string;
   imagem?: string;
   codigoBarras?: string;
-  status: number; // 1=QueroLer, 2=Lendo, 3=Lido
+  status: number;
   progresso?: number;
   estrelas?: number;
   dataCriacao?: string;
+  dataAtualizacao?: string;
+  avaliacao?: {
+    id: string;
+    nota: number;
+    dataCriacao: string;
+  };
+  comentarios?: ComentarioLivro[];
 }
 
 export enum StatusLeitura {
