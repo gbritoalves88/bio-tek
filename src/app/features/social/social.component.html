@@ -5,8 +5,18 @@
 
   <p class="section-label">Pessoas que você acompanha</p>
 
-  <!-- Loading da lista -->
-  <div class="loading" *ngIf="carregando">🔍 Carregando seus seguidores....</div>
+  <!-- Skeleton Loading -->
+  <div class="skeleton-container" *ngIf="carregando">
+    <div class="skeleton-card" *ngFor="let i of [1,2,3]">
+      <div class="skeleton-avatar"></div>
+      <div class="skeleton-info">
+        <div class="skeleton-line"></div>
+        <div class="skeleton-line short"></div>
+        <div class="skeleton-stats"></div>
+      </div>
+      <div class="skeleton-button"></div>
+    </div>
+  </div>
 
   <!-- Lista carregada -->
   <div *ngIf="!carregando">
@@ -14,14 +24,14 @@
       <div class="seguidor-card" *ngFor="let usuario of seguindo">
         <img [src]="usuario.avatar || 'assets/capas/perfilSemFoto.png'" [alt]="usuario.nome" class="avatar" />
         <div class="info" (click)="irParaPerfil(usuario.id)">
-            <span class="nome">{{ usuario.nome }}</span>
-            <span class="nickname">{{ usuario.nickname || '@sem-nickname' }}</span>
-            <div class="stats-mini">
-              <span>📚 {{ usuario.quantidadeLivros || 0 }}</span>
-              <span>✅ {{ usuario.quantidadeLivrosLidos || 0 }}</span>
-              <span>⭐ {{ usuario.mediaAvaliacoes || 0 }}</span>
-            </div>
+          <span class="nome">{{ usuario.nome }}</span>
+          <span class="nickname">{{ usuario.nickname || '@sem-nickname' }}</span>
+          <div class="stats-mini">
+            <span>📚 {{ usuario.quantidadeLivros || 0 }}</span>
+            <span>✅ {{ usuario.quantidadeLivrosLidos || 0 }}</span>
+            <span>⭐ {{ usuario.mediaAvaliacoes || 0 }}</span>
           </div>
+        </div>
         <button class="btn-deixar" (click)="deixarDeSeguir(usuario.id)">Deixar de seguir</button>
       </div>
     </div>

@@ -3,6 +3,7 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CatalogoService, CatalogoLivro } from './catalogo.service';
 import { AddBookModalComponent } from '../../shared/add-book-modal/add-book-modal.component';
+import { AlertService } from '../../shared/services/alert.service';
 
 @Component({
   selector: 'app-biblioteca',
@@ -22,6 +23,7 @@ export class BibliotecaComponent implements OnInit {
 
   constructor(
     private catalogoService: CatalogoService,
+    private alertService: AlertService,
     @Inject(PLATFORM_ID) private platformId: Object,
     private cdr: ChangeDetectorRef
   ) {}
@@ -44,11 +46,11 @@ export class BibliotecaComponent implements OnInit {
       error: (err) => {
         console.error('Erro ao carregar catálogo:', err);
         this.carregando = false;
+        this.alertService.error('Erro ao carregar catálogo');
       }
     });
   }
 
-  // Filtro local - sem requisição para cada letra
   filtrarLocal(): void {
     if (!this.termoBusca.trim()) {
       this.livros = [...this.livrosOriginais];
@@ -73,7 +75,7 @@ export class BibliotecaComponent implements OnInit {
 
   onLivroAdicionado(livro: any): void {
     this.modalAberto = false;
-    // Recarrega o catálogo para mostrar o novo livro
+    this.alertService.success('Livro adicionado ao catálogo!');
     this.carregarCatalogo();
   }
 
@@ -82,15 +84,17 @@ export class BibliotecaComponent implements OnInit {
 
     this.catalogoService.adicionarBiblioteca(catalogoId).subscribe({
       next: () => {
-        // Feedback visual mais sutil (opcional: mudar ícone temporariamente)
         this.adicionando[catalogoId] = false;
+        this.alertService.success('Livro adicionado à sua biblioteca!');
         this.cdr.markForCheck();
       },
       error: (err) => {
-        if (err.status === 400 && err.error?.mensagem) {
-          alert(err.error.mensagem);
-        }
         this.adicionando[catalogoId] = false;
+        if (err.status === 400 && err.error?.mensagem) {
+          this.alertService.warning(err.error.mensagem);
+        } else {
+          this.alertService.error('Erro ao adicionar livro');
+        }
       }
     });
   }
