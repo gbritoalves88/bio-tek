@@ -269,3 +269,92 @@
     height: 106px;
   }
 }
+
+// ===== SKELETON LOADING =====
+.skeleton-container {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.skeleton-reading {
+  background: var(--bg-card);
+  border-radius: 14px;
+  height: 180px;
+  margin-bottom: 24px;
+  border: 1px solid var(--border-color);
+  position: relative;
+  overflow: hidden;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+    animation: shimmer 1.5s infinite;
+  }
+}
+
+.skeleton-section {
+  margin-bottom: 28px;
+}
+
+.skeleton-title {
+  width: 150px;
+  height: 16px;
+  background: var(--border-color);
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.skeleton-cards {
+  display: flex;
+  gap: 16px;
+}
+
+.skeleton-card {
+  width: 100px;
+  height: 160px;
+  background: var(--bg-card);
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  position: relative;
+  overflow: hidden;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+    animation: shimmer 1.5s infinite;
+  }
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+// Responsivo para skeleton
+@media (max-width: 600px) {
+  .skeleton-card {
+    width: 85px;
+    height: 140px;
+  }
+}
+
+@media (max-width: 480px) {
+  .skeleton-card {
+    width: 75px;
+    height: 125px;
+  }
+}

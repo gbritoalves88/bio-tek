@@ -40,7 +40,6 @@
     height: 20px;
     min-width: 20px;
     flex-shrink: 0;
-    stroke: white;
   }
 
   .btn-label {
@@ -55,36 +54,11 @@
   &:hover {
     gap: 6px;
     padding: 10px 16px;
-    border-radius: 22px;
-
     .btn-label {
       max-width: 40px;
       opacity: 1;
     }
   }
-}
-
-.loading {
-  text-align: center;
-  padding: 60px 20px;
-
-  .spinner {
-    width: 40px;
-    height: 40px;
-    border: 3px solid var(--border-color);
-    border-top-color: var(--accent);
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin: 0 auto 16px;
-  }
-
-  p {
-    color: var(--text-secondary);
-  }
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
 }
 
 .search-box {
@@ -96,17 +70,11 @@
   border-radius: 12px;
   padding: 12px 16px;
   margin-bottom: 24px;
-  transition: all 0.3s;
-
-  &:focus-within {
-    border-color: var(--accent);
-  }
 
   .search-icon {
     width: 18px;
     height: 18px;
     color: var(--text-secondary);
-    flex-shrink: 0;
   }
 
   .search-input {
@@ -116,39 +84,56 @@
     color: var(--text-primary);
     font-size: 15px;
     outline: none;
-
-    &::placeholder {
-      color: var(--text-secondary);
-    }
   }
 
   .btn-clear {
     background: transparent;
     border: none;
     cursor: pointer;
-    padding: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
     svg {
       width: 16px;
       height: 16px;
       stroke: var(--text-secondary);
     }
-
-    &:hover svg {
-      stroke: var(--accent);
-    }
   }
 }
 
-// GRID DE LIVROS - ESTILO CARD
+// Skeleton
+.skeleton-container {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.skeleton-search {
+  height: 48px;
+  background: var(--bg-card);
+  border-radius: 12px;
+  margin-bottom: 24px;
+  border: 1px solid var(--border-color);
+}
+
+.skeleton-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.skeleton-card {
+  height: 250px;
+  background: var(--bg-card);
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+// Grid de livros
 .book-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 40px;
-  width: 100%;
+  gap: 20px;
 }
 
 .book-card {
@@ -159,62 +144,44 @@
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: 12px;
-  padding: 12px 2px;
-  transition: transform 0.2s, box-shadow 0.2s;
-  width: 100%;
-  min-width: 0; // Importante para quebrar
+  padding: 12px 8px;
+  transition: transform 0.2s;
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   }
 
   .book-cover {
     width: 100%;
-    max-width: 100px;
+    max-width: 90px;
     aspect-ratio: 2 / 3;
     object-fit: cover;
     border-radius: 8px;
     margin-bottom: 8px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
   }
 
   .book-info {
     width: 100%;
-    min-width: 0; // Importante para quebrar
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
     margin-bottom: 8px;
 
     .book-title {
       font-size: 11px;
       font-weight: 600;
+      margin: 0 0 4px;
       line-height: 1.3;
-      color: var(--text-primary);
-      margin: 0;
-      padding: 0;
-      width: 100%;
       word-break: break-word;
-      white-space: normal;
-      overflow-wrap: break-word;
-      text-align: center;
     }
 
     .book-author {
       font-size: 9px;
       color: var(--text-secondary);
       margin: 0;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      width: 100%;
     }
 
     .book-year {
       font-size: 9px;
       color: var(--text-secondary);
-      margin: 0;
+      margin: 2px 0 0;
     }
   }
 
@@ -224,13 +191,10 @@
     border-radius: 50%;
     border: 1px solid var(--border-color);
     background: var(--bg-card);
-    color: var(--text-secondary);
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.2s;
-    flex-shrink: 0;
 
     svg {
       width: 16px;
@@ -242,12 +206,6 @@
       border-color: var(--accent);
       color: var(--accent);
       background: rgba(237, 158, 55, 0.1);
-      transform: scale(1.05);
-    }
-
-    &:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
     }
   }
 }
@@ -256,19 +214,32 @@
   text-align: center;
   padding: 60px 20px;
   color: var(--text-secondary);
+}
 
-  p {
-    margin: 8px 0;
+@media (max-width: 600px) {
+  .book-grid {
+    gap: 12px;
   }
 
-  .empty-hint {
-    font-size: 13px;
-    opacity: 0.7;
+  .skeleton-grid {
+    gap: 12px;
+  }
+
+  .book-card .book-cover {
+    max-width: 75px;
+  }
+
+  .btn-add-minimal {
+    width: 28px;
+    height: 28px;
+    svg {
+      width: 14px;
+      height: 14px;
+    }
   }
 }
 
-// RESPONSIVIDADE
-@media (max-width: 600px) {
+@media (max-width: 480px) {
   .book-grid {
     gap: 8px;
   }
@@ -277,69 +248,15 @@
     padding: 8px 4px;
 
     .book-cover {
-      max-width: 80px;
+      max-width: 65px;
     }
 
-    .book-info .book-title {
+    .book-title {
       font-size: 10px;
-      -webkit-line-clamp: 2;
     }
 
-    .book-info .book-author {
+    .book-author, .book-year {
       font-size: 8px;
-    }
-
-    .btn-add-minimal {
-      width: 28px;
-      height: 28px;
-
-      svg {
-        width: 14px;
-        height: 14px;
-      }
     }
   }
 }
-
-@media (max-width: 480px) {
-  .catalogo {
-    padding: 16px 12px;
-  }
-
-  .book-grid {
-    gap: 20px;
-  }
-
-  .book-card {
-    padding: 6px 1px;
-
-    .book-cover {
-      max-width: 70px;
-    }
-
-    .book-info .book-title {
-      font-size: 9px;
-      -webkit-line-clamp: 2;
-    }
-
-    .book-info .book-author {
-      font-size: 7px;
-    }
-
-    .book-info .book-year {
-      font-size: 8px;
-    }
-
-    .btn-add-minimal {
-      width: 26px;
-      height: 26px;
-
-      svg {
-        width: 12px;
-        height: 12px;
-      }
-    }
-  }
-}
-
-

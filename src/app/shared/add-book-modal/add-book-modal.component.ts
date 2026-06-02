@@ -1,12 +1,11 @@
-// src/app/shared/add-book-modal/add-book-modal.component.ts
-
-import { Component, EventEmitter, Output, ChangeDetectorRef } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, EventEmitter, Output, ChangeDetectorRef, Inject, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ZXingScannerModule } from '@zxing/ngx-scanner';
 import { BarcodeFormat } from '@zxing/library';
 import { AddBookModalService } from './add-book-modal.service';
-import { UploadService } from '../../shared/services/upload.service';
+import { UploadService } from '../services/upload.service';
+import { AlertService } from '../services/alert.service';
 
 @Component({
   selector: 'app-add-book-modal',
@@ -41,8 +40,10 @@ export class AddBookModalComponent {
 
   constructor(
     private addBookService: AddBookModalService,
-    private uploadService: UploadService, // ⬅️ Upload compartilhado
-    private cdr: ChangeDetectorRef
+    private uploadService: UploadService,
+    private alertService: AlertService,
+    private cdr: ChangeDetectorRef,
+    @Inject(PLATFORM_ID) private platformId: Object
   ) {}
 
   fecharModal(): void {
@@ -56,6 +57,7 @@ export class AddBookModalComponent {
   }
 
   ativarScanner(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
     this.scannerAtivo = true;
     this.escaneando = true;
     this.flashAtivo = false;
@@ -82,7 +84,11 @@ export class AddBookModalComponent {
   onScanError(error: any): void { console.error('Erro no scanner:', error); this.escaneando = false; this.cdr.markForCheck(); }
 
   buscarPorCodigo(): void {
-    if (!this.novoLivro.codigoBarras) return;
+    if (!this.novoLivro.codigoBarras) {
+      this.alertService.warning('Digite ou escaneie um código de barras');
+      return;
+    }
+
     this.buscandoInfo = true;
     this.livroEncontrado = false;
     this.livroNaoEncontrado = false;
@@ -97,22 +103,46 @@ export class AddBookModalComponent {
           this.novoLivro.descricao = livro.descricao || '';
           this.novoLivro.capa = livro.imagem || '';
           this.livroEncontrado = true;
+          this.alertService.success('Livro encontrado! Verifique os dados.');
         } else {
           this.livroNaoEncontrado = true;
+          this.alertService.info('Livro não encontrado. Preencha os dados manualmente.');
         }
         this.cdr.markForCheck();
       },
-      error: () => { this.buscandoInfo = false; this.livroNaoEncontrado = true; this.cdr.markForCheck(); }
+      error: (err) => {
+        this.buscandoInfo = false;
+        this.livroNaoEncontrado = true;
+        this.cdr.markForCheck();
+
+        if (err.status === 404) {
+          this.alertService.info('ISBN não encontrado. Preencha os dados manualmente.');
+        } else {
+          this.alertService.error('Erro ao buscar livro. Tente novamente.');
+        }
+      }
     });
   }
 
-  // ⬅️ NOVO: Comprime + Upload + Salva
   async fazerUploadEFinalizar(): Promise<void> {
+    // Validações antes de enviar
+    if (!this.novoLivro.titulo || !this.novoLivro.titulo.trim()) {
+      this.alertService.warning('Preencha o título do livro');
+      return;
+    }
+
+    if (!this.novoLivro.autor || !this.novoLivro.autor.trim()) {
+      this.alertService.warning('Preencha o autor do livro');
+      return;
+    }
+
+    // Se não tem imagem, salva direto
     if (!this.novoLivro.capa || !this.novoLivro.capa.startsWith('data:')) {
       this.adicionarLivro();
       return;
     }
 
+    // Se tem imagem, comprime e faz upload
     try {
       const imagemComprimida = await this.comprimirImagem(this.novoLivro.capa, 800, 0.6);
       this.uploadService.uploadImagem(imagemComprimida).subscribe({
@@ -120,28 +150,61 @@ export class AddBookModalComponent {
           this.novoLivro.capa = url;
           this.adicionarLivro();
         },
-        error: () => this.adicionarLivro()
+        error: () => {
+          this.alertService.error('Erro ao enviar imagem. Tente novamente.');
+          this.adicionarLivro();
+        }
       });
-    } catch {
+    } catch (error) {
+      console.error('Erro ao comprimir imagem:', error);
+      this.alertService.error('Erro ao processar imagem');
       this.adicionarLivro();
     }
   }
 
   private adicionarLivro(): void {
+
     const dados = {
-      titulo: this.novoLivro.titulo,
-      autor: this.novoLivro.autor,
-      descricao: this.novoLivro.descricao,
+      titulo: this.novoLivro.titulo.trim(),
+      autor: this.novoLivro.autor.trim(),
+      descricao: this.novoLivro.descricao || '',
       imagem: this.novoLivro.capa || null,
       codigoBarras: this.novoLivro.codigoBarras || null
     };
+
+    console.log('📤 Enviando livro:', dados);
+
     this.addBookService.adicionarLivro(dados).subscribe({
-      next: (livro) => { this.livroAdicionado.emit(livro); this.fecharModal(); },
-      error: (err) => console.error('Erro:', err)
+      next: (livro) => {
+        console.log('✅ Livro adicionado:', livro);
+        this.alertService.success('Livro adicionado com sucesso!');
+        this.livroAdicionado.emit(livro);
+        this.fecharModal();
+      },
+      error: (err) => {
+        console.error('❌ Erro ao adicionar livro:', err);
+
+        // Exibe alerta específico baseado no erro
+        if (err.status === 0) {
+          this.alertService.error('Erro de conexão com o servidor');
+        } else if (err.status === 401) {
+          this.alertService.error('Sessão expirada. Faça login novamente.');
+        } else if (err.status === 403) {
+          this.alertService.error('Você não tem permissão para adicionar livros.');
+        } else if (err.status === 409) {
+          this.alertService.warning('Este livro já existe na sua biblioteca.');
+        } else if (err.status === 400) {
+          this.alertService.warning('Dados inválidos. Verifique as informações.');
+        } else {
+          this.alertService.error('Erro ao adicionar livro. Tente novamente.');
+        }
+      }
     });
   }
 
-  adicionarLivroEncontrado(): void { this.fazerUploadEFinalizar(); }
+  adicionarLivroEncontrado(): void {
+    this.fazerUploadEFinalizar();
+  }
 
   tentarNovamente(): void {
     this.novoLivro.codigoBarras = '';
@@ -155,20 +218,28 @@ export class AddBookModalComponent {
   }
 
   private comprimirImagem(base64: string, maxWidth: number = 800, qualidade: number = 0.7): Promise<string> {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       const img = new Image();
       img.src = base64;
       img.onload = () => {
         const canvas = document.createElement('canvas');
         let width = img.width;
         let height = img.height;
-        if (width > maxWidth) { height = (maxWidth / width) * height; width = maxWidth; }
+        if (width > maxWidth) {
+          height = (maxWidth / width) * height;
+          width = maxWidth;
+        }
         canvas.width = width;
         canvas.height = height;
-        const ctx = canvas.getContext('2d')!;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          reject(new Error('Erro ao criar canvas'));
+          return;
+        }
         ctx.drawImage(img, 0, 0, width, height);
         resolve(canvas.toDataURL('image/jpeg', qualidade));
       };
+      img.onerror = () => reject(new Error('Erro ao carregar imagem'));
     });
   }
 
@@ -181,20 +252,25 @@ export class AddBookModalComponent {
       const file = event.target.files?.[0];
       if (!file) return;
 
-      // ⬅️ Valida tipo
       if (!file.type.startsWith('image/')) {
-        console.warn('Apenas imagens são permitidas');
+        this.alertService.warning('Apenas imagens são permitidas');
         return;
       }
 
-      // ⬅️ Valida tamanho
       if (file.size > this.TAMANHO_MAXIMO) {
-        console.warn(`Imagem muito grande. Máximo: ${this.TAMANHO_MAXIMO / 1024 / 1024}MB`);
+        this.alertService.error(`Imagem muito grande. Máximo: ${this.TAMANHO_MAXIMO / 1024 / 1024}MB`);
         return;
       }
 
       const reader = new FileReader();
-      reader.onload = () => { this.novoLivro.capa = reader.result as string; this.cdr.markForCheck(); };
+      reader.onload = () => {
+        this.novoLivro.capa = reader.result as string;
+        this.alertService.success('Imagem selecionada com sucesso!');
+        this.cdr.markForCheck();
+      };
+      reader.onerror = () => {
+        this.alertService.error('Erro ao ler a imagem');
+      };
       reader.readAsDataURL(file);
     };
     input.click();
@@ -204,20 +280,25 @@ export class AddBookModalComponent {
     const file = (event.target as HTMLInputElement).files?.[0];
     if (!file) return;
 
-    // ⬅️ Valida tipo
     if (!file.type.startsWith('image/')) {
-      console.warn('Apenas imagens são permitidas');
+      this.alertService.warning('Apenas imagens são permitidas');
       return;
     }
 
-    // ⬅️ Valida tamanho
     if (file.size > this.TAMANHO_MAXIMO) {
-      console.warn(`Imagem muito grande. Máximo: ${this.TAMANHO_MAXIMO / 1024 / 1024}MB`);
+      this.alertService.error(`Imagem muito grande. Máximo: ${this.TAMANHO_MAXIMO / 1024 / 1024}MB`);
       return;
     }
 
     const reader = new FileReader();
-    reader.onload = () => { this.novoLivro.capa = reader.result as string; this.cdr.markForCheck(); };
+    reader.onload = () => {
+      this.novoLivro.capa = reader.result as string;
+      this.alertService.success('Imagem selecionada com sucesso!');
+      this.cdr.markForCheck();
+    };
+    reader.onerror = () => {
+      this.alertService.error('Erro ao ler a imagem');
+    };
     reader.readAsDataURL(file);
   }
 }

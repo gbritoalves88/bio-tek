@@ -1,11 +1,10 @@
-// src/app/features/comunidade/comunidade.component.ts
-
 import { Component, OnInit, Inject, PLATFORM_ID, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ComunidadeService } from './comunidade.service';
 import { AtividadeComunidade, Comentario } from './comunidade.model';
 import { SocialService } from '../social/social.service';
+import { AlertService } from '../../shared/services/alert.service';
 
 @Component({
   selector: 'app-comunidade',
@@ -35,6 +34,7 @@ export class ComunidadeComponent implements OnInit {
 
   constructor(
     private comunidadeService: ComunidadeService,
+    private alertService: AlertService,
     @Inject(PLATFORM_ID) private platformId: Object,
     private cdr: ChangeDetectorRef,
     private socialService: SocialService
@@ -80,6 +80,7 @@ export class ComunidadeComponent implements OnInit {
       error: (err) => {
         console.error('Erro:', err);
         this.carregando = false;
+        this.alertService.error('Erro ao carregar feed');
       }
     });
   }
@@ -90,15 +91,16 @@ export class ComunidadeComponent implements OnInit {
       next: (data) => {
         this.atividades = data;
         this.atualizando = false;
+        this.alertService.success('Feed atualizado!');
         this.cdr.markForCheck();
       },
       error: (err) => {
         console.error('Erro:', err);
         this.atualizando = false;
+        this.alertService.error('Erro ao atualizar feed');
       }
     });
   }
-
 
   abrirModal(item: AtividadeComunidade): void {
     this.itemSelecionado = item;
@@ -107,7 +109,6 @@ export class ComunidadeComponent implements OnInit {
     this.comentarios = [];
 
     if (item.tipo === 'livro_avaliado') {
-      // Verifica se já tem comentários no item (vindo do backend)
       if (item.comentarios && item.comentarios.length > 0) {
         this.comentarios = item.comentarios;
       } else {
@@ -133,6 +134,7 @@ export class ComunidadeComponent implements OnInit {
       },
       error: () => {
         this.carregandoComentarios = false;
+        this.alertService.error('Erro ao carregar comentários');
         this.cdr.markForCheck();
       }
     });
@@ -140,12 +142,17 @@ export class ComunidadeComponent implements OnInit {
 
   enviarComentario(): void {
     if (!this.novoComentario.trim() || !this.itemSelecionado) return;
+
     this.comunidadeService.enviarComentario(this.itemSelecionado.livro.id, this.novoComentario.trim()).subscribe({
       next: () => {
         this.novoComentario = '';
+        this.alertService.success('Comentário enviado!');
         this.carregarComentarios(this.itemSelecionado!.livro.id);
       },
-      error: (err) => console.error('Erro ao comentar:', err)
+      error: (err) => {
+        console.error('Erro ao comentar:', err);
+        this.alertService.error('Erro ao enviar comentário');
+      }
     });
   }
 
@@ -154,18 +161,29 @@ export class ComunidadeComponent implements OnInit {
       next: (ids) => {
         this.seguindoIds = new Set(ids);
         this.cdr.markForCheck();
+      },
+      error: (err) => {
+        console.error('Erro ao carregar seguindo:', err);
       }
     });
   }
 
-  estaSeguindo(idUsuario: string): boolean { return this.seguindoIds.has(idUsuario); }
+  estaSeguindo(idUsuario: string): boolean {
+    return this.seguindoIds.has(idUsuario);
+  }
 
   seguirUsuario(idUsuario: string): void {
     this.comunidadeService.seguir(idUsuario).subscribe({
       next: () => {
         this.seguindoIds.add(idUsuario);
         this.socialService.limparCacheSeguindo();
-        this.cdr.markForCheck(); }
+        this.alertService.success('Agora você segue este usuário!');
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        console.error('Erro:', err);
+        this.alertService.error('Erro ao seguir usuário');
+      }
     });
   }
 
@@ -174,18 +192,37 @@ export class ComunidadeComponent implements OnInit {
       next: () => {
         this.seguindoIds.delete(idUsuario);
         this.socialService.limparCacheSeguindo();
-         this.cdr.markForCheck();
-         }
+        this.alertService.info('Você deixou de seguir este usuário');
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        console.error('Erro:', err);
+        this.alertService.error('Erro ao deixar de seguir');
+      }
     });
   }
 
   getIconeTipo(tipo: string): string {
-    switch (tipo) { case 'livro_novo': return '📕'; case 'livro_lendo': return '📖'; case 'livro_lido': return '✅'; case 'livro_avaliado': return '⭐'; default: return '📚'; }
+    switch (tipo) {
+      case 'livro_novo': return '📕';
+      case 'livro_lendo': return '📖';
+      case 'livro_lido': return '✅';
+      case 'livro_avaliado': return '⭐';
+      default: return '📚';
+    }
   }
 
   getTextoTipo(tipo: string): string {
-    switch (tipo) { case 'livro_novo': return 'Adicionou um Livro'; case 'livro_lendo': return 'Está Lendo'; case 'livro_lido': return 'Terminou de Ler'; case 'livro_avaliado': return 'Avaliou'; default: return ''; }
+    switch (tipo) {
+      case 'livro_novo': return 'Adicionou um Livro';
+      case 'livro_lendo': return 'Está Lendo';
+      case 'livro_lido': return 'Terminou de Ler';
+      case 'livro_avaliado': return 'Avaliou';
+      default: return '';
+    }
   }
 
-  getEstrelas(nota: number): string { return '⭐'.repeat(nota); }
+  getEstrelas(nota: number): string {
+    return '⭐'.repeat(nota);
+  }
 }

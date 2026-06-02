@@ -17,8 +17,24 @@
     <span class="citacao-autor">— {{ citacao.autor }}</span>
   </div>
 
-  <div class="loading" *ngIf="carregando">🔍 Carregando...</div>
+  <!-- Skeleton Loading -->
+  <div class="skeleton-container" *ngIf="carregando">
+    <div class="skeleton-reading"></div>
+    <div class="skeleton-section">
+      <div class="skeleton-title"></div>
+      <div class="skeleton-cards">
+        <div class="skeleton-card" *ngFor="let i of [1,2,3,4]"></div>
+      </div>
+    </div>
+    <div class="skeleton-section">
+      <div class="skeleton-title"></div>
+      <div class="skeleton-cards">
+        <div class="skeleton-card" *ngFor="let i of [1,2,3,4]"></div>
+      </div>
+    </div>
+  </div>
 
+  <!-- Conteúdo carregado -->
   <ng-container *ngIf="!carregando">
 
     <!-- Lendo agora -->
@@ -42,6 +58,27 @@
       </div>
     </ng-template>
 
+    <!-- Livros recomendados pela comunidade -->
+    <div class="reading-now" *ngIf="topAvaliados.length > 0; else semRecomendados">
+      <h2>Recomendações da Comunidade</h2>
+      <div class="scroll-horizontal">
+        <div class="scroll-track">
+          <div class="livro-card" *ngFor="let livro of topAvaliados">
+            <img [src]="livro.imagem || 'assets/capas/perfilSemFoto.png'" [alt]="livro.titulo" class="livro-capa" />
+            <span class="livro-titulo">{{ livro.titulo || 'Sem título' }}</span>
+            <span class="livro-autor">{{ livro.autor }}</span>
+            <span class="livro-rating">⭐ {{ livro.media }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <ng-template #semRecomendados>
+      <div class="reading-now empty-state">
+        <h2>Recomendações da Comunidade</h2>
+        <p>Nenhuma recomendação ainda.</p>
+      </div>
+    </ng-template>
+
     <!-- Próximas leituras -->
     <div class="reading-now" *ngIf="listaLeitura.length > 0; else semLista">
       <h2>Próximas leituras</h2>
@@ -59,27 +96,6 @@
       <div class="reading-now empty-state">
         <h2>Próximas leituras</h2>
         <p>Nenhum livro na fila.</p>
-      </div>
-    </ng-template>
-
-    <!-- Livros recomendados pela comunidade -->
-    <div class="reading-now" *ngIf="topAvaliados.length > 0; else semRecomendados">
-      <h2>Livros recomendados pela comunidade</h2>
-      <div class="scroll-horizontal">
-        <div class="scroll-track">
-          <div class="livro-card" *ngFor="let livro of topAvaliados">
-            <img [src]="livro.imagem || 'assets/capas/perfilSemFoto.png'" [alt]="livro.titulo" class="livro-capa" />
-            <span class="livro-titulo">{{ livro.titulo || 'Sem título' }}</span>
-            <span class="livro-autor">{{ livro.autor }}</span>
-            <span class="livro-rating">⭐ {{ livro.media }}</span>
-          </div>
-        </div>
-      </div>
-    </div>
-    <ng-template #semRecomendados>
-      <div class="reading-now empty-state">
-        <h2>Livros recomendados pela comunidade</h2>
-        <p>Nenhuma recomendação ainda.</p>
       </div>
     </ng-template>
 

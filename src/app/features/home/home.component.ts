@@ -3,11 +3,12 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Livro, LivroLeitura, LivroTop, DashboardData } from './home.model';
 import { HomeService } from './home.service';
 import { AddBookModalComponent } from '../../shared/add-book-modal/add-book-modal.component';
+import { AlertService } from '../../shared/services/alert.service';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, AddBookModalComponent],
+  imports: [CommonModule, AddBookModalComponent], // ← Apenas isso
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss',
   host: { 'ngSkipHydration': 'true' }
@@ -27,7 +28,8 @@ export class HomeComponent implements OnInit {
   constructor(
     private homeService: HomeService,
     @Inject(PLATFORM_ID) private platformId: Object,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private alertService: AlertService
   ) {}
 
   ngOnInit(): void {
@@ -52,23 +54,25 @@ export class HomeComponent implements OnInit {
         this.topAvaliados = data.topAvaliados || [];
         this.carregarLivrosDoUsuario();
       },
-      error: (err) => {
+      error: (err: any) => {
         console.error('Erro ao carregar dashboard:', err);
         this.carregando = false;
+        this.alertService.error('Erro ao carregar dados da home');
       }
     });
   }
 
   carregarLivrosDoUsuario(): void {
     this.homeService.getMeusLivros().subscribe({
-      next: (livros) => {
+      next: (livros: Livro[]) => {
         this.livroAtual = livros.find(l => l.status === 2) || null;
         this.carregando = false;
         this.cdr.markForCheck();
       },
-      error: (err) => {
+      error: (err: any) => {
         console.error('Erro ao carregar livros:', err);
         this.carregando = false;
+        this.alertService.error('Erro ao carregar seus livros');
       }
     });
   }
@@ -81,5 +85,6 @@ export class HomeComponent implements OnInit {
     this.homeService.limparCache();
     this.modalAberto = false;
     this.carregarDashboard();
+    this.alertService.success('Livro adicionado com sucesso!');
   }
 }

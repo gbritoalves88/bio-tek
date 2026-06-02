@@ -5,21 +5,27 @@
 
   <div class="header-section">
     <h1>Comunidade</h1>
-  </div>
-
-  <div class="feed-header-actions">
-    <p class="descricao">Atualizações da comunidade</p>
-    <p class="aviso-geral">💡 Comentários só podem ser feitos por leitores que finalizaram e avaliaram o livro.</p>
-    <button class="btn-refresh" (click)="atualizarFeed()" [disabled]="atualizando">
+    <button class="btn-refresh-circle" (click)="atualizarFeed()" [disabled]="atualizando" title="Atualizar feed">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" [class.spinning]="atualizando">
         <polyline points="23 4 23 10 17 10"/>
         <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
       </svg>
-      {{ atualizando ? 'Atualizando...' : 'Atualizar feed' }}
     </button>
   </div>
 
-  <div class="loading" *ngIf="carregando">🔍 Carregando feed...</div>
+  <p class="aviso-geral">💡 Comentários só podem ser feitos por leitores que finalizaram e avaliaram o livro.</p>
+
+  <!-- Skeleton Loading -->
+  <div class="skeleton-container" *ngIf="carregando">
+    <div class="skeleton-item" *ngFor="let i of [1,2,3]">
+      <div class="skeleton-avatar"></div>
+      <div class="skeleton-content">
+        <div class="skeleton-line"></div>
+        <div class="skeleton-line short"></div>
+        <div class="skeleton-image"></div>
+      </div>
+    </div>
+  </div>
 
   <!-- FEED EM LISTA VERTICAL -->
   <div class="feed-lista" *ngIf="!carregando">
@@ -30,8 +36,6 @@
         [class.tipo-lendo]="item.tipo === 'livro_lendo'"
         [class.tipo-lido]="item.tipo === 'livro_lido'"
         [class.tipo-avaliado]="item.tipo === 'livro_avaliado'">
-
-
 
       <div class="feed-topo">
         <img [src]="item.usuario.avatar || 'assets/capas/perfilSemFoto.png'" [alt]="item.usuario.nome" class="avatar" />
@@ -44,10 +48,9 @@
         </div>
       </div>
 
-      <!-- CONTEÚDO POR TIPO -->
+      <!-- CONTEÚDO POR TIPO (mantido igual) -->
       <ng-container [ngSwitch]="item.tipo">
-
-        <!-- TIPO: ADICIONOU UM LIVRO (capa grande em destaque) -->
+        <!-- TIPO: ADICIONOU UM LIVRO -->
         <div class="feed-conteudo" *ngSwitchCase="'livro_novo'">
           <div class="livro-destaque">
             <img [src]="item.livro.imagem || 'assets/capas/perfilSemFoto.png'"
@@ -60,7 +63,7 @@
           </div>
         </div>
 
-        <!-- TIPO: ESTÁ LENDO (padrão) -->
+        <!-- TIPO: ESTÁ LENDO -->
         <div class="feed-conteudo" *ngSwitchCase="'livro_lendo'">
           <div class="livro-padrao">
             <img [src]="item.livro.imagem || 'assets/capas/perfilSemFoto.png'"
@@ -73,7 +76,7 @@
           </div>
         </div>
 
-        <!-- TIPO: TERMINOU DE LER (com palmas em destaque) -->
+        <!-- TIPO: TERMINOU DE LER -->
         <div class="feed-conteudo" *ngSwitchCase="'livro_lido'">
           <div class="livro-concluido">
             <img [src]="item.livro.imagem || 'assets/capas/perfilSemFoto.png'"
@@ -91,7 +94,7 @@
           </div>
         </div>
 
-        <!-- TIPO: AVALIOU (com estrelas e comentários) -->
+        <!-- TIPO: AVALIOU -->
         <div class="feed-conteudo" *ngSwitchCase="'livro_avaliado'">
           <div class="livro-avaliado">
             <img [src]="item.livro.imagem || 'assets/capas/perfilSemFoto.png'"
@@ -119,7 +122,6 @@
             </div>
           </div>
         </div>
-
       </ng-container>
 
       <div class="feed-rodape">
@@ -133,6 +135,7 @@
     </div>
   </div>
 </section>
+
 
 <!-- Modal de detalhes (mantido igual) -->
 <div class="comunidade-modal-overlay" *ngIf="modalAberto && itemSelecionado" (click)="fecharModal()">

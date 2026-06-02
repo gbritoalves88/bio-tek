@@ -1,11 +1,10 @@
-// src/app/features/social/social.component.ts (apenas as mudanças)
-
 import { Component, OnInit, Inject, PLATFORM_ID, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { SocialService } from './social.service';
 import { UsuarioSocial, LivroSocial } from './social.model';
 import { ComentariosModalComponent } from '../../shared/comentarios-modal/comentarios-modal.component';
 import { Router } from '@angular/router';
+import { AlertService } from '../../shared/services/alert.service';
 
 @Component({
   selector: 'app-social',
@@ -28,6 +27,7 @@ export class SocialComponent implements OnInit {
 
   constructor(
     private socialService: SocialService,
+    private alertService: AlertService,
     @Inject(PLATFORM_ID) private platformId: Object,
     private router: Router,
     private cdr: ChangeDetectorRef
@@ -40,6 +40,7 @@ export class SocialComponent implements OnInit {
   }
 
   carregarSeguindo(): void {
+    this.carregando = true;
     this.socialService.getSeguindoCompleto().subscribe({
       next: (usuarios) => {
         this.seguindo = usuarios;
@@ -49,6 +50,7 @@ export class SocialComponent implements OnInit {
       error: (err) => {
         console.error('Erro:', err);
         this.carregando = false;
+        this.alertService.error('Erro ao carregar seguidores');
       }
     });
   }
@@ -56,10 +58,9 @@ export class SocialComponent implements OnInit {
   verPerfil(usuario: UsuarioSocial): void {
     this.carregandoPerfil = true;
 
-    // ⬅️ Use o novo endpoint
     this.socialService.getPerfilCompleto(usuario.id).subscribe({
       next: (data) => {
-        console.log('📦 Dados do perfil:', data); // Debug
+        console.log('📦 Dados do perfil:', data);
 
         this.perfilSelecionado = {
           id: data.id,
@@ -80,7 +81,7 @@ export class SocialComponent implements OnInit {
           status: l.status,
           dataCriacao: l.dataCriacao,
           estrelas: l.avaliacao?.nota,
-          comentarios: l.comentarios // ⬅️ Preserva os comentários
+          comentarios: l.comentarios
         }));
 
         this.carregandoPerfil = false;
@@ -89,6 +90,7 @@ export class SocialComponent implements OnInit {
       error: () => {
         this.perfilSelecionado = usuario;
         this.carregandoPerfil = false;
+        this.alertService.error('Erro ao carregar perfil do usuário');
         this.cdr.markForCheck();
       }
     });
@@ -106,7 +108,6 @@ export class SocialComponent implements OnInit {
 
   abrirComentarios(livro: any): void {
     console.log('📖 Livro clicado:', livro);
-    console.log('💬 Comentários do livro:', livro.comentarios);
 
     this.livroComentarioId = livro.id;
     this.livroComentarioTitulo = livro.titulo;
@@ -119,25 +120,37 @@ export class SocialComponent implements OnInit {
       dataCriacao: c.dataCriacao
     })) || null;
 
-    console.log('📦 comentariosProntos mapeado:', this.livroComentarioProntos);
     this.comentariosAberto = true;
   }
+
   getStatusTexto(status: number): string {
-    switch (status) { case 2: return '📖 Lendo'; case 3: return '✅ Lido'; default: return '📕 Quero ler'; }
+    switch (status) {
+      case 2: return '📖 Lendo';
+      case 3: return '✅ Lido';
+      default: return '📕 Quero ler';
+    }
   }
 
   getStatusClass(status: number): string {
-    switch (status) { case 2: return 'lendo'; case 3: return 'lido'; default: return 'quero-ler'; }
+    switch (status) {
+      case 2: return 'lendo';
+      case 3: return 'lido';
+      default: return 'quero-ler';
+    }
   }
 
   deixarDeSeguir(idUsuario: string): void {
     if (confirm('Deixar de seguir?')) {
       this.socialService.deixarDeSeguir(idUsuario).subscribe({
         next: () => {
-          this.socialService.limparCacheSeguindo(); // ⬅️ Limpa cache
+          this.socialService.limparCacheSeguindo();
           this.carregarSeguindo();
+          this.alertService.success('Você deixou de seguir este usuário');
         },
-        error: (err) => console.error('Erro:', err)
+        error: (err) => {
+          console.error('Erro:', err);
+          this.alertService.error('Erro ao deixar de seguir');
+        }
       });
     }
   }
