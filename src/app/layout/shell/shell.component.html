@@ -12,13 +12,16 @@
           <path d="M4 25.5A2.5 2.5 0 0 1 6.5 23H20V2H6.5A2.5 2.5 0 0 0 4 4.5v21z"
                 stroke="currentColor" stroke-width="2" fill="none"/>
           <text x="28" y="22" font-family="'Segoe UI', sans-serif" font-size="18"
-                font-weight="700" fill="currentColor">Bio-Tek</text>
+                font-weight="700" fill="currentColor">BliTeca</text>
         </svg>
       </a>
 
-      <button class="theme-btn" (click)="toggleTheme()">
-        {{ isDarkMode ? '☀️' : '🌙' }}
-      </button>
+      <div class="header-actions">
+        <app-notification-bell></app-notification-bell>
+        <button class="theme-btn" (click)="toggleTheme()">
+          {{ isDarkMode ? '☀️' : '🌙' }}
+        </button>
+      </div>
     </div>
   </header>
 

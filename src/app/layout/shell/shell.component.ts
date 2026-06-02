@@ -1,17 +1,23 @@
-// shell.component.ts
-
 import { Component, Inject, OnInit, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/router';
+import { NotificationBellComponent } from '../../shared/notification-bell/notification-bell.component'; // ⬅️ Adicionar
 
 @Component({
   selector: 'app-shell',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive],
+  imports: [
+    CommonModule,
+    RouterOutlet,
+    RouterLink,
+    RouterLinkActive,
+    NotificationBellComponent  // ⬅️ Adicionar
+  ],
   templateUrl: './shell.component.html',
   styleUrl: './shell.component.scss'
 })
 export class ShellComponent implements OnInit {
+
   isDarkMode = true;
   menuOpen = false;
 
