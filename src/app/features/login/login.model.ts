@@ -1,5 +1,3 @@
-// src/app/features/login/login.model.ts
-
 export interface UsuarioLogin {
   id: string;
   nome: string;
@@ -8,6 +6,9 @@ export interface UsuarioLogin {
   descricao?: string;
   avatar?: string;
   tema: number;
+  adm: boolean;  // ⬅️ minúsculo para consistência
+  Adm?: boolean;
+  aceitouTermos?: boolean;  // ⬅️ fallback
 }
 
 export interface LoginResponse {

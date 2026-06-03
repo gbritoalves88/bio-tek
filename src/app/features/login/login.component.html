@@ -1,18 +1,27 @@
 <section class="login">
   <div class="login-container">
+    <!-- Loading -->
+    <div class="login-loading" *ngIf="carregando">
+      <svg class="logo-animado" viewBox="0 0 120 120" fill="none">
+        <path d="M20 102A10 10 0 0 1 30 92H80V8H30A10 10 0 0 0 20 18v84z"
+              stroke="currentColor" stroke-width="3" fill="none"/>
+      </svg>
+      <p>Entrando...</p>
+    </div>
+
     <!-- Logo -->
     <div class="logo-area">
       <svg class="logo-grande" viewBox="0 0 120 120" fill="none">
         <path d="M20 102A10 10 0 0 1 30 92H80V8H30A10 10 0 0 0 20 18v84z"
               stroke="currentColor" stroke-width="3" fill="none"/>
       </svg>
-      <h1 class="app-nome">Bio-Tek</h1>
+      <h1 class="app-nome">BliTeca</h1>
       <p class="slogan">Sua jornada literária começa aqui.</p>
     </div>
 
     <!-- Botões de login -->
     <div class="botoes-login">
-      <button class="btn-social btn-google" (click)="entrarComGoogle()">
+      <button class="btn-social btn-google" (click)="entrarComGoogle()" [disabled]="carregando">
         <svg class="btn-icon" viewBox="0 0 24 24" fill="currentColor">
           <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/>
           <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -22,38 +31,117 @@
         Entrar com Google
       </button>
 
-      <button class="btn-social btn-facebook" (click)="entrarComFacebook()">
-        <svg class="btn-icon" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-        </svg>
-        Entrar com Facebook
-      </button>
-
       <div class="divider">
         <span>ou</span>
       </div>
 
-      <button class="btn-convidado" (click)="entrarComoConvidado()">
-        Entrar como convidado
+      <button class="btn-convidado" (click)="entrarComoConvidado()" [disabled]="carregando">
+        Entrar como convidado (teste)
       </button>
-<!--
-      <div class="divider"><span>ou</span></div>
-      <p class="mock-label">Usuários de teste:</p>
-
-      <button class="btn-mock" (click)="entrarMock('Leitor Fantasy', '@fantasy')">
-        🧙 Leitor Fantasy
-      </button>
-      <button class="btn-mock" (click)="entrarMock('Leitor Sci-Fi', '@scifi')">
-        🚀 Leitor Sci-Fi
-      </button>
-      <button class="btn-mock" (click)="entrarMock('Leitor Mangá', '@manga')">
-        📘 Leitor Mangá
-      </button> !-->
     </div>
 
     <p class="termos">
       Ao entrar, você concorda com nossos<br />
-      <a href="#">Termos de Uso</a> e <a href="#">Política de Privacidade</a>
+      <a href="javascript:void(0)" (click)="abrirTermos()">Termos de Uso</a> e
+      <a href="javascript:void(0)" (click)="abrirPolitica()">Política de Privacidade</a>
     </p>
   </div>
 </section>
+
+<!-- Modal de Erro -->
+<div class="erro-modal-overlay" *ngIf="mostrarModalErro" (click)="fecharModalErro()">
+  <div class="erro-modal-content" (click)="$event.stopPropagation()">
+    <div class="erro-icone">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="8" x2="12" y2="12"/>
+        <line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+    </div>
+    <p class="erro-mensagem">{{ mensagemErro }}</p>
+    <button class="erro-btn-ok" (click)="fecharModalErro()">OK</button>
+  </div>
+</div>
+
+<!-- Modal de Termos de Uso -->
+<div class="termos-modal-overlay" *ngIf="mostrarTermos" (click)="fecharModalTermos()">
+  <div class="termos-modal-content" (click)="$event.stopPropagation()">
+    <div class="termos-modal-header">
+      <h2>Termos de Uso</h2>
+      <button class="termos-modal-close" (click)="fecharModalTermos()">✕</button>
+    </div>
+    <div class="termos-modal-body">
+      <p class="termos-data">Última atualização: 2026</p>
+
+      <h3>1. Sobre o BliTeca</h3>
+      <p>O BliTeca é uma plataforma voltada para organização de leituras, avaliações de livros e interação entre leitores através de comentários, atividades e recursos sociais.</p>
+
+      <h3>2. Conta do Usuário</h3>
+      <p>O usuário é responsável pelas informações fornecidas em sua conta e pela segurança de seu acesso. O login poderá ser realizado através de provedores externos, como Google.</p>
+
+      <h3>3. Conteúdo Publicado</h3>
+      <p>Ao utilizar a plataforma, você concorda em não publicar conteúdo ofensivo, discriminatório ou ilegal. Comentários com discurso de ódio serão removidos.</p>
+
+      <h3>4. Direitos Autorais</h3>
+      <p>As capas, títulos e informações dos livros exibidos no BliTeca são obtidos através de APIs públicas. Todos os direitos relacionados às obras pertencem aos seus respectivos detentores.</p>
+
+      <h3>5. Política de Dados e Privacidade</h3>
+      <p>O BliTeca coleta apenas os dados necessários para funcionamento da plataforma. Seus dados não são vendidos ou compartilhados para fins comerciais.</p>
+
+      <h3>6. Exclusão de Conta</h3>
+      <p>O usuário poderá solicitar a exclusão de sua conta através das configurações da plataforma.</p>
+
+      <h3>7. Disponibilidade do Serviço</h3>
+      <p>O BliTeca é fornecido "como está", sem garantias de funcionamento ininterrupto. A plataforma poderá passar por manutenções ou instabilidades ocasionais.</p>
+
+      <h3>8. Limitação de Responsabilidade</h3>
+      <p>O BliTeca não se responsabiliza por conteúdo publicado por usuários, perda de dados causada por terceiros ou instabilidades de serviços externos.</p>
+
+      <h3>9. Menores de Idade</h3>
+      <p>Usuários menores de 18 anos devem utilizar a plataforma com supervisão de um responsável legal.</p>
+
+      <h3>10. Alterações nos Termos</h3>
+      <p>Os presentes termos poderão ser atualizados periodicamente. O uso contínuo da plataforma após alterações implica concordância com os novos termos.</p>
+    </div>
+    <div class="termos-modal-footer">
+      <button class="btn-fechar" (click)="fecharModalTermos()">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Política de Privacidade -->
+<div class="termos-modal-overlay" *ngIf="mostrarPolitica" (click)="fecharModalTermos()">
+  <div class="termos-modal-content" (click)="$event.stopPropagation()">
+    <div class="termos-modal-header">
+      <h2>Política de Privacidade</h2>
+      <button class="termos-modal-close" (click)="fecharModalTermos()">✕</button>
+    </div>
+    <div class="termos-modal-body">
+      <p class="termos-data">Última atualização: 2026</p>
+
+      <h3>1. Dados Coletados</h3>
+      <p>Coletamos seu nome, email, avatar e nickname quando você faz login através do Google. Também armazenamos seus livros, avaliações e comentários.</p>
+
+      <h3>2. Uso dos Dados</h3>
+      <p>Utilizamos seus dados para personalizar sua experiência, exibir sua biblioteca, recomendar livros e permitir interações com outros usuários.</p>
+
+      <h3>3. Compartilhamento de Dados</h3>
+      <p>Não compartilhamos seus dados pessoais com terceiros. Suas avaliações e comentários são públicos na plataforma.</p>
+
+      <h3>4. Segurança</h3>
+      <p>Seus dados são armazenados de forma segura em servidores protegidos. Sua senha não é armazenada (login via Google OAuth).</p>
+
+      <h3>5. Seus Direitos</h3>
+      <p>Você pode solicitar a exclusão de sua conta a qualquer momento. Seus dados serão removidos permanentemente.</p>
+
+      <h3>6. Cookies</h3>
+      <p>Utilizamos cookies apenas para manter sua sessão ativa. Não utilizamos cookies de rastreamento de terceiros.</p>
+
+      <h3>7. Alterações na Política</h3>
+      <p>Esta política pode ser atualizada periodicamente. Notificaremos sobre mudanças significativas.</p>
+    </div>
+    <div class="termos-modal-footer">
+      <button class="btn-fechar" (click)="fecharModalTermos()">Fechar</button>
+    </div>
+  </div>
+</div>

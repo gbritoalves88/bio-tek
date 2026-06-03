@@ -33,6 +33,7 @@ export interface LivroTop {
 }
 
 export interface DashboardData {
+  livroAtual: Livro | null;        // ⬅️ ADICIONAR
   listaLeitura: LivroLeitura[];
   topAvaliados: LivroTop[];
 }

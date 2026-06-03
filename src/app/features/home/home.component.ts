@@ -8,7 +8,7 @@ import { AlertService } from '../../shared/services/alert.service';
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, AddBookModalComponent], // ← Apenas isso
+  imports: [CommonModule, AddBookModalComponent],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss',
   host: { 'ngSkipHydration': 'true' }
@@ -50,29 +50,16 @@ export class HomeComponent implements OnInit {
 
     this.homeService.getDashboard().subscribe({
       next: (data: DashboardData) => {
+        this.livroAtual = data.livroAtual || null;  // ⬅️ USA O CAMPO DO DASHBOARD
         this.listaLeitura = data.listaLeitura || [];
         this.topAvaliados = data.topAvaliados || [];
-        this.carregarLivrosDoUsuario();
-      },
-      error: (err: any) => {
-        console.error('Erro ao carregar dashboard:', err);
-        this.carregando = false;
-        this.alertService.error('Erro ao carregar dados da home');
-      }
-    });
-  }
-
-  carregarLivrosDoUsuario(): void {
-    this.homeService.getMeusLivros().subscribe({
-      next: (livros: Livro[]) => {
-        this.livroAtual = livros.find(l => l.status === 2) || null;
         this.carregando = false;
         this.cdr.markForCheck();
       },
-      error: (err: any) => {
-        console.error('Erro ao carregar livros:', err);
+      error: (err) => {
+        console.error('Erro ao carregar dashboard:', err);
         this.carregando = false;
-        this.alertService.error('Erro ao carregar seus livros');
+        this.alertService.error('Erro ao carregar dados da home');
       }
     });
   }

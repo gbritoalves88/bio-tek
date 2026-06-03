@@ -24,7 +24,13 @@ export class AddBookModalComponent {
   livroEncontrado = false;
   livroNaoEncontrado = false;
   flashAtivo = false;
-  private readonly TAMANHO_MAXIMO = 2 * 1024 * 1024; // 2MB
+
+  // ⬅️ AUMENTAR LIMITE PARA 10MB (arquivo original)
+  private readonly TAMANHO_MAXIMO = 10 * 1024 * 1024; // 10MB
+
+  // ⬅️ CONFIGURAÇÕES DE COMPRESSÃO
+  private readonly COMPRESSAO_MAX_WIDTH = 1200; // pixels
+  private readonly COMPRESSAO_QUALIDADE = 0.7; // 70%
 
   novoLivro = {
     titulo: '',
@@ -81,7 +87,10 @@ export class AddBookModalComponent {
   }
 
   onHasDevices(hasDevices: boolean): void { this.scannerDisponivel = hasDevices; this.cdr.markForCheck(); }
-  onScanError(error: any): void { console.error('Erro no scanner:', error); this.escaneando = false; this.cdr.markForCheck(); }
+  onScanError(error: any): void {
+    this.escaneando = false;
+    this.cdr.markForCheck();
+  }
 
   buscarPorCodigo(): void {
     if (!this.novoLivro.codigoBarras) {
@@ -144,7 +153,13 @@ export class AddBookModalComponent {
 
     // Se tem imagem, comprime e faz upload
     try {
-      const imagemComprimida = await this.comprimirImagem(this.novoLivro.capa, 800, 0.6);
+      // ⬅️ COMPRESSÃO MAIS EFICIENTE
+      const imagemComprimida = await this.comprimirImagem(
+        this.novoLivro.capa,
+        this.COMPRESSAO_MAX_WIDTH,
+        this.COMPRESSAO_QUALIDADE
+      );
+
       this.uploadService.uploadImagem(imagemComprimida).subscribe({
         next: (url) => {
           this.novoLivro.capa = url;
@@ -163,7 +178,6 @@ export class AddBookModalComponent {
   }
 
   private adicionarLivro(): void {
-
     const dados = {
       titulo: this.novoLivro.titulo.trim(),
       autor: this.novoLivro.autor.trim(),
@@ -172,19 +186,12 @@ export class AddBookModalComponent {
       codigoBarras: this.novoLivro.codigoBarras || null
     };
 
-    console.log('📤 Enviando livro:', dados);
-
     this.addBookService.adicionarLivro(dados).subscribe({
       next: (livro) => {
-        console.log('✅ Livro adicionado:', livro);
-        this.alertService.success('Livro adicionado com sucesso!');
         this.livroAdicionado.emit(livro);
         this.fecharModal();
       },
       error: (err) => {
-        console.error('❌ Erro ao adicionar livro:', err);
-
-        // Exibe alerta específico baseado no erro
         if (err.status === 0) {
           this.alertService.error('Erro de conexão com o servidor');
         } else if (err.status === 401) {
@@ -217,7 +224,8 @@ export class AddBookModalComponent {
     this.cdr.markForCheck();
   }
 
-  private comprimirImagem(base64: string, maxWidth: number = 800, qualidade: number = 0.7): Promise<string> {
+  // ⬅️ COMPRESSÃO OTIMIZADA
+  private comprimirImagem(base64: string, maxWidth: number = 1200, qualidade: number = 0.7): Promise<string> {
     return new Promise((resolve, reject) => {
       const img = new Image();
       img.src = base64;
@@ -225,10 +233,13 @@ export class AddBookModalComponent {
         const canvas = document.createElement('canvas');
         let width = img.width;
         let height = img.height;
+
+        // Redimensiona se necessário
         if (width > maxWidth) {
           height = (maxWidth / width) * height;
           width = maxWidth;
         }
+
         canvas.width = width;
         canvas.height = height;
         const ctx = canvas.getContext('2d');
@@ -237,9 +248,47 @@ export class AddBookModalComponent {
           return;
         }
         ctx.drawImage(img, 0, 0, width, height);
-        resolve(canvas.toDataURL('image/jpeg', qualidade));
+
+        // Tenta JPEG primeiro (melhor compressão), fallback para PNG
+        try {
+          resolve(canvas.toDataURL('image/jpeg', qualidade));
+        } catch {
+          resolve(canvas.toDataURL('image/png', qualidade));
+        }
       };
       img.onerror = () => reject(new Error('Erro ao carregar imagem'));
+    });
+  }
+
+  // ⬅️ PROCESSAMENTO DE IMAGEM COM COMPRESSÃO ANTES DO LIMITE
+  private processarImagem(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      // Verifica tipo
+      if (!file.type.startsWith('image/')) {
+        reject(new Error('Apenas imagens são permitidas'));
+        return;
+      }
+
+      // Avisa se for muito grande, mas não bloqueia
+      if (file.size > this.TAMANHO_MAXIMO) {
+        this.alertService.warning(`Imagem grande (${(file.size / 1024 / 1024).toFixed(1)}MB). Será comprimida automaticamente.`);
+      }
+
+      const reader = new FileReader();
+      reader.onload = async () => {
+        const base64 = reader.result as string;
+
+        // Comprime antes de salvar o preview
+        try {
+          const comprimida = await this.comprimirImagem(base64, this.COMPRESSAO_MAX_WIDTH, this.COMPRESSAO_QUALIDADE);
+          resolve(comprimida);
+        } catch {
+          // Fallback: usa a imagem original
+          resolve(base64);
+        }
+      };
+      reader.onerror = () => reject(new Error('Erro ao ler o arquivo'));
+      reader.readAsDataURL(file);
     });
   }
 
@@ -248,30 +297,18 @@ export class AddBookModalComponent {
     input.type = 'file';
     input.accept = 'image/*';
     input.capture = 'environment';
-    input.onchange = (event: any) => {
+    input.onchange = async (event: any) => {
       const file = event.target.files?.[0];
       if (!file) return;
 
-      if (!file.type.startsWith('image/')) {
-        this.alertService.warning('Apenas imagens são permitidas');
-        return;
-      }
-
-      if (file.size > this.TAMANHO_MAXIMO) {
-        this.alertService.error(`Imagem muito grande. Máximo: ${this.TAMANHO_MAXIMO / 1024 / 1024}MB`);
-        return;
-      }
-
-      const reader = new FileReader();
-      reader.onload = () => {
-        this.novoLivro.capa = reader.result as string;
-        this.alertService.success('Imagem selecionada com sucesso!');
+      try {
+        const imagemComprimida = await this.processarImagem(file);
+        this.novoLivro.capa = imagemComprimida;
+        this.alertService.success('Imagem selecionada e otimizada!');
         this.cdr.markForCheck();
-      };
-      reader.onerror = () => {
-        this.alertService.error('Erro ao ler a imagem');
-      };
-      reader.readAsDataURL(file);
+      } catch (error: any) {
+        this.alertService.error(error.message || 'Erro ao processar imagem');
+      }
     };
     input.click();
   }
@@ -280,25 +317,15 @@ export class AddBookModalComponent {
     const file = (event.target as HTMLInputElement).files?.[0];
     if (!file) return;
 
-    if (!file.type.startsWith('image/')) {
-      this.alertService.warning('Apenas imagens são permitidas');
-      return;
-    }
-
-    if (file.size > this.TAMANHO_MAXIMO) {
-      this.alertService.error(`Imagem muito grande. Máximo: ${this.TAMANHO_MAXIMO / 1024 / 1024}MB`);
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      this.novoLivro.capa = reader.result as string;
-      this.alertService.success('Imagem selecionada com sucesso!');
-      this.cdr.markForCheck();
-    };
-    reader.onerror = () => {
-      this.alertService.error('Erro ao ler a imagem');
-    };
-    reader.readAsDataURL(file);
+    // Processa a imagem de forma assíncrona
+    this.processarImagem(file)
+      .then(imagemComprimida => {
+        this.novoLivro.capa = imagemComprimida;
+        this.alertService.success('Imagem selecionada e otimizada!');
+        this.cdr.markForCheck();
+      })
+      .catch(error => {
+        this.alertService.error(error.message || 'Erro ao processar imagem');
+      });
   }
 }

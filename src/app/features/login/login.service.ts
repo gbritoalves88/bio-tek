@@ -1,5 +1,3 @@
-// src/app/features/login/login.service.ts
-
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
@@ -22,7 +20,18 @@ export class LoginService {
     return this.http.post<LoginResponse>(`${this.apiUrl}/google`, { id, idToken, nome, email }).pipe(
       tap(response => {
         localStorage.setItem('token', response.token);
-        localStorage.setItem('usuario', JSON.stringify(response.usuario));
+        const usuario = {
+          id: response.usuario.id,
+          nome: response.usuario.nome,
+          nickname: response.usuario.nickname,
+          email: response.usuario.email,
+          avatar: response.usuario.avatar,
+          descricao: response.usuario.descricao,
+          tema: response.usuario.tema,
+          adm: response.usuario.adm,
+          aceitouTermos: response.usuario.aceitouTermos || false  // ⬅️ ADICIONAR
+        };
+        localStorage.setItem('usuario', JSON.stringify(usuario));
       })
     );
   }
@@ -38,7 +47,18 @@ export class LoginService {
     }).pipe(
       tap(response => {
         localStorage.setItem('token', response.token);
-        localStorage.setItem('usuario', JSON.stringify(response.usuario));
+        const usuario = {
+          id: response.usuario.id,
+          nome: response.usuario.nome,
+          nickname: response.usuario.nickname,
+          email: response.usuario.email,
+          avatar: response.usuario.avatar,
+          descricao: response.usuario.descricao,
+          tema: response.usuario.tema,
+          adm: response.usuario.adm,
+          aceitouTermos: response.usuario.aceitouTermos || false  // ⬅️ ADICIONAR
+        };
+        localStorage.setItem('usuario', JSON.stringify(usuario));
       })
     );
   }

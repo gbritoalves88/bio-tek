@@ -5,17 +5,20 @@ import { UsuarioSocial, LivroSocial } from './social.model';
 import { ComentariosModalComponent } from '../../shared/comentarios-modal/comentarios-modal.component';
 import { Router } from '@angular/router';
 import { AlertService } from '../../shared/services/alert.service';
+import { FormsModule } from '@angular/forms'; // ⬅️ ADICIONAR
 
 @Component({
   selector: 'app-social',
   standalone: true,
-  imports: [CommonModule, ComentariosModalComponent],
+  imports: [CommonModule, FormsModule, ComentariosModalComponent],
   templateUrl: './social.component.html',
   styleUrl: './social.component.scss',
   host: { 'ngSkipHydration': 'true' }
 })
 export class SocialComponent implements OnInit {
   seguindo: UsuarioSocial[] = [];
+   usuariosFiltrados: UsuarioSocial[] = [];
+   termoBusca = ''; // ⬅️ NOVO
   carregando = true;
   perfilSelecionado: UsuarioSocial | null = null;
   livrosUsuario: LivroSocial[] = [];
@@ -25,6 +28,14 @@ export class SocialComponent implements OnInit {
   livroComentarioTitulo = '';
   livroComentarioProntos: any[] | null = null;
 
+  // Modo administrador
+  isAdmin = false;
+
+  // Propriedades para modal de confirmação
+  confirmarExclusao = false;
+  usuarioParaDeixarSeguir: string | null = null;
+  nomeUsuarioParaDeixarSeguir = '';
+
   constructor(
     private socialService: SocialService,
     private alertService: AlertService,
@@ -33,17 +44,38 @@ export class SocialComponent implements OnInit {
     private cdr: ChangeDetectorRef
   ) {}
 
-  ngOnInit(): void {
-    if (isPlatformBrowser(this.platformId)) {
-      this.carregarSeguindo();
-    }
+ngOnInit(): void {
+  if (isPlatformBrowser(this.platformId)) {
+    const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+    // ⬅️ USAR "Adm" com A maiúsculo, ou verificar ambos
+    this.isAdmin = usuario.Adm === true || usuario.adm === true;
+    console.log('👑 É admin?', this.isAdmin);
+    this.carregarUsuarios();
   }
+}
 
-  carregarSeguindo(): void {
-    this.carregando = true;
+ carregarUsuarios(): void {
+  this.carregando = true;
+
+  if (this.isAdmin) {
+    this.socialService.getTodosUsuarios().subscribe({
+      next: (usuarios) => {
+        this.seguindo = usuarios;
+        this.usuariosFiltrados = [...usuarios]; // ⬅️ ATUALIZAR A LISTA FILTRADA
+        this.carregando = false;
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        console.error('Erro:', err);
+        this.carregando = false;
+        this.alertService.error('Erro ao carregar usuários');
+      }
+    });
+  } else {
     this.socialService.getSeguindoCompleto().subscribe({
       next: (usuarios) => {
         this.seguindo = usuarios;
+        this.usuariosFiltrados = [...usuarios]; // ⬅️ ATUALIZAR A LISTA FILTRADA
         this.carregando = false;
         this.cdr.markForCheck();
       },
@@ -54,14 +86,13 @@ export class SocialComponent implements OnInit {
       }
     });
   }
+}
 
   verPerfil(usuario: UsuarioSocial): void {
     this.carregandoPerfil = true;
 
     this.socialService.getPerfilCompleto(usuario.id).subscribe({
       next: (data) => {
-        console.log('📦 Dados do perfil:', data);
-
         this.perfilSelecionado = {
           id: data.id,
           nome: data.nome,
@@ -101,14 +132,30 @@ export class SocialComponent implements OnInit {
     this.livrosUsuario = [];
   }
 
+    filtrarUsuarios(): void {
+    if (!this.termoBusca.trim()) {
+      this.usuariosFiltrados = [...this.seguindo];
+      return;
+    }
+
+    const termo = this.termoBusca.toLowerCase();
+    this.usuariosFiltrados = this.seguindo.filter(usuario =>
+      usuario.nome?.toLowerCase().includes(termo) ||
+      usuario.nickname?.toLowerCase().includes(termo)
+    );
+  }
+
+   limparBusca(): void {
+    this.termoBusca = '';
+    this.usuariosFiltrados = [...this.seguindo];
+  }
+
+
   irParaPerfil(id: string): void {
-    console.log('🔍 Navegando para perfil do usuário:', id);
     this.router.navigate(['/inicio/perfil', id]);
   }
 
   abrirComentarios(livro: any): void {
-    console.log('📖 Livro clicado:', livro);
-
     this.livroComentarioId = livro.id;
     this.livroComentarioTitulo = livro.titulo;
 
@@ -139,17 +186,31 @@ export class SocialComponent implements OnInit {
     }
   }
 
-  deixarDeSeguir(idUsuario: string): void {
-    if (confirm('Deixar de seguir?')) {
-      this.socialService.deixarDeSeguir(idUsuario).subscribe({
+  abrirConfirmacaoDeixarSeguir(idUsuario: string, nomeUsuario: string): void {
+    this.usuarioParaDeixarSeguir = idUsuario;
+    this.nomeUsuarioParaDeixarSeguir = nomeUsuario;
+    this.confirmarExclusao = true;
+  }
+
+  fecharConfirmacao(): void {
+    this.confirmarExclusao = false;
+    this.usuarioParaDeixarSeguir = null;
+    this.nomeUsuarioParaDeixarSeguir = '';
+  }
+
+  confirmarDeixarSeguir(): void {
+    if (this.usuarioParaDeixarSeguir) {
+      this.socialService.deixarDeSeguir(this.usuarioParaDeixarSeguir).subscribe({
         next: () => {
           this.socialService.limparCacheSeguindo();
-          this.carregarSeguindo();
-          this.alertService.success('Você deixou de seguir este usuário');
+          this.carregarUsuarios();
+          this.alertService.success(`Você deixou de seguir ${this.nomeUsuarioParaDeixarSeguir}`);
+          this.fecharConfirmacao();
         },
         error: (err) => {
           console.error('Erro:', err);
           this.alertService.error('Erro ao deixar de seguir');
+          this.fecharConfirmacao();
         }
       });
     }

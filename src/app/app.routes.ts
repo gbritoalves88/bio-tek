@@ -6,10 +6,14 @@ import { ComunidadeComponent } from './features/comunidade/comunidade.component'
 import { SocialComponent } from './features/social/social.component';
 import { PerfilComponent } from './features/perfil/perfil.component';
 import { LoginComponent } from './features/login/login.component';
+import { TermoComponent } from './features/termos/termos.component'; // ⬅️ Nome corrigido
 
 export const routes: Routes = [
   // Tela inicial → Login
   { path: '', component: LoginComponent },
+
+  // Termos de uso
+  { path: 'termo', component: TermoComponent }, // ⬅️ Nome corrigido
 
   // App interno
   {
@@ -21,7 +25,7 @@ export const routes: Routes = [
       { path: 'comunidade', component: ComunidadeComponent },
       { path: 'social', component: SocialComponent },
       { path: 'perfil', component: PerfilComponent },
-      { path: 'perfil/:id', component: PerfilComponent }, // ← Sem renderMode
+      { path: 'perfil/:id', component: PerfilComponent },
     ]
   },
 
