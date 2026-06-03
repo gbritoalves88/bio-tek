@@ -18,23 +18,16 @@ import { AlertService } from '../../shared/services/alert.service';
   host: { 'ngSkipHydration': 'true' }
 })
 export class PerfilComponent implements OnInit {
-  // Dados do usuário
   usuario: Usuario | null = null;
   editando = false;
   usuarioEdit: Partial<Usuario> = {};
   carregando = true;
   uploadErro = '';
 
-  // Termos de uso
-  mostrarTermos = false;
-  podeAceitar = false;
-
-  // Biblioteca pessoal
   livros: LivroDoUsuario[] = [];
   filtroStatus: number | null = null;
   filtroAvaliado = false;
 
-  // Modais de livro
   modalAdicionarAberto = false;
   modalEdicaoLivroAberto = false;
   livroEditando: LivroDoUsuario | null = null;
@@ -42,24 +35,24 @@ export class PerfilComponent implements OnInit {
   novaCapaPreview: string | null = null;
   edicaoCapaPreview: string | null = null;
 
-  // Comentários
   comentariosAberto = false;
   livroComentarioId = '';
   livroComentarioTitulo = '';
   livroComentarioProntos: any[] | null = null;
 
-  // Upload
-  private readonly TAMANHO_MAXIMO = 2 * 1024 * 1024;
-  menuConfigAberto = false;
+  private readonly TAMANHO_MAXIMO = 10 * 1024 * 1024;
+  private readonly COMPRESSAO_MAX_WIDTH = 1200;
+  private readonly COMPRESSAO_QUALIDADE = 0.7;
 
-  // Modo visualização
+  menuConfigAberto = false;
   modoVisualizacao = false;
   usuarioIdVisualizado: string | null = null;
-
   confirmarExclusao = false;
   livroParaExcluir: string | null = null;
 
-  @ViewChild('textoTermos') textoTermosRef!: ElementRef;
+  // ⬅️ NOVO: controla se é novo usuário (nickname não editável)
+  isNovoUsuario = false;
+
   @ViewChild('fileInputLivro') fileInputLivro!: ElementRef;
   @ViewChild('fileInputEdicaoLivro') fileInputEdicaoLivro!: ElementRef;
 
@@ -76,25 +69,28 @@ export class PerfilComponent implements OnInit {
 
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
-      this.route.params.subscribe(params => {
-        const idVisualizado = params['id'];
+      this.route.queryParams.subscribe(queryParams => {
+        const isNovo = queryParams['novo'] === 'true';
+        this.isNovoUsuario = isNovo;
 
-        if (idVisualizado) {
-          this.modoVisualizacao = true;
-          this.usuarioIdVisualizado = idVisualizado;
-          this.carregarPerfilVisualizacao(idVisualizado);
-        } else {
-          this.modoVisualizacao = false;
-          this.usuarioIdVisualizado = null;
-          this.carregarMeuPerfil();
-        }
+        this.route.params.subscribe(routeParams => {
+          const idVisualizado = routeParams['id'];
+
+          if (idVisualizado) {
+            this.modoVisualizacao = true;
+            this.usuarioIdVisualizado = idVisualizado;
+            this.carregarPerfilVisualizacao(idVisualizado);
+          } else {
+            this.modoVisualizacao = false;
+            this.usuarioIdVisualizado = null;
+            this.carregarMeuPerfil(isNovo);
+          }
+        });
       });
     }
   }
 
-  // ==================== MEU PERFIL ====================
-
-  carregarMeuPerfil(): void {
+  carregarMeuPerfil(isNovo: boolean = false): void {
     const usuarioLogado = JSON.parse(localStorage.getItem('usuario') || '{}');
     const id = usuarioLogado.id;
 
@@ -112,6 +108,12 @@ export class PerfilComponent implements OnInit {
         this.livros = data.livros || [];
         this.carregando = false;
         this.cdr.markForCheck();
+
+        if (isNovo && !data.aceitouTermos) {
+          this.router.navigate(['/termo']);
+        } else if (isNovo && data.aceitouTermos) {
+          setTimeout(() => this.abrirEdicao(), 500);
+        }
       },
       error: (err) => {
         console.error('Erro ao carregar perfil:', err);
@@ -120,8 +122,6 @@ export class PerfilComponent implements OnInit {
       }
     });
   }
-
-  // ==================== PERFIL VISUALIZAÇÃO ====================
 
   carregarPerfilVisualizacao(id: string): void {
     this.carregando = true;
@@ -141,8 +141,6 @@ export class PerfilComponent implements OnInit {
     });
   }
 
-  // ==================== MÉTODOS GERAIS ====================
-
   voltar(): void {
     this.location.back();
   }
@@ -151,7 +149,7 @@ export class PerfilComponent implements OnInit {
     if (this.modoVisualizacao && this.usuarioIdVisualizado) {
       this.carregarPerfilVisualizacao(this.usuarioIdVisualizado);
     } else {
-      this.carregarMeuPerfil();
+      this.carregarMeuPerfil(false);
     }
   }
 
@@ -171,57 +169,52 @@ export class PerfilComponent implements OnInit {
     this.uploadErro = '';
   }
 
-  onAvatarSelected(event: Event): void {
+  async onAvatarSelected(event: Event): Promise<void> {
     const file = (event.target as HTMLInputElement).files?.[0];
     if (!file) return;
 
-    if (!file.type.startsWith('image/')) {
-      this.alertService.warning('Apenas imagens são permitidas');
-      return;
-    }
+    try {
+      if (!file.type.startsWith('image/')) throw new Error('Apenas imagens');
+      if (file.size > this.TAMANHO_MAXIMO) throw new Error(`Máximo ${this.TAMANHO_MAXIMO / 1024 / 1024}MB`);
 
-    if (file.size > this.TAMANHO_MAXIMO) {
-      this.alertService.error(`Imagem muito grande. Máximo: ${this.TAMANHO_MAXIMO / 1024 / 1024}MB`);
-      return;
-    }
+      const reader = new FileReader();
+      const base64 = await new Promise<string>((resolve) => {
+        reader.onload = () => resolve(reader.result as string);
+        reader.readAsDataURL(file);
+      });
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      this.usuarioEdit.avatar = reader.result as string;
+      const comprimida = await this.comprimirImagem(base64, this.COMPRESSAO_MAX_WIDTH, this.COMPRESSAO_QUALIDADE);
+      this.usuarioEdit.avatar = comprimida;
+      this.alertService.success('Imagem selecionada!');
       this.cdr.markForCheck();
-    };
-    reader.readAsDataURL(file);
+    } catch (error: any) {
+      this.alertService.error(error.message);
+    }
   }
 
   async salvarPerfil(): Promise<void> {
     if (!this.usuarioEdit || !this.usuario) return;
 
-    const nick = (this.usuarioEdit.nickname || '').replace('@', '').trim();
-    if (!nick) {
-      this.alertService.warning('Nickname é obrigatório');
-      return;
+    // ⬅️ SÓ VALIDA NICKNAME SE NÃO FOR NOVO USUÁRIO
+    if (!this.isNovoUsuario) {
+      const nick = (this.usuarioEdit.nickname || '').replace('@', '').trim();
+      if (!nick) { this.alertService.warning('Nickname é obrigatório'); return; }
+      if (nick.length < 3) { this.alertService.warning('Mínimo 3 caracteres'); return; }
+      if (nick.length > 10) { this.alertService.warning('Máximo 10 caracteres'); return; }
+      this.usuarioEdit.nickname = '@' + nick;
+    } else {
+      // ⬅️ Para novo usuário, mantém o nickname original (não deixa editar)
+      delete this.usuarioEdit.nickname;
     }
-    if (nick.length < 3) {
-      this.alertService.warning('Nickname deve ter no mínimo 3 caracteres');
-      return;
-    }
-    if (nick.length > 10) {
-      this.alertService.warning('Nickname deve ter no máximo 10 caracteres');
-      return;
-    }
-
-    this.usuarioEdit.nickname = '@' + nick;
 
     if (this.usuarioEdit.avatar?.startsWith('data:')) {
-      const imagemComprimida = await this.comprimirImagem(this.usuarioEdit.avatar, 400, 0.6);
-      this.uploadService.uploadImagem(imagemComprimida).subscribe({
-        next: (url: string) => {
+      const comprimida = await this.comprimirImagem(this.usuarioEdit.avatar, 400, 0.6);
+      this.uploadService.uploadImagem(comprimida).subscribe({
+        next: (url) => {
           this.usuarioEdit.avatar = url;
           this.salvarDadosPerfil();
         },
-        error: () => {
-          this.alertService.error('Erro ao enviar foto. Tente novamente.');
-        }
+        error: () => this.alertService.error('Erro ao enviar foto')
       });
     } else {
       this.salvarDadosPerfil();
@@ -230,7 +223,7 @@ export class PerfilComponent implements OnInit {
 
   private salvarDadosPerfil(): void {
     if (!this.usuarioEdit || !this.usuario) return;
-    const dadosParaSalvar: Partial<Usuario> = {
+    const dados: Partial<Usuario> = {
       nome: this.usuarioEdit.nome,
       nickname: this.usuarioEdit.nickname,
       descricao: this.usuarioEdit.descricao,
@@ -238,35 +231,31 @@ export class PerfilComponent implements OnInit {
       tema: this.usuarioEdit.tema
     };
 
-    this.perfilService.atualizarPerfil(this.usuario.id, dadosParaSalvar).subscribe({
+    this.perfilService.atualizarPerfil(this.usuario.id, dados).subscribe({
       next: () => {
         this.perfilService.limparCache();
         this.carregarPerfil();
         this.editando = false;
-        this.alertService.success('Perfil atualizado com sucesso!');
-        this.cdr.markForCheck();
+        this.alertService.success('Perfil atualizado!');
+        this.isNovoUsuario = false; // ⬅️ Após salvar, não é mais novo usuário
       },
-      error: (err) => {
-        console.error('Erro:', err);
-        this.alertService.error('Erro ao salvar. Tente novamente.');
-      }
+      error: () => this.alertService.error('Erro ao salvar')
     });
   }
 
   sair(): void {
-    this.fecharTermos();
     localStorage.removeItem('token');
     localStorage.removeItem('usuario');
     this.router.navigate(['/']);
   }
 
   limparArroba(): void {
-    if (this.usuarioEdit.nickname) {
+    if (this.usuarioEdit.nickname && !this.isNovoUsuario) {
       this.usuarioEdit.nickname = this.usuarioEdit.nickname.replace(/@/g, '');
     }
   }
 
-  private comprimirImagem(base64: string, maxWidth: number = 400, qualidade: number = 0.7): Promise<string> {
+  private comprimirImagem(base64: string, maxWidth: number = 800, qualidade: number = 0.7): Promise<string> {
     return new Promise((resolve) => {
       const img = new Image();
       img.src = base64;
@@ -285,71 +274,13 @@ export class PerfilComponent implements OnInit {
     });
   }
 
-  // ==================== TERMOS ====================
-
-  verificarScroll(): void {
-    const el = this.textoTermosRef?.nativeElement;
-    if (el) {
-      const scrolledToBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 10;
-      if (scrolledToBottom) {
-        this.podeAceitar = true;
-      }
-    }
-  }
-
-  aceitarTermos(): void {
-    if (!this.usuario) return;
-    this.perfilService.aceitarTermos().subscribe({
-      next: () => {
-        this.fecharTermos();
-        this.abrirEdicao();
-        this.alertService.success('Termos aceitos!');
-      },
-      error: (err) => {
-        console.error('Erro ao aceitar termos:', err);
-        this.alertService.error('Erro ao aceitar termos');
-      }
-    });
-  }
-
-  recusarTermos(): void {
-    this.fecharTermos();
-    localStorage.removeItem('token');
-    localStorage.removeItem('usuario');
-    this.router.navigate(['/']);
-  }
-
-  abrirTermos(): void {
-    this.mostrarTermos = true;
-    const header = document.querySelector('.header') as HTMLElement;
-    const bottomNav = document.querySelector('.bottom-nav') as HTMLElement;
-    const sidebar = document.querySelector('.sidebar') as HTMLElement;
-    if (header) header.style.display = 'none';
-    if (bottomNav) bottomNav.style.display = 'none';
-    if (sidebar) sidebar.style.display = 'none';
-  }
-
-  fecharTermos(): void {
-    this.mostrarTermos = false;
-    this.podeAceitar = false;
-    const header = document.querySelector('.header') as HTMLElement;
-    const bottomNav = document.querySelector('.bottom-nav') as HTMLElement;
-    const sidebar = document.querySelector('.sidebar') as HTMLElement;
-    if (header) header.style.display = '';
-    if (bottomNav) bottomNav.style.display = '';
-    if (sidebar) sidebar.style.display = '';
-    this.cdr.markForCheck();
-  }
-
-  // ==================== LIVROS ====================
-
   get livrosFiltrados(): LivroDoUsuario[] {
     let resultado = [...this.livros];
     if (this.filtroStatus !== null) {
       resultado = resultado.filter(l => l.status === this.filtroStatus);
     }
     if (this.filtroAvaliado) {
-      resultado = resultado.filter(l => l.avaliacao !== null && l.avaliacao !== undefined);
+      resultado = resultado.filter(l => l.avaliacao !== null);
     }
     resultado.sort((a, b) => new Date(b.dataCriacao).getTime() - new Date(a.dataCriacao).getTime());
     return resultado;
@@ -371,25 +302,18 @@ export class PerfilComponent implements OnInit {
     }
   }
 
-  // ===== Modal Adicionar Livro =====
-
   abrirModalAdicionarLivro(): void {
     this.modalAdicionarAberto = true;
   }
 
-  onLivroAdicionado(livro: any): void {
+  onLivroAdicionado(): void {
     this.modalAdicionarAberto = false;
     this.alertService.success('Livro adicionado!');
     this.carregarPerfil();
   }
 
-  // ===== Editar Livro =====
-
   abrirEdicaoLivro(livro: LivroDoUsuario): void {
-    this.livroEditando = {
-      ...livro,
-      estrelas: livro.avaliacao?.nota || undefined
-    };
+    this.livroEditando = { ...livro, estrelas: livro.avaliacao?.nota || undefined };
     this.edicaoCapaPreview = livro.imagem || null;
     this.modalEdicaoLivroAberto = true;
   }
@@ -400,41 +324,59 @@ export class PerfilComponent implements OnInit {
     this.edicaoCapaPreview = null;
   }
 
-  tirarFotoEdicaoLivro(): void {
+  async tirarFotoEdicaoLivro(): Promise<void> {
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = 'image/*';
     input.capture = 'environment';
-    input.onchange = (event: any) => {
+    input.onchange = async (event: any) => {
       const file = event.target.files?.[0];
-      if (file) this.processarImagemEdicao(file);
+      if (!file) return;
+
+      try {
+        if (!file.type.startsWith('image/')) throw new Error('Apenas imagens');
+        if (file.size > this.TAMANHO_MAXIMO) throw new Error(`Máximo ${this.TAMANHO_MAXIMO / 1024 / 1024}MB`);
+
+        const reader = new FileReader();
+        const base64 = await new Promise<string>((resolve) => {
+          reader.onload = () => resolve(reader.result as string);
+          reader.readAsDataURL(file);
+        });
+
+        const comprimida = await this.comprimirImagem(base64, 800, 0.6);
+        this.edicaoCapaPreview = comprimida;
+        if (this.livroEditando) this.livroEditando.imagem = comprimida;
+        this.alertService.success('Imagem selecionada!');
+        this.cdr.markForCheck();
+      } catch (error: any) {
+        this.alertService.error(error.message);
+      }
     };
     input.click();
   }
 
-  onFileSelectedEdicaoLivro(event: Event): void {
+  async onFileSelectedEdicaoLivro(event: Event): Promise<void> {
     const file = (event.target as HTMLInputElement).files?.[0];
-    if (file) this.processarImagemEdicao(file);
-  }
+    if (!file) return;
 
-  private processarImagemEdicao(file: File): void {
-    if (!file.type.startsWith('image/')) {
-      this.alertService.warning('Apenas imagens são permitidas');
-      return;
-    }
-    if (file.size > this.TAMANHO_MAXIMO) {
-      this.alertService.error(`Imagem muito grande. Máximo: ${this.TAMANHO_MAXIMO / 1024 / 1024}MB`);
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = () => {
-      this.edicaoCapaPreview = reader.result as string;
-      if (this.livroEditando) {
-        this.livroEditando.imagem = reader.result as string;
-      }
+    try {
+      if (!file.type.startsWith('image/')) throw new Error('Apenas imagens');
+      if (file.size > this.TAMANHO_MAXIMO) throw new Error(`Máximo ${this.TAMANHO_MAXIMO / 1024 / 1024}MB`);
+
+      const reader = new FileReader();
+      const base64 = await new Promise<string>((resolve) => {
+        reader.onload = () => resolve(reader.result as string);
+        reader.readAsDataURL(file);
+      });
+
+      const comprimida = await this.comprimirImagem(base64, 800, 0.6);
+      this.edicaoCapaPreview = comprimida;
+      if (this.livroEditando) this.livroEditando.imagem = comprimida;
+      this.alertService.success('Imagem selecionada!');
       this.cdr.markForCheck();
-    };
-    reader.readAsDataURL(file);
+    } catch (error: any) {
+      this.alertService.error(error.message);
+    }
   }
 
   async salvarEdicaoLivro(): Promise<void> {
@@ -448,10 +390,7 @@ export class PerfilComponent implements OnInit {
           this.livroEditando!.imagem = url;
           this.enviarEdicaoLivro();
         },
-        error: () => {
-          this.alertService.error('Erro ao enviar imagem');
-          this.enviarEdicaoLivro();
-        }
+        error: () => this.enviarEdicaoLivro()
       });
     } else {
       this.enviarEdicaoLivro();
@@ -461,7 +400,7 @@ export class PerfilComponent implements OnInit {
   private enviarEdicaoLivro(): void {
     if (!this.livroEditando) return;
 
-    const dadosParaEnviar: any = {
+    const dados: any = {
       titulo: this.livroEditando.titulo,
       autor: this.livroEditando.autor,
       descricao: this.livroEditando.descricao,
@@ -470,40 +409,30 @@ export class PerfilComponent implements OnInit {
     };
 
     if (this.livroEditando.status === 3 && this.livroEditando.estrelas) {
-      dadosParaEnviar.estrelas = this.livroEditando.estrelas;
+      dados.estrelas = this.livroEditando.estrelas;
     }
 
-    this.perfilService.atualizarLivro(this.livroEditando.id, dadosParaEnviar).subscribe({
+    this.perfilService.atualizarLivro(this.livroEditando.id, dados).subscribe({
       next: () => {
         this.fecharEdicaoLivro();
-        this.alertService.success('Livro atualizado com sucesso!');
+        this.alertService.success('Livro atualizado!');
         this.carregarPerfil();
       },
-      error: (err) => {
-        console.error('Erro ao editar livro:', err);
-        this.alertService.error('Erro ao atualizar livro');
-      }
+      error: () => this.alertService.error('Erro ao atualizar livro')
     });
   }
 
-  // ===== Deletar Livro =====
-
   deletarLivro(id: string): void {
-    if (confirm('Tem certeza que deseja remover este livro?')) {
+    if (confirm('Remover este livro?')) {
       this.perfilService.deletarLivro(id).subscribe({
         next: () => {
-          this.alertService.success('Livro removido com sucesso!');
+          this.alertService.success('Livro removido!');
           this.carregarPerfil();
         },
-        error: (err) => {
-          console.error('Erro ao deletar livro:', err);
-          this.alertService.error('Erro ao remover livro');
-        }
+        error: () => this.alertService.error('Erro ao remover livro')
       });
     }
   }
-
-  // ===== Comentários =====
 
   abrirComentarios(livro: LivroDoUsuario): void {
     this.livroComentarioId = livro.id;
@@ -518,29 +447,19 @@ export class PerfilComponent implements OnInit {
     this.comentariosAberto = true;
   }
 
-  // ===== Menu Configuração =====
-
   toggleMenuConfig(): void {
     this.menuConfigAberto = !this.menuConfigAberto;
-  }
-
-  fecharMenuConfig(): void {
-    this.menuConfigAberto = false;
   }
 
   confirmarExcluirLivro(): void {
     if (this.livroParaExcluir) {
       this.perfilService.deletarLivro(this.livroParaExcluir).subscribe({
         next: () => {
-          this.alertService.success('Livro removido com sucesso!');
+          this.alertService.success('Livro removido!');
           this.carregarPerfil();
           this.fecharConfirmacaoExclusao();
         },
-        error: (err) => {
-          console.error('Erro ao deletar livro:', err);
-          this.alertService.error('Erro ao remover livro');
-          this.fecharConfirmacaoExclusao();
-        }
+        error: () => this.alertService.error('Erro ao remover livro')
       });
     }
   }

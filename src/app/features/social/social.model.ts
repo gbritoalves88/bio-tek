@@ -1,4 +1,3 @@
-
 export interface Seguidor {
   id: string;
   idUsuario: string;
@@ -15,8 +14,9 @@ export interface UsuarioSocial {
   quantidadeLivros: number;
   quantidadeLivrosLidos: number;
   mediaAvaliacoes: number;
+  Adm?: boolean;  // ⬅️ COM A MAIÚSCULO
+  adm?: boolean;  // ⬅️ TAMBÉM ACEITA MINÚSCULO (fallback)
 }
-
 export interface LivroSocial {
   id: string;
   titulo: string;

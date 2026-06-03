@@ -58,4 +58,8 @@ export class SocialService {
   deixarDeSeguir(idUsuario: string): Observable<any> {
     return this.http.delete(`${this.apiSeguidor}/deixar-de-seguir/${idUsuario}`);
   }
+
+  getTodosUsuarios(): Observable<UsuarioSocial[]> {
+    return this.http.get<UsuarioSocial[]>(`${this.apiUsuario}/todos`);
+  }
 }

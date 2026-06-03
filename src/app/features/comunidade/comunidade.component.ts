@@ -19,14 +19,12 @@ export class ComunidadeComponent implements OnInit {
   carregando = true;
   atualizando = false;
   pullParaAtualizar = false;
-
+  meuId = '';
   modalAberto = false;
   itemSelecionado: AtividadeComunidade | null = null;
   novoComentario = '';
   comentarios: Comentario[] = [];
   carregandoComentarios = false;
-  seguindoIds: Set<string> = new Set();
-  meuId = '';
   livroComentarioProntos: any[] | null = null;
 
   private touchStartY = 0;
@@ -45,7 +43,6 @@ export class ComunidadeComponent implements OnInit {
       const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
       this.meuId = usuario.id || '';
       this.carregarFeed();
-      this.carregarSeguindo();
     }
   }
 
@@ -71,8 +68,8 @@ export class ComunidadeComponent implements OnInit {
 
   carregarFeed(): void {
     this.carregando = true;
-    this.comunidadeService.getFeedComunidade(this.meuId).subscribe({
-      next: (data) => {
+    this.comunidadeService.getFeedComunidade().subscribe({
+      next: (data: AtividadeComunidade[]) => {
         this.atividades = data;
         this.carregando = false;
         this.cdr.markForCheck();
@@ -87,8 +84,8 @@ export class ComunidadeComponent implements OnInit {
 
   atualizarFeed(): void {
     this.atualizando = true;
-    this.comunidadeService.atualizarFeed(this.meuId).subscribe({
-      next: (data) => {
+    this.comunidadeService.atualizarFeed().subscribe({
+      next: (data: AtividadeComunidade[]) => {
         this.atividades = data;
         this.atualizando = false;
         this.alertService.success('Feed atualizado!');
@@ -110,7 +107,14 @@ export class ComunidadeComponent implements OnInit {
 
     if (item.tipo === 'livro_avaliado') {
       if (item.comentarios && item.comentarios.length > 0) {
-        this.comentarios = item.comentarios;
+        this.comentarios = item.comentarios.map(c => ({
+          id: c.id,
+          idUsuario: c.idUsuario || c.usuario?.id || '',
+          usuarioNome: c.usuarioNome || c.usuario?.nome || '',
+          usuarioNickname: c.usuarioNickname || c.usuario?.nickname || 'Usuário',
+          comentario: c.comentario,
+          dataCriacao: c.dataCriacao
+        }));
       } else {
         this.carregarComentarios(item.livro.id);
       }
@@ -127,8 +131,15 @@ export class ComunidadeComponent implements OnInit {
   carregarComentarios(idLivro: string): void {
     this.carregandoComentarios = true;
     this.comunidadeService.getComentariosDoLivro(idLivro).subscribe({
-      next: (comentarios) => {
-        this.comentarios = comentarios;
+      next: (comentarios: Comentario[]) => {
+        this.comentarios = comentarios.map(c => ({
+          id: c.id,
+          idUsuario: c.idUsuario,
+          usuarioNome: c.usuarioNome || '',
+          usuarioNickname: c.usuarioNickname || 'Usuário',
+          comentario: c.comentario,
+          dataCriacao: c.dataCriacao
+        }));
         this.carregandoComentarios = false;
         this.cdr.markForCheck();
       },
@@ -156,27 +167,21 @@ export class ComunidadeComponent implements OnInit {
     });
   }
 
-  carregarSeguindo(): void {
-    this.comunidadeService.getSeguindo().subscribe({
-      next: (ids) => {
-        this.seguindoIds = new Set(ids);
-        this.cdr.markForCheck();
-      },
-      error: (err) => {
-        console.error('Erro ao carregar seguindo:', err);
-      }
-    });
-  }
-
-  estaSeguindo(idUsuario: string): boolean {
-    return this.seguindoIds.has(idUsuario);
-  }
-
+  // ⬅️ MÉTODOS DE SEGUIR USANDO O CAMPO 'segue' DO PRÓPRIO ITEM
   seguirUsuario(idUsuario: string): void {
     this.comunidadeService.seguir(idUsuario).subscribe({
       next: () => {
-        this.seguindoIds.add(idUsuario);
-        this.socialService.limparCacheSeguindo();
+        // Atualiza localmente o campo "segue" no feed
+        this.atividades = this.atividades.map(a => {
+          if (a.usuario.id === idUsuario) {
+            return { ...a, usuario: { ...a.usuario, segue: true } };
+          }
+          return a;
+        });
+        // Atualiza também o item selecionado se estiver no modal
+        if (this.itemSelecionado?.usuario.id === idUsuario) {
+          this.itemSelecionado = { ...this.itemSelecionado, usuario: { ...this.itemSelecionado.usuario, segue: true } };
+        }
         this.alertService.success('Agora você segue este usuário!');
         this.cdr.markForCheck();
       },
@@ -190,8 +195,17 @@ export class ComunidadeComponent implements OnInit {
   deixarDeSeguirUsuario(idUsuario: string): void {
     this.comunidadeService.deixarDeSeguir(idUsuario).subscribe({
       next: () => {
-        this.seguindoIds.delete(idUsuario);
-        this.socialService.limparCacheSeguindo();
+        // Atualiza localmente o campo "segue" no feed
+        this.atividades = this.atividades.map(a => {
+          if (a.usuario.id === idUsuario) {
+            return { ...a, usuario: { ...a.usuario, segue: false } };
+          }
+          return a;
+        });
+        // Atualiza também o item selecionado se estiver no modal
+        if (this.itemSelecionado?.usuario.id === idUsuario) {
+          this.itemSelecionado = { ...this.itemSelecionado, usuario: { ...this.itemSelecionado.usuario, segue: false } };
+        }
         this.alertService.info('Você deixou de seguir este usuário');
         this.cdr.markForCheck();
       },

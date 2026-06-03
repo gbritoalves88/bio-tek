@@ -2,15 +2,22 @@ export interface Comentario {
   id: string;
   idUsuario: string;
   usuarioNome?: string;
-  usuarioNickname?: string;  // ⬅️ Use esta propriedade
+  usuarioNickname?: string;
   comentario: string;
   dataCriacao: string;
+  usuario?: {
+    id: string;
+    nome: string;
+    nickname: string;
+    avatar?: string;
+  };
 }
 
 export interface AtividadeComunidade {
   id: string;
   tipo: 'livro_novo' | 'livro_lido' | 'livro_lendo' | 'livro_avaliado';
   usuario: {
+    segue: any;
     id: string;
     nome: string;
     nickname: string;

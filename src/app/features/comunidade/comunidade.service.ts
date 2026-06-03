@@ -1,5 +1,3 @@
-// src/app/features/comunidade/comunidade.service.ts
-
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, forkJoin, of } from 'rxjs';
@@ -19,28 +17,21 @@ export class ComunidadeService {
 
   // Cache
   private feedCache$: Observable<AtividadeComunidade[]> | null = null;
-  private cacheKey = '';
 
   constructor(private http: HttpClient) {}
 
-  getFeedComunidade(meuId: string): Observable<AtividadeComunidade[]> {
-    if (this.cacheKey !== meuId) {
-      this.feedCache$ = null;
-      this.cacheKey = meuId;
-    }
-
+  getFeedComunidade(): Observable<AtividadeComunidade[]> {
     if (!this.feedCache$) {
       this.feedCache$ = this.http.get<AtividadeComunidade[]>(
-        `${this.apiComunidade}/feed?meuId=${meuId}&limite=30`
+        `${this.apiComunidade}/feed?limite=30` // ⬅️ REMOVEU O & extra
       ).pipe(shareReplay(1));
     }
-
     return this.feedCache$;
   }
 
-  atualizarFeed(meuId: string): Observable<AtividadeComunidade[]> {
-    this.feedCache$ = null;
-    return this.getFeedComunidade(meuId);
+  atualizarFeed(): Observable<AtividadeComunidade[]> {
+    this.feedCache$ = null; // Limpa cache
+    return this.getFeedComunidade();
   }
 
   getComentariosDoLivro(idLivro: string): Observable<Comentario[]> {
@@ -52,9 +43,11 @@ export class ComunidadeService {
           map(usuarios => {
             const mapU = new Map(usuarios.map(u => [u.id, u]));
             return data.map(c => ({
-              id: c.id, idUsuario: c.idUsuario,
+              id: c.id,
+              idUsuario: c.idUsuario,
               usuarioNickname: mapU.get(c.idUsuario)?.nickname || '@desconhecido',
-              comentario: c.comentario, dataCriacao: c.dataCriacao
+              comentario: c.comentario,
+              dataCriacao: c.dataCriacao
             }));
           })
         );

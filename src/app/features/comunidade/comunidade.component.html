@@ -110,18 +110,18 @@
                 <span class="avaliacao-nota">{{ item.avaliacao?.nota || 0 }}/5</span>
               </div>
               <div class="ultimo-comentario" *ngIf="item.comentarios && item.comentarios.length > 0">
-                <div class="comentario-destaque">
-                  <span class="aspas">“</span>
-                  <span class="comentario-texto">{{ item.comentarios[0].comentario | slice:0:80 }}{{ item.comentarios[0].comentario.length > 80 ? '...' : '' }}</span>
-                  <span class="aspas">”</span>
-                </div>
-                <div class="comentario-autor-destaque">
-                  — {{ item.comentarios[0].usuarioNickname || '@user' }}
-                </div>
+              <div class="comentario-destaque">
+                <span class="aspas">“</span>
+                <span class="comentario-texto">{{ item.comentarios[item.comentarios.length - 1].comentario | slice:0:80 }}{{ item.comentarios[item.comentarios.length - 1].comentario.length > 80 ? '...' : '' }}</span>
+                <span class="aspas">”</span>
+              </div>
+              <div class="comentario-autor-destaque">
+                — {{ item.comentarios[item.comentarios.length - 1].usuarioNickname || item.comentarios[item.comentarios.length - 1].usuario?.nickname || 'Usuário' }}
               </div>
             </div>
           </div>
         </div>
+      </div>
       </ng-container>
 
       <div class="feed-rodape">
@@ -158,9 +158,9 @@
       </div>
       <button class="btn-seguir-modal"
               *ngIf="itemSelecionado.usuario.id !== meuId"
-              (click)="estaSeguindo(itemSelecionado.usuario.id) ? deixarDeSeguirUsuario(itemSelecionado.usuario.id) : seguirUsuario(itemSelecionado.usuario.id)"
-              [class.seguindo]="estaSeguindo(itemSelecionado.usuario.id)">
-        {{ estaSeguindo(itemSelecionado.usuario.id) ? 'Seguindo' : 'Seguir' }}
+              (click)="itemSelecionado.usuario.segue ? deixarDeSeguirUsuario(itemSelecionado.usuario.id) : seguirUsuario(itemSelecionado.usuario.id)"
+              [class.seguindo]="itemSelecionado.usuario.segue">
+        {{ itemSelecionado.usuario.segue ? 'Seguindo' : 'Seguir' }}
       </button>
     </div>
 
@@ -179,7 +179,7 @@
       </div>
     </div>
 
-    <div class="comunidade-comentarios" *ngIf="itemSelecionado.tipo === 'livro_avaliado'">
+    <div class="comunidade-comentarios" *ngIf="itemSelecionado && itemSelecionado.tipo === 'livro_avaliado'">
       <h4>Comentários</h4>
       <div class="loading" *ngIf="carregandoComentarios">🔍 Carregando...</div>
 

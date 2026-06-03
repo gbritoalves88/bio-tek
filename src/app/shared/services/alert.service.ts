@@ -5,6 +5,21 @@ import { Injectable } from '@angular/core';
 })
 export class AlertService {
 
+  private getThemeColors(): { bg: string; text: string; button: string } {
+    // Verifica se está no navegador
+    if (typeof document === 'undefined') {
+      return { bg: '#ffffff', text: '#333333', button: '#999999' };
+    }
+
+    const isDarkTheme = document.body.classList.contains('dark-theme');
+
+    return {
+      bg: isDarkTheme ? '#2a2a2a' : '#ffffff',
+      text: isDarkTheme ? '#e0e0e0' : '#333333',
+      button: isDarkTheme ? '#888888' : '#999999'
+    };
+  }
+
   private showToast(message: string, type: string): void {
     // Cria o container se não existir
     let container = document.querySelector('.alert-toast-container') as HTMLElement;
@@ -23,16 +38,19 @@ export class AlertService {
       document.body.appendChild(container);
     }
 
+    // Obtém as cores do tema atual
+    const theme = this.getThemeColors();
+
     // Cria o toast
     const toast = document.createElement('div');
     toast.className = `alert-toast alert-${type}`;
 
-    // Define cores baseado no tipo
+    // Define cores baseado no tipo (apenas borda e ícone)
     const colors = {
-      success: { border: '#4caf50', icon: '#4caf50', iconChar: '✓', bg: '#f3dcba' },
-      error: { border: '#e74c3c', icon: '#e74c3c', iconChar: '✗', bg: '#f3dcba' },
-      info: { border: '#2196f3', icon: '#2196f3', iconChar: 'ℹ', bg: '#f3dcba' },
-      warning: { border: '#ff9800', icon: '#ff9800', iconChar: '⚠', bg: '#f3dcba' }
+      success: { border: '#4caf50', icon: '#4caf50', iconChar: '✓' },
+      error: { border: '#e74c3c', icon: '#e74c3c', iconChar: '✗' },
+      info: { border: '#2196f3', icon: '#2196f3', iconChar: 'ℹ' },
+      warning: { border: '#ff9800', icon: '#ff9800', iconChar: '⚠' }
     };
 
     const color = colors[type as keyof typeof colors] || colors.info;
@@ -42,7 +60,7 @@ export class AlertService {
       align-items: center;
       gap: 12px;
       padding: 12px 16px;
-      background: ${color.bg};
+      background: ${theme.bg};
       border-radius: 8px;
       border-left: 4px solid ${color.border};
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
@@ -54,8 +72,8 @@ export class AlertService {
 
     toast.innerHTML = `
       <span style="font-size: 18px; font-weight: bold; color: ${color.icon}">${color.iconChar}</span>
-      <span style="flex: 1; font-size: 14px; color: #333;">${message}</span>
-      <button style="background: none; border: none; font-size: 18px; cursor: pointer; color: #999; padding: 0 4px;">×</button>
+      <span style="flex: 1; font-size: 14px; color: ${theme.text};">${message}</span>
+      <button style="background: none; border: none; font-size: 18px; cursor: pointer; color: ${theme.button}; padding: 0 4px;">×</button>
     `;
 
     // Botão fechar

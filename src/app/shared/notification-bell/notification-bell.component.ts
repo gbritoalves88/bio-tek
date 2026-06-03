@@ -28,7 +28,7 @@ import { NotificationService, Notificacao } from '../services/notification.servi
             <span class="icone">{{ n.tipo === 'seguidor' ? '👤' : '💬' }}</span>
             <div class="mensagem">
               <span class="texto">{{ n.mensagem }}</span>
-              <span class="data">{{ n.dataCriacao | date:'dd/MM/yyyy' }}</span>
+              <span class="data">{{ formatarData(n.dataCriacao) }}</span>
             </div>
           </div>
           <div class="empty" *ngIf="notificacoes.length === 0">
@@ -179,17 +179,32 @@ import { NotificationService, Notificacao } from '../services/notification.servi
     }
   `]
 })
-export class NotificationBellComponent implements OnInit {
+export class NotificationBellComponent implements OnInit, OnDestroy {
   panelAberto = false;
   naoLidas = 0;
   notificacoes: Notificacao[] = [];
   private intervalId: any;
+  private ultimaAtividade = Date.now();
+
+  @HostListener('document:mousemove')
+  @HostListener('document:click')
+  @HostListener('document:keydown')
+  @HostListener('document:scroll')
+  onUserActivity() {
+    this.ultimaAtividade = Date.now();
+  }
 
   constructor(private notificationService: NotificationService) {}
 
   ngOnInit(): void {
     this.carregarNotificacoes();
-    this.intervalId = setInterval(() => this.carregarNotificacoes(), 30000);
+
+    this.intervalId = setInterval(() => {
+      const segundosInativo = (Date.now() - this.ultimaAtividade) / 1000;
+      if (segundosInativo < 60) {
+        this.carregarNotificacoes();
+      }
+    }, 30000);
   }
 
   ngOnDestroy(): void {
@@ -200,12 +215,38 @@ export class NotificationBellComponent implements OnInit {
 
   carregarNotificacoes(): void {
     this.notificationService.getNaoLidas().subscribe({
-      next: (data) => this.naoLidas = data.length
+      next: (data: Notificacao[]) => this.naoLidas = data.length
     });
 
     this.notificationService.getAll().subscribe({
-      next: (data) => this.notificacoes = data
+      next: (data: Notificacao[]) => this.notificacoes = data
     });
+  }
+
+  // ⬅️ MÉTODO PARA FORMATAR DATA COM HORA
+  formatarData(dataISO: string): string {
+    const data = new Date(dataISO);
+    const hoje = new Date();
+    const ontem = new Date(hoje);
+    ontem.setDate(ontem.getDate() - 1);
+
+    const dia = data.getDate().toString().padStart(2, '0');
+    const mes = (data.getMonth() + 1).toString().padStart(2, '0');
+    const horas = data.getHours().toString().padStart(2, '0');
+    const minutos = data.getMinutes().toString().padStart(2, '0');
+
+    // Se for hoje, mostra só a hora
+    if (data.toDateString() === hoje.toDateString()) {
+      return `Hoje às ${horas}:${minutos}`;
+    }
+
+    // Se for ontem, mostra "Ontem"
+    if (data.toDateString() === ontem.toDateString()) {
+      return `Ontem às ${horas}:${minutos}`;
+    }
+
+    // Caso contrário, mostra data completa
+    return `${dia}/${mes} às ${horas}:${minutos}`;
   }
 
   togglePanel(event: MouseEvent): void {

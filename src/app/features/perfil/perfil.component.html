@@ -20,23 +20,19 @@
   <ng-container *ngIf="!carregando">
     <!-- Dados do perfil - Modo visualização -->
     <div class="perfil-container" *ngIf="usuario && !editando">
-      <!-- LINHA 1: FOTO, INFORMAÇÕES E BOTÃO -->
       <div class="perfil-header-row">
-        <!-- FOTO -->
         <div class="perfil-avatar">
           <div class="avatar-pequeno">
             <img [src]="usuario.avatar || 'assets/capas/perfilSemFoto.png'" [alt]="usuario.nome" />
           </div>
         </div>
 
-        <!-- INFORMAÇÕES -->
         <div class="perfil-info">
           <h2 class="nome">{{ usuario.nome }}</h2>
           <span class="nickname">{{ usuario.nickname || '@sem-nickname' }}</span>
           <p class="bio" *ngIf="usuario.descricao">{{ usuario.descricao }}</p>
         </div>
 
-        <!-- BOTÃO (VOLTAR ou ENGREMAGEM) -->
         <div class="perfil-actions">
           <button class="btn-voltar" *ngIf="modoVisualizacao" (click)="voltar()" title="Voltar">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -73,7 +69,6 @@
         </div>
       </div>
 
-      <!-- ESTATÍSTICAS -->
       <div class="stats">
         <div class="stat-item">
           <span class="stat-valor">{{ usuario.quantidadeLivros || 0 }}</span>
@@ -90,7 +85,7 @@
       </div>
     </div>
 
-    <!-- Edição do perfil - Modo edição -->
+    <!-- Edição do perfil -->
     <div class="perfil-container" *ngIf="editando && usuarioEdit">
       <div class="perfil-edicao-row">
         <div class="perfil-avatar">
@@ -113,10 +108,20 @@
             <input type="text" [(ngModel)]="usuarioEdit.nome">
 
             <label class="input-label">@ Nickname</label>
-            <div class="nickname-input-wrapper">
+            <div class="nickname-input-wrapper" [class.disabled]="isNovoUsuario">
               <span class="nickname-prefix">@</span>
-              <input type="text" [(ngModel)]="usuarioEdit.nickname" placeholder="seunickname (3 a 10 caracteres)" maxlength="10" (input)="limparArroba()">
+              <input
+                type="text"
+                [(ngModel)]="usuarioEdit.nickname"
+                placeholder="seunickname (3 a 10 caracteres)"
+                maxlength="10"
+                (input)="limparArroba()"
+                [disabled]="isNovoUsuario"
+                [title]="isNovoUsuario ? 'Nickname não pode ser alterado após o cadastro' : ''">
             </div>
+            <p class="nickname-aviso" *ngIf="isNovoUsuario">
+              ⚠️ O nickname não pode ser alterado após o cadastro. Escolha com cuidado!
+            </p>
 
             <label class="input-label">Biografia</label>
             <textarea [(ngModel)]="usuarioEdit.descricao" placeholder="Conte um pouco sobre você..." rows="3"></textarea>
@@ -149,7 +154,6 @@
         </button>
       </div>
 
-      <!-- FILTROS -->
       <div class="filtros">
         <button class="filtro-btn" [class.active]="filtroStatus === null" (click)="filtroStatus = null">Todos</button>
         <button class="filtro-btn" [class.active]="filtroStatus === 1" (click)="filtroStatus = 1">📕 Quero ler</button>
@@ -158,7 +162,6 @@
         <button class="filtro-btn" [class.active]="filtroAvaliado" (click)="filtroAvaliado = !filtroAvaliado">⭐ Avaliados</button>
       </div>
 
-      <!-- GRID DE LIVROS -->
       <div class="book-list">
         <div class="book-item" *ngFor="let livro of livrosFiltrados">
           <img [src]="livro.imagem || 'assets/capas/perfilSemFoto.png'" [alt]="livro.titulo" class="book-cover" />
@@ -182,8 +185,8 @@
                   <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
                 </svg>
               </button>
-             <button class="btn-icon-action btn-delete" title="Remover" (click)="abrirConfirmacaoExclusao(livro.id)">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <button class="btn-icon-action btn-delete" title="Remover" (click)="abrirConfirmacaoExclusao(livro.id)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <polyline points="3 6 5 6 21 6"/>
                   <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
                 </svg>
@@ -198,7 +201,10 @@
 </section>
 
 <!-- Modal de Adicionar Livro -->
-<app-add-book-modal *ngIf="modalAdicionarAberto" (fechar)="modalAdicionarAberto = false" (livroAdicionado)="onLivroAdicionado($event)"></app-add-book-modal>
+<app-add-book-modal *ngIf="modalAdicionarAberto"
+(fechar)="modalAdicionarAberto = false"
+(livroAdicionado)="onLivroAdicionado()">
+</app-add-book-modal>
 
 <!-- Modal de Editar Livro -->
 <div class="modal-overlay" *ngIf="modalEdicaoLivroAberto" (click)="fecharEdicaoLivro()">
@@ -264,50 +270,7 @@
 <!-- Modal de Comentários -->
 <app-comentarios-modal [aberto]="comentariosAberto" [livroId]="livroComentarioId" [livroTitulo]="livroComentarioTitulo" [comentariosProntos]="livroComentarioProntos" (fechar)="comentariosAberto = false"></app-comentarios-modal>
 
-<!-- Modal de Termos de Uso -->
-<div class="termos-modal-overlay" *ngIf="mostrarTermos">
-  <div class="termos-modal-content">
-    <h2>Termos de Uso – BioTek</h2>
-    <p class="termos-data">Última atualização: 2026</p>
-    <div class="termos-texto" #textoTermos (scroll)="verificarScroll()">
-      <p>Ao utilizar o BioTek, você concorda com os termos descritos abaixo. Caso não concorde com qualquer parte destes termos, recomendamos não utilizar a plataforma.</p>
-      <h3>1. Sobre o BioTek</h3>
-      <p>O BioTek é uma plataforma voltada para organização de leituras, avaliações de livros e interação entre leitores através de comentários, atividades e recursos sociais. O aplicativo está em constante evolução e novas funcionalidades poderão ser adicionadas, alteradas ou removidas ao longo do tempo.</p>
-      <h3>2. Conta do Usuário</h3>
-      <p>O usuário é responsável pelas informações fornecidas em sua conta e pela segurança de seu acesso. O login poderá ser realizado através de provedores externos, como Google, seguindo também os termos e políticas desses serviços.</p>
-      <h3>3. Conteúdo Publicado</h3>
-      <p>Ao utilizar a plataforma, você concorda em não publicar:</p>
-      <ul>
-        <li>Conteúdo ofensivo, discriminatório ou ilegal;</li>
-        <li>Spam ou publicidade não autorizada;</li>
-        <li>Conteúdo que viole direitos autorais ou direitos de terceiros;</li>
-        <li>Comentários com discurso de ódio, ameaças ou assédio.</li>
-      </ul>
-      <p>O usuário é integralmente responsável pelos comentários, avaliações e publicações realizadas em sua conta. A plataforma reserva-se o direito de remover conteúdos inadequados e suspender contas que violem estes termos.</p>
-      <h3>4. Direitos Autorais</h3>
-      <p>As capas, títulos e informações dos livros exibidos no BioTek podem ser obtidos através de APIs públicas. Todos os direitos relacionados às obras, capas e autores pertencem aos seus respectivos detentores legais.</p>
-      <h3>5. Política de Dados e Privacidade</h3>
-      <p>O BioTek coleta apenas os dados necessários para funcionamento da plataforma. Os dados não são vendidos ou compartilhados para fins comerciais.</p>
-      <h3>6. Exclusão de Conta</h3>
-      <p>O usuário poderá solicitar a exclusão de sua conta através das configurações da plataforma.</p>
-      <h3>7. Disponibilidade do Serviço</h3>
-      <p>O BioTek é fornecido "como está", sem garantias de funcionamento ininterrupto. A plataforma poderá passar por manutenções ou instabilidades ocasionais.</p>
-      <h3>8. Limitação de Responsabilidade</h3>
-      <p>O BioTek não se responsabiliza por conteúdo publicado por usuários, perda de dados causada por terceiros ou instabilidades de serviços externos.</p>
-      <h3>9. Menores de Idade</h3>
-      <p>Usuários menores de 18 anos devem utilizar a plataforma com supervisão de um responsável legal.</p>
-      <h3>10. Alterações nos Termos</h3>
-      <p>Os presentes termos poderão ser atualizados periodicamente. O uso contínuo da plataforma após alterações implica concordância com os novos termos.</p>
-      <h3>11. Contato</h3>
-      <p>Em caso de dúvidas, entre em contato através dos canais oficiais disponibilizados no aplicativo.</p>
-    </div>
-    <div class="termos-acoes">
-      <button class="btn-recusar" (click)="recusarTermos()">Recusar</button>
-      <button class="btn-aceitar" [disabled]="!podeAceitar" (click)="aceitarTermos()">{{ podeAceitar ? 'Aceitar Termos' : 'Leia até o final' }}</button>
-    </div>
-  </div>
-</div>
-
+<!-- Modal de Confirmação Exclusão -->
 <div class="confirm-overlay" *ngIf="confirmarExclusao" (click)="fecharConfirmacaoExclusao()">
   <div class="confirm-modal" (click)="$event.stopPropagation()">
     <div class="confirm-icon">🗑️</div>
