@@ -50,9 +50,6 @@ export class PerfilComponent implements OnInit {
   confirmarExclusao = false;
   livroParaExcluir: string | null = null;
 
-  // ⬅️ NOVO: controla se é novo usuário (nickname não editável)
-  isNovoUsuario = false;
-
   @ViewChild('fileInputLivro') fileInputLivro!: ElementRef;
   @ViewChild('fileInputEdicaoLivro') fileInputEdicaoLivro!: ElementRef;
 
@@ -67,30 +64,31 @@ export class PerfilComponent implements OnInit {
     private cdr: ChangeDetectorRef
   ) {}
 
+  // 🆕 Getter: nickname só é editável se ainda não foi definido
+  get nicknameEditavel(): boolean {
+    const nick = this.usuario?.nickname || '';
+    return !nick || nick === '@sem-nickname';
+  }
+
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
-      this.route.queryParams.subscribe(queryParams => {
-        const isNovo = queryParams['novo'] === 'true';
-        this.isNovoUsuario = isNovo;
+      this.route.params.subscribe(routeParams => {
+        const idVisualizado = routeParams['id'];
 
-        this.route.params.subscribe(routeParams => {
-          const idVisualizado = routeParams['id'];
-
-          if (idVisualizado) {
-            this.modoVisualizacao = true;
-            this.usuarioIdVisualizado = idVisualizado;
-            this.carregarPerfilVisualizacao(idVisualizado);
-          } else {
-            this.modoVisualizacao = false;
-            this.usuarioIdVisualizado = null;
-            this.carregarMeuPerfil(isNovo);
-          }
-        });
+        if (idVisualizado) {
+          this.modoVisualizacao = true;
+          this.usuarioIdVisualizado = idVisualizado;
+          this.carregarPerfilVisualizacao(idVisualizado);
+        } else {
+          this.modoVisualizacao = false;
+          this.usuarioIdVisualizado = null;
+          this.carregarMeuPerfil();
+        }
       });
     }
   }
 
-  carregarMeuPerfil(isNovo: boolean = false): void {
+  carregarMeuPerfil(): void {
     const usuarioLogado = JSON.parse(localStorage.getItem('usuario') || '{}');
     const id = usuarioLogado.id;
 
@@ -109,9 +107,8 @@ export class PerfilComponent implements OnInit {
         this.carregando = false;
         this.cdr.markForCheck();
 
-        if (isNovo && !data.aceitouTermos) {
-          this.router.navigate(['/termo']);
-        } else if (isNovo && data.aceitouTermos) {
+        // Se for novo usuário (não tem nickname), abre edição automaticamente
+        if (this.nicknameEditavel) {
           setTimeout(() => this.abrirEdicao(), 500);
         }
       },
@@ -149,7 +146,7 @@ export class PerfilComponent implements OnInit {
     if (this.modoVisualizacao && this.usuarioIdVisualizado) {
       this.carregarPerfilVisualizacao(this.usuarioIdVisualizado);
     } else {
-      this.carregarMeuPerfil(false);
+      this.carregarMeuPerfil();
     }
   }
 
@@ -195,15 +192,15 @@ export class PerfilComponent implements OnInit {
   async salvarPerfil(): Promise<void> {
     if (!this.usuarioEdit || !this.usuario) return;
 
-    // ⬅️ SÓ VALIDA NICKNAME SE NÃO FOR NOVO USUÁRIO
-    if (!this.isNovoUsuario) {
+    // Valida nickname apenas se for editável (primeira vez)
+    if (this.nicknameEditavel) {
       const nick = (this.usuarioEdit.nickname || '').replace('@', '').trim();
       if (!nick) { this.alertService.warning('Nickname é obrigatório'); return; }
       if (nick.length < 3) { this.alertService.warning('Mínimo 3 caracteres'); return; }
       if (nick.length > 10) { this.alertService.warning('Máximo 10 caracteres'); return; }
       this.usuarioEdit.nickname = '@' + nick;
     } else {
-      // ⬅️ Para novo usuário, mantém o nickname original (não deixa editar)
+      // Se não é editável, mantém o nickname original (não envia pro backend)
       delete this.usuarioEdit.nickname;
     }
 
@@ -237,7 +234,6 @@ export class PerfilComponent implements OnInit {
         this.carregarPerfil();
         this.editando = false;
         this.alertService.success('Perfil atualizado!');
-        this.isNovoUsuario = false; // ⬅️ Após salvar, não é mais novo usuário
       },
       error: () => this.alertService.error('Erro ao salvar')
     });
@@ -250,7 +246,7 @@ export class PerfilComponent implements OnInit {
   }
 
   limparArroba(): void {
-    if (this.usuarioEdit.nickname && !this.isNovoUsuario) {
+    if (this.usuarioEdit.nickname && this.nicknameEditavel) {
       this.usuarioEdit.nickname = this.usuarioEdit.nickname.replace(/@/g, '');
     }
   }

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { switchMap, map, shareReplay } from 'rxjs/operators';
+import { Observable, of } from 'rxjs';
+import { switchMap, map, shareReplay, tap } from 'rxjs/operators';
 import { LivroBiblioteca } from './biblioteca.model';
 import { environment } from '../../../environments/environment';
 
@@ -25,7 +25,9 @@ export class BibliotecaService {
     if (!this.bibliotecaCache$) {
       this.bibliotecaCache$ = this.http.get<LivroBiblioteca[]>(
         `${this.apiUrl}/biblioteca`
-      ).pipe(shareReplay(1));
+      ).pipe(
+        shareReplay(1)
+      );
     }
     return this.bibliotecaCache$;
   }
@@ -34,16 +36,23 @@ export class BibliotecaService {
     this.bibliotecaCache$ = null;
   }
 
+  // 🆕 Invalida cache após mutações
   deletarLivro(id: string): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/${id}`);
+    return this.http.delete(`${this.apiUrl}/${id}`).pipe(
+      tap(() => this.limparCache())
+    );
   }
 
   atualizarLivro(id: string, livro: Partial<LivroBiblioteca>): Observable<any> {
-    return this.http.put(`${this.apiUrl}/${id}`, livro);
+    return this.http.put(`${this.apiUrl}/${id}`, livro).pipe(
+      tap(() => this.limparCache())
+    );
   }
 
   criarAvaliacao(idLivro: string, nota: number): Observable<any> {
-    return this.http.post(this.apiAvaliacaoUrl, { idLivro, nota });
+    return this.http.post(this.apiAvaliacaoUrl, { idLivro, nota }).pipe(
+      tap(() => this.limparCache())
+    );
   }
 
   atualizarLivroComAvaliacao(id: string, livro: Partial<LivroBiblioteca>): Observable<any> {
@@ -52,8 +61,9 @@ export class BibliotecaService {
         if (livro.status === 3 && livro.estrelas) {
           return this.criarAvaliacao(id, Number(livro.estrelas));
         }
-        return [null];
-      })
+        return of(null);
+      }),
+      tap(() => this.limparCache())
     );
   }
 

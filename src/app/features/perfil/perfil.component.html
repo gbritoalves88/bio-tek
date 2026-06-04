@@ -108,7 +108,7 @@
             <input type="text" [(ngModel)]="usuarioEdit.nome">
 
             <label class="input-label">@ Nickname</label>
-            <div class="nickname-input-wrapper" [class.disabled]="isNovoUsuario">
+            <div class="nickname-input-wrapper" [class.disabled]="!nicknameEditavel">
               <span class="nickname-prefix">@</span>
               <input
                 type="text"
@@ -116,11 +116,11 @@
                 placeholder="seunickname (3 a 10 caracteres)"
                 maxlength="10"
                 (input)="limparArroba()"
-                [disabled]="isNovoUsuario"
-                [title]="isNovoUsuario ? 'Nickname não pode ser alterado após o cadastro' : ''">
+                [disabled]="!nicknameEditavel"
+                [title]="!nicknameEditavel ? 'Nickname não pode ser alterado após o cadastro' : ''">
             </div>
-            <p class="nickname-aviso" *ngIf="isNovoUsuario">
-              ⚠️ O nickname não pode ser alterado após o cadastro. Escolha com cuidado!
+            <p class="nickname-aviso" *ngIf="!nicknameEditavel">
+              ⚠️ O nickname não pode ser alterado após o cadastro.
             </p>
 
             <label class="input-label">Biografia</label>
