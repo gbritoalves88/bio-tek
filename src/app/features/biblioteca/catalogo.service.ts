@@ -2,7 +2,7 @@
 
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, shareReplay, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
 export interface CatalogoLivro {
@@ -27,14 +27,28 @@ export interface CatalogoLivro {
 export class CatalogoService {
   private apiUrl = `${environment.apiUrl}/Catalogo`;
 
+  // 🆕 Cache do catálogo
+  private catalogoCache$: Observable<CatalogoLivro[]> | null = null;
+
   constructor(private http: HttpClient) {}
 
   getAll(): Observable<CatalogoLivro[]> {
-    return this.http.get<CatalogoLivro[]>(this.apiUrl);
+    if (!this.catalogoCache$) {
+      this.catalogoCache$ = this.http.get<CatalogoLivro[]>(this.apiUrl).pipe(
+        shareReplay(1)
+      );
+    }
+    return this.catalogoCache$;
   }
 
-  // Endpoint correto para adicionar à biblioteca pessoal
   adicionarBiblioteca(catalogoId: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/${catalogoId}/adicionar-biblioteca`, {});
+    // 🆕 Invalida cache ao adicionar livro (pode atualizar dados do catálogo)
+    return this.http.post(`${this.apiUrl}/${catalogoId}/adicionar-biblioteca`, {}).pipe(
+      tap(() => this.limparCache())
+    );
+  }
+
+  limparCache(): void {
+    this.catalogoCache$ = null;
   }
 }
