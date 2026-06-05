@@ -40,7 +40,7 @@ export class PerfilComponent implements OnInit {
   livroComentarioTitulo = '';
   livroComentarioProntos: any[] | null = null;
 
-  private primeiraCarga = true; // 🆕
+  private primeiraCarga = true;
 
   private readonly TAMANHO_MAXIMO = 10 * 1024 * 1024;
   private readonly COMPRESSAO_MAX_WIDTH = 1200;
@@ -66,7 +66,6 @@ export class PerfilComponent implements OnInit {
     private cdr: ChangeDetectorRef
   ) {}
 
-  // 🆕 Getter: nickname só é editável se ainda não foi definido
   get nicknameEditavel(): boolean {
     const nick = this.usuario?.nickname || '';
     return !nick || nick === '@sem-nickname';
@@ -108,7 +107,6 @@ export class PerfilComponent implements OnInit {
         this.livros = data.livros || [];
         this.carregando = false;
 
-        // 🆕 ATUALIZA O LOCALSTORAGE COM DADOS FRESCOS
         this.atualizarLocalStorage(data);
 
         this.cdr.markForCheck();
@@ -157,6 +155,7 @@ export class PerfilComponent implements OnInit {
   }
 
   abrirEdicao(): void {
+    this.menuConfigAberto = false; // 🆕 Fecha o menu
     const nickSemArroba = this.usuario?.nickname?.replace('@', '') || '';
     this.usuarioEdit = {
       ...this.usuario,
@@ -165,6 +164,13 @@ export class PerfilComponent implements OnInit {
     };
     this.uploadErro = '';
     this.editando = true;
+  }
+
+  sair(): void {
+    this.menuConfigAberto = false; // 🆕 Fecha o menu (só por garantia)
+    localStorage.removeItem('token');
+    localStorage.removeItem('usuario');
+    this.router.navigate(['/']);
   }
 
   fecharEdicao(): void {
@@ -205,9 +211,10 @@ export class PerfilComponent implements OnInit {
       if (nick.length < 3) { this.alertService.warning('Mínimo 3 caracteres'); return; }
       if (nick.length > 10) { this.alertService.warning('Máximo 10 caracteres'); return; }
       this.usuarioEdit.nickname = '@' + nick;
-    } else {
-      // Se não é editável, mantém o nickname original (não envia pro backend)
-      delete this.usuarioEdit.nickname;
+    }
+     else {
+
+      this.usuarioEdit.nickname = this.usuario?.nickname || '';
     }
 
     if (this.usuarioEdit.avatar?.startsWith('data:')) {
@@ -225,24 +232,30 @@ export class PerfilComponent implements OnInit {
   }
 
   private salvarDadosPerfil(): void {
-      if (!this.usuarioEdit || !this.usuario) return;
-      const dados: Partial<Usuario> = {
-        nome: this.usuarioEdit.nome,
-        nickname: this.usuarioEdit.nickname,
-        descricao: this.usuarioEdit.descricao,
-        avatar: this.usuarioEdit.avatar,
-        tema: this.usuarioEdit.tema
-      };
+    if (!this.usuarioEdit || !this.usuario) return;
 
-      this.perfilService.atualizarPerfil(this.usuario.id, dados).subscribe({
-        next: () => {
-          this.perfilService.limparCache();
-          this.carregarPerfil();
-          this.editando = false;
-          this.alertService.success('Perfil atualizado!');
-        },
-        error: () => this.alertService.error('Erro ao salvar')
-      });
+    const dados: Partial<Usuario> = {
+      nome: this.usuarioEdit.nome,
+      descricao: this.usuarioEdit.descricao,
+      nickname: this.usuarioEdit.nickname || this.usuario?.nickname,
+      avatar: this.usuarioEdit.avatar,
+      tema: this.usuarioEdit.tema
+    };
+
+    // ✅ Só envia nickname se for editável (primeira vez)
+    if (this.nicknameEditavel) {
+      dados.nickname = this.usuarioEdit.nickname;
+    }
+
+    this.perfilService.atualizarPerfil(this.usuario.id, dados).subscribe({
+      next: () => {
+        this.perfilService.limparCache();
+        this.carregarPerfil();
+        this.editando = false;
+        this.alertService.success('Perfil atualizado!');
+      },
+      error: () => this.alertService.error('Erro ao salvar')
+    });
   }
 
   private atualizarLocalStorage(data: Usuario): void {
@@ -257,12 +270,6 @@ export class PerfilComponent implements OnInit {
       ativo: data.ativo
     };
     localStorage.setItem('usuario', JSON.stringify(usuarioStorage));
-  }
-
-  sair(): void {
-    localStorage.removeItem('token');
-    localStorage.removeItem('usuario');
-    this.router.navigate(['/']);
   }
 
   limparArroba(): void {

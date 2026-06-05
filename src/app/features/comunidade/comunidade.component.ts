@@ -46,6 +46,11 @@ export class ComunidadeComponent implements OnInit {
     }
   }
 
+  // 🆕 TrackBy para performance
+  trackById(index: number, item: AtividadeComunidade): string {
+    return item.id || index.toString();
+  }
+
   onTouchStart(event: TouchEvent): void {
     if (window.scrollY === 0) {
       this.touchStartY = event.touches[0].clientY;
@@ -132,14 +137,7 @@ export class ComunidadeComponent implements OnInit {
     this.carregandoComentarios = true;
     this.comunidadeService.getComentariosDoLivro(idLivro).subscribe({
       next: (comentarios: Comentario[]) => {
-        this.comentarios = comentarios.map(c => ({
-          id: c.id,
-          idUsuario: c.idUsuario,
-          usuarioNome: c.usuarioNome || '',
-          usuarioNickname: c.usuarioNickname || 'Usuário',
-          comentario: c.comentario,
-          dataCriacao: c.dataCriacao
-        }));
+        this.comentarios = comentarios;
         this.carregandoComentarios = false;
         this.cdr.markForCheck();
       },
@@ -152,7 +150,7 @@ export class ComunidadeComponent implements OnInit {
   }
 
   enviarComentario(): void {
-    if (!this.novoComentario.trim() || !this.itemSelecionado) return;
+    if (!this.novoComentario?.trim() || !this.itemSelecionado) return;
 
     this.comunidadeService.enviarComentario(this.itemSelecionado.livro.id, this.novoComentario.trim()).subscribe({
       next: () => {
@@ -167,18 +165,15 @@ export class ComunidadeComponent implements OnInit {
     });
   }
 
-  // ⬅️ MÉTODOS DE SEGUIR USANDO O CAMPO 'segue' DO PRÓPRIO ITEM
   seguirUsuario(idUsuario: string): void {
     this.comunidadeService.seguir(idUsuario).subscribe({
       next: () => {
-        // Atualiza localmente o campo "segue" no feed
         this.atividades = this.atividades.map(a => {
           if (a.usuario.id === idUsuario) {
             return { ...a, usuario: { ...a.usuario, segue: true } };
           }
           return a;
         });
-        // Atualiza também o item selecionado se estiver no modal
         if (this.itemSelecionado?.usuario.id === idUsuario) {
           this.itemSelecionado = { ...this.itemSelecionado, usuario: { ...this.itemSelecionado.usuario, segue: true } };
         }
@@ -195,14 +190,12 @@ export class ComunidadeComponent implements OnInit {
   deixarDeSeguirUsuario(idUsuario: string): void {
     this.comunidadeService.deixarDeSeguir(idUsuario).subscribe({
       next: () => {
-        // Atualiza localmente o campo "segue" no feed
         this.atividades = this.atividades.map(a => {
           if (a.usuario.id === idUsuario) {
             return { ...a, usuario: { ...a.usuario, segue: false } };
           }
           return a;
         });
-        // Atualiza também o item selecionado se estiver no modal
         if (this.itemSelecionado?.usuario.id === idUsuario) {
           this.itemSelecionado = { ...this.itemSelecionado, usuario: { ...this.itemSelecionado.usuario, segue: false } };
         }

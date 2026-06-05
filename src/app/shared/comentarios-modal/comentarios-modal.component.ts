@@ -60,7 +60,8 @@ export class ComentariosModalComponent {
   }
 
   enviarComentario(): void {
-    if (!this.novoComentario.trim()) return;
+    if (!this.novoComentario?.trim()) return;
+
     this.comentariosService.enviarComentario(this.livroId, this.novoComentario.trim()).subscribe({
       next: () => {
         this.novoComentario = '';
