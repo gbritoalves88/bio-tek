@@ -40,6 +40,8 @@ export class PerfilComponent implements OnInit {
   livroComentarioTitulo = '';
   livroComentarioProntos: any[] | null = null;
 
+  private primeiraCarga = true; // 🆕
+
   private readonly TAMANHO_MAXIMO = 10 * 1024 * 1024;
   private readonly COMPRESSAO_MAX_WIDTH = 1200;
   private readonly COMPRESSAO_QUALIDADE = 0.7;
@@ -105,10 +107,14 @@ export class PerfilComponent implements OnInit {
         this.usuario = data;
         this.livros = data.livros || [];
         this.carregando = false;
+
+        // 🆕 ATUALIZA O LOCALSTORAGE COM DADOS FRESCOS
+        this.atualizarLocalStorage(data);
+
         this.cdr.markForCheck();
 
-        // Se for novo usuário (não tem nickname), abre edição automaticamente
-        if (this.nicknameEditavel) {
+        if (this.primeiraCarga && this.nicknameEditavel) {
+          this.primeiraCarga = false;
           setTimeout(() => this.abrirEdicao(), 500);
         }
       },
@@ -219,24 +225,38 @@ export class PerfilComponent implements OnInit {
   }
 
   private salvarDadosPerfil(): void {
-    if (!this.usuarioEdit || !this.usuario) return;
-    const dados: Partial<Usuario> = {
-      nome: this.usuarioEdit.nome,
-      nickname: this.usuarioEdit.nickname,
-      descricao: this.usuarioEdit.descricao,
-      avatar: this.usuarioEdit.avatar,
-      tema: this.usuarioEdit.tema
-    };
+      if (!this.usuarioEdit || !this.usuario) return;
+      const dados: Partial<Usuario> = {
+        nome: this.usuarioEdit.nome,
+        nickname: this.usuarioEdit.nickname,
+        descricao: this.usuarioEdit.descricao,
+        avatar: this.usuarioEdit.avatar,
+        tema: this.usuarioEdit.tema
+      };
 
-    this.perfilService.atualizarPerfil(this.usuario.id, dados).subscribe({
-      next: () => {
-        this.perfilService.limparCache();
-        this.carregarPerfil();
-        this.editando = false;
-        this.alertService.success('Perfil atualizado!');
-      },
-      error: () => this.alertService.error('Erro ao salvar')
-    });
+      this.perfilService.atualizarPerfil(this.usuario.id, dados).subscribe({
+        next: () => {
+          this.perfilService.limparCache();
+          this.carregarPerfil();
+          this.editando = false;
+          this.alertService.success('Perfil atualizado!');
+        },
+        error: () => this.alertService.error('Erro ao salvar')
+      });
+  }
+
+  private atualizarLocalStorage(data: Usuario): void {
+    const usuarioStorage = {
+      id: data.id,
+      nome: data.nome,
+      nickname: data.nickname,
+      email: data.email,
+      avatar: data.avatar,
+      tema: data.tema,
+      adm: data.adm,
+      ativo: data.ativo
+    };
+    localStorage.setItem('usuario', JSON.stringify(usuarioStorage));
   }
 
   sair(): void {
