@@ -25,10 +25,20 @@
     </div>
 
     <div class="novo-comentario">
-      <textarea [(ngModel)]="novoComentario" name="comentario" placeholder="Escreva um comentário..." rows="2" maxlength="200"></textarea>
+      <textarea
+        [(ngModel)]="novoComentario"
+        name="comentario"
+        placeholder="Escreva um comentário..."
+        rows="2"
+        maxlength="200">
+      </textarea>
       <div class="comentario-actions">
-        <span class="contador">{{ novoComentario.length }}/200</span>
-        <button (click)="enviarComentario()" [disabled]="novoComentario.trim().length < 5">Enviar</button>
+        <span class="contador">{{ novoComentario?.length || 0 }}/200</span>
+        <button
+          (click)="enviarComentario()"
+          [disabled]="!novoComentario?.trim()">
+          Enviar
+        </button>
       </div>
     </div>
 

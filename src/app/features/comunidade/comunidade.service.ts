@@ -23,7 +23,7 @@ export class ComunidadeService {
   getFeedComunidade(): Observable<AtividadeComunidade[]> {
     if (!this.feedCache$) {
       this.feedCache$ = this.http.get<AtividadeComunidade[]>(
-        `${this.apiComunidade}/feed?limite=30` // ⬅️ REMOVEU O & extra
+        `${this.apiComunidade}/feed?limite=15` // ⬅️ REMOVEU O & extra
       ).pipe(shareReplay(1));
     }
     return this.feedCache$;
