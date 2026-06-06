@@ -13,8 +13,8 @@ import { AlertService } from '../../shared/services/alert.service';
   imports: [CommonModule, FormsModule],
   templateUrl: './comunidade.component.html',
   styleUrl: './comunidade.component.scss',
-  host: { 'ngSkipHydration': 'true' },
-  changeDetection: ChangeDetectionStrategy.OnPush
+  host: { 'ngSkipHydration': 'true' }//,
+  //changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ComunidadeComponent implements OnInit {
   atividades: AtividadeComunidade[] = [];
@@ -106,8 +106,9 @@ export class ComunidadeComponent implements OnInit {
     });
   }
 
-  abrirModal(item: AtividadeComunidade): void {
-    this.itemSelecionado = item;
+abrirModal(item: AtividadeComunidade): void {
+    // Cria uma cópia profunda para evitar referências
+    this.itemSelecionado = JSON.parse(JSON.stringify(item));
     this.modalAberto = true;
     this.novoComentario = '';
     this.comentarios = [];
@@ -127,7 +128,9 @@ export class ComunidadeComponent implements OnInit {
       }
     }
 
-    this.cdr.markForCheck();
+    // Força detecção dupla para garantir
+    this.cdr.detectChanges();
+    setTimeout(() => this.cdr.markForCheck(), 50);
   }
 
   fecharModal(): void {
