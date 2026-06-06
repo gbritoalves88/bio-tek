@@ -201,15 +201,12 @@
           name="comentario"
           placeholder="Escreva um comentário..."
           rows="2"
-          maxlength="200">
+          maxlength="200"
+          (input)="onComentarioChange()">
         </textarea>
         <div class="comentario-actions">
-          <span class="contador">{{ novoComentario?.length || 0 }}/200</span>
-          <button
-            (click)="enviarComentario()"
-            [disabled]="!novoComentario?.trim()">
-            Enviar
-          </button>
+          <span class="contador">{{ novoComentario.length }}/200</span>
+          <button [disabled]="!novoComentario.trim()" (click)="enviarComentario()">Enviar</button>
         </div>
       </div>
     </div>

@@ -28,17 +28,13 @@ export class ComentariosModalComponent {
   ) {}
 
 
- ngOnChanges(): void {
-  console.log('🔄 ngOnChanges - aberto:', this.aberto, 'livroId:', this.livroId);
-  console.log('📦 comentariosProntos:', this.comentariosProntos);
-
+ngOnChanges(): void {
   if (this.aberto && this.livroId) {
     if (this.comentariosProntos && this.comentariosProntos.length > 0) {
-      console.log('✅ Usando comentários prontos');
       this.comentarios = this.comentariosProntos;
       this.carregandoComentarios = false;
+      this.cdr.markForCheck(); // 🆕
     } else {
-      console.log('⚠️ Buscando via API');
       this.carregarComentarios();
     }
   }
@@ -57,6 +53,10 @@ export class ComentariosModalComponent {
         this.cdr.markForCheck();
       }
     });
+  }
+
+  onInputChange(): void {
+    this.cdr.markForCheck();
   }
 
   enviarComentario(): void {
