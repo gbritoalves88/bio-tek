@@ -138,15 +138,18 @@ export class TermoComponent {
   ) {}
 
   aceitar(): void {
-    this.perfilService.aceitarTermos().subscribe({
-      next: () => {
-        this.alertService.success('Bem-vindo ao BliTeca!');
-        this.router.navigate(['/inicio/perfil']);
-      },
-      error: () => {
-        this.alertService.error('Erro ao aceitar termos. Tente novamente.');
-      }
-    });
+      this.perfilService.aceitarTermos().subscribe({
+        next: () => {
+          this.alertService.success('Bem-vindo ao BliTeca!');
+          // ✅ Passa queryParam para forçar edição
+          this.router.navigate(['/inicio/perfil'], {
+            queryParams: { editar: true }
+          });
+        },
+        error: () => {
+          this.alertService.error('Erro ao aceitar termos. Tente novamente.');
+        }
+      });
   }
 
   recusar(): void {

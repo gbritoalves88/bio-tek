@@ -1,4 +1,4 @@
-import { Component, OnInit, Inject, PLATFORM_ID, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, Inject, PLATFORM_ID, ChangeDetectorRef,ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ComunidadeService } from './comunidade.service';
@@ -6,13 +6,15 @@ import { AtividadeComunidade, Comentario } from './comunidade.model';
 import { SocialService } from '../social/social.service';
 import { AlertService } from '../../shared/services/alert.service';
 
+
 @Component({
   selector: 'app-comunidade',
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './comunidade.component.html',
   styleUrl: './comunidade.component.scss',
-  host: { 'ngSkipHydration': 'true' }
+  host: { 'ngSkipHydration': 'true' },
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ComunidadeComponent implements OnInit {
   atividades: AtividadeComunidade[] = [];
@@ -124,6 +126,8 @@ export class ComunidadeComponent implements OnInit {
         this.carregarComentarios(item.livro.id);
       }
     }
+
+    this.cdr.markForCheck();
   }
 
   fecharModal(): void {
@@ -131,6 +135,7 @@ export class ComunidadeComponent implements OnInit {
     this.itemSelecionado = null;
     this.comentarios = [];
     this.novoComentario = '';
+    this.cdr.markForCheck();
   }
 
   carregarComentarios(idLivro: string): void {
@@ -157,12 +162,17 @@ export class ComunidadeComponent implements OnInit {
         this.novoComentario = '';
         this.alertService.success('Comentário enviado!');
         this.carregarComentarios(this.itemSelecionado!.livro.id);
+         this.cdr.markForCheck();
       },
       error: (err) => {
         console.error('Erro ao comentar:', err);
         this.alertService.error('Erro ao enviar comentário');
       }
     });
+  }
+
+  onComentarioChange(): void {
+    this.cdr.markForCheck();
   }
 
   seguirUsuario(idUsuario: string): void {

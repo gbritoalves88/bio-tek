@@ -73,23 +73,27 @@ export class PerfilComponent implements OnInit {
 
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
-      this.route.params.subscribe(routeParams => {
-        const idVisualizado = routeParams['id'];
+      this.route.queryParams.subscribe(queryParams => {
+        const forcarEdicao = queryParams['editar'] === 'true';
 
-        if (idVisualizado) {
-          this.modoVisualizacao = true;
-          this.usuarioIdVisualizado = idVisualizado;
-          this.carregarPerfilVisualizacao(idVisualizado);
-        } else {
-          this.modoVisualizacao = false;
-          this.usuarioIdVisualizado = null;
-          this.carregarMeuPerfil();
-        }
+        this.route.params.subscribe(routeParams => {
+          const idVisualizado = routeParams['id'];
+
+          if (idVisualizado) {
+            this.modoVisualizacao = true;
+            this.usuarioIdVisualizado = idVisualizado;
+            this.carregarPerfilVisualizacao(idVisualizado);
+          } else {
+            this.modoVisualizacao = false;
+            this.usuarioIdVisualizado = null;
+            this.carregarMeuPerfil(forcarEdicao); // 🆕 Passa flag
+          }
+        });
       });
     }
   }
 
-  carregarMeuPerfil(): void {
+  carregarMeuPerfil(forcarEdicao: boolean = false): void {
     const usuarioLogado = JSON.parse(localStorage.getItem('usuario') || '{}');
     const id = usuarioLogado.id;
 
@@ -108,12 +112,13 @@ export class PerfilComponent implements OnInit {
         this.carregando = false;
 
         this.atualizarLocalStorage(data);
-
         this.cdr.markForCheck();
 
-        if (this.primeiraCarga && this.nicknameEditavel) {
-          this.primeiraCarga = false;
-          setTimeout(() => this.abrirEdicao(), 500);
+        // ✅ Abre edição se for primeira carga E usuário novo, OU se forçar edição
+        if ((this.primeiraCarga && this.nicknameEditavel) || forcarEdicao) {
+            this.primeiraCarga = false;
+            this.abrirEdicao(); // ✅ Direto, sem setTimeout
+            this.cdr.markForCheck();
         }
       },
       error: (err) => {
