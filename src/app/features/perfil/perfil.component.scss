@@ -1010,3 +1010,222 @@
   margin-bottom: 8px;
 }
 
+// ========== BOTTOM SHEET STYLES ==========
+
+.bottom-sheet-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-color);
+
+  h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+}
+
+.bottom-sheet-close {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 4px;
+
+  svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  &:hover {
+    color: var(--accent);
+  }
+}
+
+// Inputs e selects dentro do bottom sheet
+.bs-input {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 14px;
+  outline: none;
+  box-sizing: border-box;
+  margin-bottom: 12px;
+
+  &:focus {
+    border-color: var(--accent);
+  }
+
+  &::placeholder {
+    color: var(--text-secondary);
+  }
+}
+
+.bs-select {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 14px;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  box-sizing: border-box;
+  margin-bottom: 12px;
+}
+
+.bs-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-color);
+
+  button {
+    flex: 1;
+    padding: 10px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+}
+
+// Estilos de comentários dentro do bottom sheet
+.comentario-item {
+  padding: 10px;
+  background: var(--bg-primary);
+  border-radius: 8px;
+  margin-bottom: 8px;
+
+  p {
+    margin: 0;
+    font-size: 13px;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: pre-wrap;
+  }
+
+  .data {
+    font-size: 11px;
+    color: var(--text-secondary);
+  }
+}
+
+.comentario-autor {
+  font-weight: 600;
+  color: var(--accent);
+  margin-right: 4px;
+}
+
+// Confirmação de exclusão
+.confirm-icon {
+  font-size: 48px;
+  margin-bottom: 12px;
+  opacity: 0.8;
+}
+
+.confirm-message {
+  font-size: 15px;
+  color: var(--text-primary);
+  margin-bottom: 24px;
+  line-height: 1.4;
+}
+
+.confirm-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.confirm-btn {
+  padding: 8px 20px;
+  border-radius: 30px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+
+  &.cancel {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+
+    &:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+  }
+
+  &.delete {
+    background: #e74c3c;
+    color: white;
+
+    &:hover {
+      background: #c0392b;
+    }
+  }
+}
+
+.novo-comentario {
+  margin-top: 12px;
+
+  textarea {
+    width: 100%;
+    max-width: 100%;
+    min-width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-size: 13px;
+    resize: vertical;
+    font-family: inherit;
+    outline: none;
+    box-sizing: border-box;
+
+    &:focus {
+      border-color: var(--accent);
+    }
+  }
+
+  .comentario-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 6px;
+
+    .contador {
+      font-size: 11px;
+      color: var(--text-secondary);
+    }
+
+    button {
+      padding: 6px 16px;
+      border: none;
+      border-radius: 16px;
+      background: var(--accent);
+      color: #fff;
+      font-size: 13px;
+      cursor: pointer;
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+    }
+  }
+}
