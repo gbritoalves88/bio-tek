@@ -105,22 +105,17 @@ export class ComunidadeComponent implements OnInit {
     this.itemSelecionado = item;
     this.modalAberto = true;
     this.novoComentario = '';
-    this.comentarios = [];
 
+    // ✅ Usa os comentários como vieram do backend
     if (item.tipo === 'livro_avaliado') {
       if (item.comentarios && item.comentarios.length > 0) {
-        this.comentarios = item.comentarios.map(c => ({
-          id: c.id,
-          idUsuario: c.idUsuario || c.usuario?.id || '',
-          usuarioNome: c.usuarioNome || c.usuario?.nome || '',
-          usuarioNickname: c.usuarioNickname || c.usuario?.nickname || 'Usuário',
-          comentario: c.comentario,
-          dataCriacao: c.dataCriacao
-        }));
+        this.comentarios = item.comentarios; // Direto, sem mapear
       } else {
-        this.carregarComentarios(item.livro.id);
+        this.comentarios = []; // Não chama API
       }
     }
+
+    this.cdr.markForCheck();
   }
 
   fecharModal(): void {
@@ -128,6 +123,7 @@ export class ComunidadeComponent implements OnInit {
     this.itemSelecionado = null;
     this.comentarios = [];
     this.novoComentario = '';
+    this.cdr.markForCheck(); // 🆕 Adicionar aqui também
   }
 
   carregarComentarios(idLivro: string): void {
