@@ -66,4 +66,13 @@ export class PerfilService {
   atualizarLivro(id: string, livro: Partial<LivroDoUsuario>): Observable<any> {
     return this.http.put(`${this.apiLivroUrl}/${id}`, livro);
   }
+
+  enviarComentario(idLivro: string, comentario: string): Observable<any> {
+    return this.http.post(`${environment.apiUrl}/ComentarioLivro`, {
+      idLivro,
+      comentario
+    });
+  }
 }
+
+

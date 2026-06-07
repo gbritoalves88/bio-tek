@@ -136,14 +136,13 @@
   </div>
 </section>
 
+<!-- Bottom Sheet de detalhes -->
+<app-bottom-sheet [aberto]="modalAberto" (fechar)="fecharModal()">
 
-<!-- Modal de detalhes (mantido igual) -->
-<div class="comunidade-modal-overlay" *ngIf="modalAberto && itemSelecionado" (click)="fecharModal()">
-  <div class="comunidade-modal-content" (click)="$event.stopPropagation()">
-
-    <div class="comunidade-modal-header">
+  <ng-container *ngIf="itemSelecionado">
+    <div class="bottom-sheet-header">
       <h3>{{ getIconeTipo(itemSelecionado.tipo) }} {{ getTextoTipo(itemSelecionado.tipo) }}</h3>
-      <button class="comunidade-modal-close" (click)="fecharModal()">
+      <button class="bottom-sheet-close" (click)="fecharModal()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
         </svg>
@@ -210,6 +209,5 @@
         </div>
       </div>
     </div>
-
-  </div>
-</div>
+  </ng-container>
+</app-bottom-sheet>

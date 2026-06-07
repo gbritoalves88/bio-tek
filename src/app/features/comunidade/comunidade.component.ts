@@ -1,20 +1,18 @@
-import { Component, OnInit, Inject, PLATFORM_ID, ChangeDetectorRef,ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, Inject, PLATFORM_ID, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ComunidadeService } from './comunidade.service';
 import { AtividadeComunidade, Comentario } from './comunidade.model';
-import { SocialService } from '../social/social.service';
 import { AlertService } from '../../shared/services/alert.service';
-
+import { BottomSheetComponent } from '../../shared/bottom-sheet/bottom-sheet.component';
 
 @Component({
   selector: 'app-comunidade',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, BottomSheetComponent],
   templateUrl: './comunidade.component.html',
   styleUrl: './comunidade.component.scss',
-  host: { 'ngSkipHydration': 'true' }//,
-  //changeDetection: ChangeDetectionStrategy.OnPush
+  host: { 'ngSkipHydration': 'true' }
 })
 export class ComunidadeComponent implements OnInit {
   atividades: AtividadeComunidade[] = [];
@@ -27,7 +25,6 @@ export class ComunidadeComponent implements OnInit {
   novoComentario = '';
   comentarios: Comentario[] = [];
   carregandoComentarios = false;
-  livroComentarioProntos: any[] | null = null;
 
   private touchStartY = 0;
   private readonly pullThreshold = 80;
@@ -36,8 +33,7 @@ export class ComunidadeComponent implements OnInit {
     private comunidadeService: ComunidadeService,
     private alertService: AlertService,
     @Inject(PLATFORM_ID) private platformId: Object,
-    private cdr: ChangeDetectorRef,
-    private socialService: SocialService
+    public cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -48,7 +44,6 @@ export class ComunidadeComponent implements OnInit {
     }
   }
 
-  // 🆕 TrackBy para performance
   trackById(index: number, item: AtividadeComunidade): string {
     return item.id || index.toString();
   }
@@ -106,9 +101,8 @@ export class ComunidadeComponent implements OnInit {
     });
   }
 
-abrirModal(item: AtividadeComunidade): void {
-    // Cria uma cópia profunda para evitar referências
-    this.itemSelecionado = JSON.parse(JSON.stringify(item));
+  abrirModal(item: AtividadeComunidade): void {
+    this.itemSelecionado = item;
     this.modalAberto = true;
     this.novoComentario = '';
     this.comentarios = [];
@@ -127,10 +121,6 @@ abrirModal(item: AtividadeComunidade): void {
         this.carregarComentarios(item.livro.id);
       }
     }
-
-    // Força detecção dupla para garantir
-    this.cdr.detectChanges();
-    setTimeout(() => this.cdr.markForCheck(), 50);
   }
 
   fecharModal(): void {
@@ -138,7 +128,6 @@ abrirModal(item: AtividadeComunidade): void {
     this.itemSelecionado = null;
     this.comentarios = [];
     this.novoComentario = '';
-    this.cdr.markForCheck();
   }
 
   carregarComentarios(idLivro: string): void {
@@ -165,7 +154,6 @@ abrirModal(item: AtividadeComunidade): void {
         this.novoComentario = '';
         this.alertService.success('Comentário enviado!');
         this.carregarComentarios(this.itemSelecionado!.livro.id);
-         this.cdr.markForCheck();
       },
       error: (err) => {
         console.error('Erro ao comentar:', err);

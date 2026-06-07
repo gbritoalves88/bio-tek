@@ -2,7 +2,6 @@ import { Component, OnInit, Inject, PLATFORM_ID, ChangeDetectorRef } from '@angu
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { SocialService } from './social.service';
 import { UsuarioSocial, LivroSocial } from './social.model';
-import { ComentariosModalComponent } from '../../shared/comentarios-modal/comentarios-modal.component';
 import { Router } from '@angular/router';
 import { AlertService } from '../../shared/services/alert.service';
 import { FormsModule } from '@angular/forms'; // ⬅️ ADICIONAR
@@ -10,7 +9,7 @@ import { FormsModule } from '@angular/forms'; // ⬅️ ADICIONAR
 @Component({
   selector: 'app-social',
   standalone: true,
-  imports: [CommonModule, FormsModule, ComentariosModalComponent],
+  imports: [CommonModule, FormsModule],
   templateUrl: './social.component.html',
   styleUrl: './social.component.scss',
   host: { 'ngSkipHydration': 'true' }
@@ -26,7 +25,7 @@ export class SocialComponent implements OnInit {
   comentariosAberto = false;
   livroComentarioId = '';
   livroComentarioTitulo = '';
-  livroComentarioProntos: any[] | null = null;
+
 
   // Modo administrador
   isAdmin = false;
@@ -155,20 +154,6 @@ ngOnInit(): void {
     this.router.navigate(['/inicio/perfil', id]);
   }
 
-  abrirComentarios(livro: any): void {
-    this.livroComentarioId = livro.id;
-    this.livroComentarioTitulo = livro.titulo;
-
-    this.livroComentarioProntos = livro.comentarios?.map((c: any) => ({
-      id: c.id,
-      idUsuario: '',
-      usuarioNickname: c.usuario?.nickname || '@user',
-      comentario: c.comentario,
-      dataCriacao: c.dataCriacao
-    })) || null;
-
-    this.comentariosAberto = true;
-  }
 
   getStatusTexto(status: number): string {
     switch (status) {
