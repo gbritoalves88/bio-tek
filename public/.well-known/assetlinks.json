@@ -1,0 +1,8 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "com.bliteca.app",
+    "sha256_cert_fingerprints": ["24:EC:4C:96:D1:35:37:83:C1:76:71:29:76:CB:33:4B:C0:63:9D:69:A8:BF:A1:88:C6:BD:D6:FC:00:5E:C6:76"]
+  }
+}]
