@@ -4,8 +4,6 @@ import { Router } from '@angular/router';
 import { LoginService } from './login.service';
 import { environment } from '../../../environments/environment';
 import { AlertService } from '../../shared/services/alert.service';
-import { Browser } from '@capacitor/browser';
-import { Capacitor } from '@capacitor/core';
 
 declare const google: any;
 
@@ -65,7 +63,7 @@ export class LoginComponent {
     this.cdr.detectChanges();
   }
 
-  async entrarComGoogle(): Promise<void> {
+  entrarComGoogle(): void {
     this.carregando = true;
     this.cdr.detectChanges();
 
@@ -75,48 +73,17 @@ export class LoginComponent {
       }
     }, 60000);
 
-    // 🆕 Se for app nativo (Android), usa Browser externo
-    if (Capacitor.isNativePlatform()) {
-      try {
-        const redirectUri = environment.google.redirectUri;
-        const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
-          `client_id=${environment.google.clientId}` +
-          `&redirect_uri=${encodeURIComponent(redirectUri)}` +
-          `&response_type=code` +
-          `&scope=email%20profile%20openid` +
-          `&access_type=offline` +
-          `&prompt=consent`;
-
-        await Browser.open({ url: authUrl, windowName: '_self' });
-
-        // Listener para quando voltar ao app
-        Browser.addListener('browserFinished', () => {
-          this.carregando = false;
-          this.alertService.warning('Login não concluído. Tente novamente.');
-        });
-
-      } catch (err) {
-        clearTimeout(timeoutId);
-        this.exibirErro('Erro ao abrir navegador. Use o login de convidado.');
-      }
-      return;
-    }
-
-    // 🆕 Se for web (navegador), usa o fluxo normal
     const client = google.accounts.oauth2.initCodeClient({
       client_id: environment.google.clientId,
       scope: 'email profile openid',
       ux_mode: 'popup',
       callback: (response: any) => {
         clearTimeout(timeoutId);
-
         if (this.carregando === false) return;
-
         if (!response || !response.code) {
           this.exibirErro('Login cancelado. Tente novamente.');
           return;
         }
-
         this.processarLogin(response.code);
       }
     });
