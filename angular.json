@@ -28,7 +28,6 @@
               "src/favicon.ico",
               "src/favicon.svg",
               "src/assets",
-              "src/manifest.json",
               {
                 "glob": "**/*",
                 "input": "public"
