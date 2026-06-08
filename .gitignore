@@ -43,3 +43,24 @@ __screenshots__/
 .DS_Store
 Thumbs.db
 .vercel
+
+# Bubblewrap / Android
+/android/
+*.keystore
+*.apk
+*.aab
+*.idsig
+app-release-signed.apk
+app-release-unsigned-aligned.apk
+twa-manifest.json
+manifest-checksum.txt
+store_icon.png
+.gradle/
+/app/
+/build/
+/build.gradle
+/gradle/
+/gradle.properties
+/gradlew
+/gradlew.bat
+/settings.gradle
