@@ -3,6 +3,7 @@
   "buildCommand": "ng build --configuration production",
   "outputDirectory": "dist/bio-tek/browser",
   "routes": [
+    { "src": "/manifest.json", "dest": "/manifest.json" },
     { "src": "/assets/(.*)", "dest": "/assets/$1" },
     { "src": "/(.*)\\.(js|css|png|jpg|jpeg|gif|ico|svg|woff2?|ttf|eot)", "dest": "/$1.$2" },
     { "src": "/(.*)", "dest": "/index.html" }
