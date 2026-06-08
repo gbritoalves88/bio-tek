@@ -2,10 +2,9 @@
   "name": "Bliteca",
   "short_name": "Bliteca",
   "description": "Sua jornada literária começa aqui",
-  "start_url": "/",
+  "start_url": "/?utm_source=twa",
   "scope": "/",
   "display": "fullscreen",
-  "display_override": ["standalone", "fullscreen"],
   "background_color": "#1a1a2e",
   "theme_color": "#1a1a2e",
   "icons": [
