@@ -21,12 +21,9 @@ export class ComunidadeService {
   constructor(private http: HttpClient) {}
 
   getFeedComunidade(): Observable<AtividadeComunidade[]> {
-    if (!this.feedCache$) {
-      this.feedCache$ = this.http.get<AtividadeComunidade[]>(
-        `${this.apiComunidade}/feed?limite=15` // ⬅️ REMOVEU O & extra
-      ).pipe(shareReplay(1));
-    }
-    return this.feedCache$;
+      return this.http.get<AtividadeComunidade[]>(
+        `${this.apiComunidade}/feed?limite=15`
+      );
   }
 
   atualizarFeed(): Observable<AtividadeComunidade[]> {

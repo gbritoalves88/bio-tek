@@ -1,16 +1,7 @@
-<section class="comunidade"
-         (touchstart)="onTouchStart($event)"
-         (touchmove)="onTouchMove($event)"
-         (touchend)="onTouchEnd()">
+<section class="comunidade">
 
   <div class="header-section">
     <h1>Comunidade</h1>
-    <button class="btn-refresh-circle" (click)="atualizarFeed()" [disabled]="atualizando" title="Atualizar feed">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" [class.spinning]="atualizando">
-        <polyline points="23 4 23 10 17 10"/>
-        <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
-      </svg>
-    </button>
   </div>
 
   <p class="aviso-geral">💡 Comentários só podem ser feitos por leitores que finalizaram e avaliaram o livro.</p>
@@ -52,39 +43,39 @@
       <ng-container [ngSwitch]="item.tipo">
         <!-- TIPO: ADICIONOU UM LIVRO -->
         <div class="feed-conteudo" *ngSwitchCase="'livro_novo'">
-          <div class="livro-destaque">
+          <div class="livro-destaque" *ngIf="item.livro">
             <img [src]="item.livro.imagem || 'assets/capas/perfilSemFoto.png'"
-                 [alt]="item.livro.titulo"
-                 class="capa-destaque" />
+                [alt]="item.livro.titulo"
+                class="capa-destaque" />
             <div class="livro-info-destaque">
               <strong class="titulo-destaque">{{ item.livro.titulo || 'Sem título' }}</strong>
-              <span class="autor-destaque">{{ item.livro.autor }}</span>
+              <span class="autor-destaque">{{ item.livro.autor || 'Autor desconhecido' }}</span>
             </div>
           </div>
         </div>
 
         <!-- TIPO: ESTÁ LENDO -->
         <div class="feed-conteudo" *ngSwitchCase="'livro_lendo'">
-          <div class="livro-padrao">
+          <div class="livro-padrao" *ngIf="item.livro">
             <img [src]="item.livro.imagem || 'assets/capas/perfilSemFoto.png'"
-                 [alt]="item.livro.titulo"
-                 class="capa-padrao" />
+                [alt]="item.livro.titulo"
+                class="capa-padrao" />
             <div class="livro-info-padrao">
               <strong class="titulo-padrao">{{ item.livro.titulo || 'Sem título' }}</strong>
-              <span class="autor-padrao">{{ item.livro.autor }}</span>
+              <span class="autor-padrao">{{ item.livro.autor || 'Autor desconhecido' }}</span>
             </div>
           </div>
         </div>
 
         <!-- TIPO: TERMINOU DE LER -->
         <div class="feed-conteudo" *ngSwitchCase="'livro_lido'">
-          <div class="livro-concluido">
+          <div class="livro-concluido" *ngIf="item.livro">
             <img [src]="item.livro.imagem || 'assets/capas/perfilSemFoto.png'"
-                 [alt]="item.livro.titulo"
-                 class="capa-concluido" />
+                [alt]="item.livro.titulo"
+                class="capa-concluido" />
             <div class="livro-info-concluido">
               <strong class="titulo-concluido">{{ item.livro.titulo || 'Sem título' }}</strong>
-              <span class="autor-concluido">{{ item.livro.autor }}</span>
+              <span class="autor-concluido">{{ item.livro.autor || 'Autor desconhecido' }}</span>
               <div class="palmas-destaque">
                 <span class="palmas-icon">👏</span>
                 <span class="palmas-icon">👏</span>
@@ -96,13 +87,13 @@
 
         <!-- TIPO: AVALIOU -->
         <div class="feed-conteudo" *ngSwitchCase="'livro_avaliado'">
-          <div class="livro-avaliado">
+          <div class="livro-avaliado" *ngIf="item.livro">
             <img [src]="item.livro.imagem || 'assets/capas/perfilSemFoto.png'"
-                 [alt]="item.livro.titulo"
-                 class="capa-avaliado" />
+                [alt]="item.livro.titulo"
+                class="capa-avaliado" />
             <div class="livro-info-avaliado">
               <strong class="titulo-avaliado">{{ item.livro.titulo || 'Sem título' }}</strong>
-              <span class="autor-avaliado">{{ item.livro.autor }}</span>
+              <span class="autor-avaliado">{{ item.livro.autor || 'Autor desconhecido' }}</span>
               <div class="estrelas-destaque">
                 <div class="estrelas-grandes">
                   {{ '⭐'.repeat(item.avaliacao?.nota || 0) }}
@@ -110,17 +101,18 @@
                 <span class="avaliacao-nota">{{ item.avaliacao?.nota || 0 }}/5</span>
               </div>
               <div class="ultimo-comentario" *ngIf="item.comentarios && item.comentarios.length > 0">
-              <div class="comentario-destaque">
-                <span class="aspas">“</span>
-                <span class="comentario-texto">{{ item.comentarios[item.comentarios.length - 1].comentario | slice:0:80 }}{{ item.comentarios[item.comentarios.length - 1].comentario.length > 80 ? '...' : '' }}</span>
-                <span class="aspas">”</span>
-              </div>
-              <div class="comentario-autor-destaque">
-                — {{ item.comentarios[item.comentarios.length - 1].usuarioNickname || item.comentarios[item.comentarios.length - 1].usuario?.nickname || 'Usuário' }}
+                <div class="comentario-destaque">
+                  <span class="aspas">"</span>
+                  <span class="comentario-texto">{{ item.comentarios[item.comentarios.length - 1].comentario | slice:0:80 }}{{ item.comentarios[item.comentarios.length - 1].comentario.length > 80 ? '...' : '' }}</span>
+                  <span class="aspas">"</span>
+                </div>
+                <div class="comentario-autor-destaque">
+                  — {{ item.comentarios[item.comentarios.length - 1].usuario?.nickname || item.comentarios[item.comentarios.length - 1].usuarioNickname || 'Usuário' }}
+                </div>
               </div>
             </div>
           </div>
-        </div>
+
       </div>
       </ng-container>
 
@@ -163,11 +155,11 @@
       </button>
     </div>
 
-    <div class="comunidade-livro">
+    <div class="comunidade-livro" *ngIf="itemSelecionado.livro">
       <img [src]="itemSelecionado.livro.imagem || 'assets/capas/perfilSemFoto.png'" [alt]="itemSelecionado.livro.titulo" class="capa" />
       <div class="info">
         <strong>{{ itemSelecionado.livro.titulo || 'Sem título' }}</strong>
-        <span>{{ itemSelecionado.livro.autor }}</span>
+        <span>{{ itemSelecionado.livro.autor || 'Autor desconhecido' }}</span>
         <p *ngIf="itemSelecionado.livro.descricao">{{ itemSelecionado.livro.descricao }}</p>
       </div>
     </div>

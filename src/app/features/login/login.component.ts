@@ -4,6 +4,8 @@ import { Router } from '@angular/router';
 import { LoginService } from './login.service';
 import { environment } from '../../../environments/environment';
 import { AlertService } from '../../shared/services/alert.service';
+import { Browser } from '@capacitor/browser';
+import { Capacitor } from '@capacitor/core';
 
 declare const google: any;
 
@@ -45,28 +47,25 @@ export class LoginComponent {
     this.cdr.detectChanges();
   }
 
-  // ⬅️ ABRIR MODAL DE TERMOS
   abrirTermos(): void {
     this.mostrarTermos = true;
     this.mostrarPolitica = false;
     this.cdr.detectChanges();
   }
 
-  // ⬅️ ABRIR MODAL DE POLÍTICA
   abrirPolitica(): void {
     this.mostrarTermos = false;
     this.mostrarPolitica = true;
     this.cdr.detectChanges();
   }
 
-  // ⬅️ FECHAR MODAL
   fecharModalTermos(): void {
     this.mostrarTermos = false;
     this.mostrarPolitica = false;
     this.cdr.detectChanges();
   }
 
-  entrarComGoogle(): void {
+  async entrarComGoogle(): Promise<void> {
     this.carregando = true;
     this.cdr.detectChanges();
 
@@ -76,6 +75,34 @@ export class LoginComponent {
       }
     }, 60000);
 
+    // 🆕 Se for app nativo (Android), usa Browser externo
+    if (Capacitor.isNativePlatform()) {
+      try {
+        const redirectUri = environment.google.redirectUri;
+        const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
+          `client_id=${environment.google.clientId}` +
+          `&redirect_uri=${encodeURIComponent(redirectUri)}` +
+          `&response_type=code` +
+          `&scope=email%20profile%20openid` +
+          `&access_type=offline` +
+          `&prompt=consent`;
+
+        await Browser.open({ url: authUrl, windowName: '_self' });
+
+        // Listener para quando voltar ao app
+        Browser.addListener('browserFinished', () => {
+          this.carregando = false;
+          this.alertService.warning('Login não concluído. Tente novamente.');
+        });
+
+      } catch (err) {
+        clearTimeout(timeoutId);
+        this.exibirErro('Erro ao abrir navegador. Use o login de convidado.');
+      }
+      return;
+    }
+
+    // 🆕 Se for web (navegador), usa o fluxo normal
     const client = google.accounts.oauth2.initCodeClient({
       client_id: environment.google.clientId,
       scope: 'email profile openid',
@@ -90,48 +117,52 @@ export class LoginComponent {
           return;
         }
 
-        fetch('https://oauth2.googleapis.com/token', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: new URLSearchParams({
-            code: response.code,
-            client_id: environment.google.clientId,
-            client_secret: environment.google.clientSecret,
-            redirect_uri: environment.google.redirectUri,
-            grant_type: 'authorization_code'
-          })
-        })
-        .then(res => res.json())
-        .then(data => {
-          if (!data.id_token) {
-            this.exibirErro('Erro ao obter token do Google.');
-            return;
-          }
-
-          const payload = JSON.parse(atob(data.id_token.split('.')[1]));
-
-          this.loginService.loginComGoogle(data.id_token, payload.sub, payload.name, payload.email)
-            .subscribe({
-              next: (response) => {
-                this.carregando = false;
-                this.alertService.success(`Bem-vindo, ${response.usuario.nome}!`);
-                if (response.novoUsuario) {
-                  this.router.navigate(['/termo']);
-                } else {
-                  this.router.navigate(['/inicio']);
-                }
-              },
-              error: (err) => {
-                this.exibirErro(err.error?.mensagem || 'Erro ao fazer login. Tente novamente.');
-              }
-            });
-        })
-        .catch(() => {
-          this.exibirErro('Erro ao conectar com o Google.');
-        });
+        this.processarLogin(response.code);
       }
     });
     client.requestCode();
+  }
+
+  private processarLogin(code: string): void {
+    fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        code: code,
+        client_id: environment.google.clientId,
+        client_secret: environment.google.clientSecret,
+        redirect_uri: environment.google.redirectUri,
+        grant_type: 'authorization_code'
+      })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (!data.id_token) {
+        this.exibirErro('Erro ao obter token do Google.');
+        return;
+      }
+
+      const payload = JSON.parse(atob(data.id_token.split('.')[1]));
+
+      this.loginService.loginComGoogle(data.id_token, payload.sub, payload.name, payload.email)
+        .subscribe({
+          next: (response) => {
+            this.carregando = false;
+            this.alertService.success(`Bem-vindo, ${response.usuario.nome}!`);
+            if (response.novoUsuario) {
+              this.router.navigate(['/termo']);
+            } else {
+              this.router.navigate(['/inicio']);
+            }
+          },
+          error: (err) => {
+            this.exibirErro(err.error?.mensagem || 'Erro ao fazer login. Tente novamente.');
+          }
+        });
+    })
+    .catch(() => {
+      this.exibirErro('Erro ao conectar com o Google.');
+    });
   }
 
   entrarComoConvidado(): void {
