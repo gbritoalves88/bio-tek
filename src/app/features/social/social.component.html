@@ -40,15 +40,17 @@
     </div>
   </div>
 
-  <!-- Lista carregada - USANDO usuariosFiltrados -->
+  <!-- Lista carregada -->
   <div *ngIf="!carregando">
+
+    <!-- Seguidos / Admin -->
     <div class="seguindo-list" *ngIf="usuariosFiltrados.length > 0">
       <div class="seguidor-card" *ngFor="let usuario of usuariosFiltrados">
         <img [src]="usuario.avatar || 'assets/capas/perfilSemFoto.png'" [alt]="usuario.nome" class="avatar" />
         <div class="info" (click)="irParaPerfil(usuario.id)">
           <span class="nome">{{ usuario.nome }}</span>
           <span class="nickname">{{ usuario.nickname || '@sem-nickname' }}</span>
-          <div class="stats-mini">
+          <div class="stats-mini" *ngIf="!isAdmin">
             <span>📚 {{ usuario.quantidadeLivros || 0 }}</span>
             <span>✅ {{ usuario.quantidadeLivrosLidos || 0 }}</span>
             <span>⭐ {{ usuario.mediaAvaliacoes || 0 }}</span>
@@ -57,29 +59,45 @@
 
         <!-- Botão "Deixar de seguir" só para usuário normal -->
         <button class="btn-deixar" *ngIf="!isAdmin" (click)="abrirConfirmacaoDeixarSeguir(usuario.id, usuario.nome)">
-          Deixar de seguir
+          Seguindo
         </button>
 
-        <!-- Badge Admin para usuários administradores -->
+        <!-- Badge Admin -->
         <span class="badge-admin" *ngIf="isAdmin && usuario.adm === true">👑 Admin</span>
       </div>
     </div>
 
-    <div class="empty" *ngIf="usuariosFiltrados.length === 0">
+    <!-- Resultados da busca externa -->
+    <div class="seguindo-list" *ngIf="buscarUsuariosExternos.length > 0">
+      <p class="section-label">🔍 Resultados da busca</p>
+      <div class="seguidor-card" *ngFor="let usuario of buscarUsuariosExternos">
+        <img [src]="usuario.avatar || 'assets/capas/perfilSemFoto.png'" [alt]="usuario.nome" class="avatar" />
+        <div class="info" (click)="irParaPerfil(usuario.id)">
+          <span class="nome">{{ usuario.nome }}</span>
+          <span class="nickname">{{ usuario.nickname || '@sem-nickname' }}</span>
+        </div>
+        <button class="btn-seguir" (click)="seguirUsuario(usuario.id)">
+          Seguir
+        </button>
+      </div>
+    </div>
+
+    <!-- Buscando... -->
+    <div class="loading" *ngIf="buscando" style="text-align: center; padding: 20px;">
+      🔍 Buscando usuários...
+    </div>
+
+    <!-- Vazio -->
+    <div class="empty" *ngIf="usuariosFiltrados.length === 0 && buscarUsuariosExternos.length === 0 && !buscando">
       <p *ngIf="termoBusca">Nenhum usuário encontrado para "{{ termoBusca }}"</p>
       <p *ngIf="!termoBusca && !isAdmin">Você ainda não segue ninguém.</p>
       <p *ngIf="!termoBusca && isAdmin">Nenhum usuário cadastrado ainda.</p>
-      <p *ngIf="!termoBusca && !isAdmin">Encontre leitores na Comunidade!</p>
+      <p *ngIf="!termoBusca && !isAdmin">Busque por leitores para seguir!</p>
     </div>
-  </div>
-
-  <!-- Modal Perfil do Usuário (mantido igual) -->
-  <div class="perfil-modal-overlay" *ngIf="perfilSelecionado" (click)="fecharPerfil()">
-    <!-- ... conteúdo existente ... -->
   </div>
 </section>
 
-<!-- Modal de Confirmação Minimalista -->
+<!-- Modal de Confirmação -->
 <div class="confirm-overlay" *ngIf="confirmarExclusao" (click)="fecharConfirmacao()">
   <div class="confirm-modal" (click)="$event.stopPropagation()">
     <div class="confirm-icon">👋</div>

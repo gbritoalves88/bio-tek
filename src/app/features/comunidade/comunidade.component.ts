@@ -23,6 +23,7 @@ export class ComunidadeComponent implements OnInit {
   novoComentario = '';
   comentarios: Comentario[] = [];
   carregandoComentarios = false;
+  usuarioAtual: any = null;
 
   constructor(
     private comunidadeService: ComunidadeService,
@@ -34,6 +35,8 @@ export class ComunidadeComponent implements OnInit {
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
       const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+
+      this.usuarioAtual = usuario;
       this.meuId = usuario.id || '';
       this.carregarFeed();
     }
@@ -79,24 +82,75 @@ export class ComunidadeComponent implements OnInit {
     this.cdr.markForCheck();
   }
 
-  enviarComentario(): void {
-    if (!this.novoComentario?.trim() || !this.itemSelecionado) return;
+  enviarComentarioOld(): void {
+      if (!this.novoComentario?.trim() || !this.itemSelecionado) return;
 
-    this.comunidadeService.enviarComentario(this.itemSelecionado.livro.id, this.novoComentario.trim()).subscribe({
-      next: () => {
-        this.novoComentario = '';
+      this.comunidadeService.enviarComentario(this.itemSelecionado.livro.id, this.novoComentario.trim()).subscribe({
+        next: () => {
+          this.novoComentario = '';
+          this.alertService.success('Comentário enviado!');
+          this.cdr.detectChanges(); // 🆕 detectChanges aqui também
+        },
+        error: (err) => {
+          console.error('Erro ao comentar:', err);
+          this.alertService.error('Erro ao enviar comentário');
+        }
+      });
+  }
+
+enviarComentario(): void {
+  if (!this.novoComentario?.trim() || !this.itemSelecionado) {
+    return;
+  }
+
+  const textoComentario = this.novoComentario.trim();
+
+  // 🆕 Adiciona imediatamente (otimista)
+  const comentarioTemp: any = {
+    id: 'temp-' + Date.now(),
+    comentario: textoComentario,
+    dataCriacao: new Date().toISOString(),
+    usuarioNickname: this.usuarioAtual?.nickname || '@user',
+    usuario: {
+      id: this.usuarioAtual?.id,
+      nickname: this.usuarioAtual?.nickname || '@user'
+    }
+  };
+
+  this.comentarios = [...this.comentarios, comentarioTemp];
+  this.novoComentario = '';
+  this.cdr.markForCheck();
+
+  // Depois confirma com a API
+  this.comunidadeService
+    .enviarComentario(this.itemSelecionado.livro.id, textoComentario)
+    .subscribe({
+      next: (comentarioCriado: any) => {
+        // Substitui o temporário pelo real
+        this.comentarios = this.comentarios.map(c =>
+          c.id === comentarioTemp.id
+            ? { ...comentarioCriado, usuarioNickname: this.usuarioAtual?.nickname, usuario: { id: this.usuarioAtual?.id, nickname: this.usuarioAtual?.nickname } }
+            : c
+        );
         this.alertService.success('Comentário enviado!');
         this.cdr.markForCheck();
       },
       error: (err) => {
+        // Remove o temporário em caso de erro
+        this.comentarios = this.comentarios.filter(c => c.id !== comentarioTemp.id);
         console.error('Erro ao comentar:', err);
         this.alertService.error('Erro ao enviar comentário');
+        this.cdr.markForCheck();
       }
     });
-  }
+}
+
 
   onComentarioChange(): void {
-    this.cdr.markForCheck();
+    // Força o Angular a verificar este componente
+    this.cdr.detectChanges();
+    // Tenta verificar também o componente pai (se necessário)
+    setTimeout(() => this.cdr.detectChanges(), 0);
   }
 
   seguirUsuario(idUsuario: string): void {

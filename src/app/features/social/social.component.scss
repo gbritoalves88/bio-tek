@@ -437,3 +437,20 @@
     }
   }
 }
+
+.btn-seguir {
+  padding: 6px 16px;
+  border: 1px solid var(--accent);
+  border-radius: 16px;
+  background: transparent;
+  color: var(--accent);
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all 0.2s;
+  &:hover {
+    background: var(--accent);
+    color: #fff;
+  }
+}

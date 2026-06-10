@@ -16,8 +16,12 @@ export class LoginService {
     private router: Router
   ) {}
 
-  loginComGoogle(idToken: string, id: string, nome: string, email: string): Observable<LoginResponse> {
-    return this.http.post<LoginResponse>(`${this.apiUrl}/google`, { id, idToken, nome, email }).pipe(
+  // 🆕 Novo método: envia apenas o code para o backend
+  loginComGoogleCode(code: string): Observable<LoginResponse> {
+    return this.http.post<LoginResponse>(`${this.apiUrl}/google-code`, {
+      code,
+      redirectUri: environment.google.redirectUri
+    }).pipe(
       tap(response => {
         localStorage.setItem('token', response.token);
         const usuario = {
@@ -29,7 +33,7 @@ export class LoginService {
           descricao: response.usuario.descricao,
           tema: response.usuario.tema,
           adm: response.usuario.adm,
-          aceitouTermos: response.usuario.aceitouTermos || false  // ⬅️ ADICIONAR
+          aceitouTermos: response.usuario.aceitouTermos || false
         };
         localStorage.setItem('usuario', JSON.stringify(usuario));
       })

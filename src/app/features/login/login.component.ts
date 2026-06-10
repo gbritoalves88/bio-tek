@@ -84,51 +84,28 @@ export class LoginComponent {
           this.exibirErro('Login cancelado. Tente novamente.');
           return;
         }
-        this.processarLogin(response.code);
+        // ✅ Envia o code para o BACKEND (seguro!)
+        this.enviarCodeParaBackend(response.code);
       }
     });
     client.requestCode();
   }
 
-  private processarLogin(code: string): void {
-    fetch('https://oauth2.googleapis.com/token', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({
-        code: code,
-        client_id: environment.google.clientId,
-        client_secret: environment.google.clientSecret,
-        redirect_uri: environment.google.redirectUri,
-        grant_type: 'authorization_code'
-      })
-    })
-    .then(res => res.json())
-    .then(data => {
-      if (!data.id_token) {
-        this.exibirErro('Erro ao obter token do Google.');
-        return;
+  // 🆕 Envia o code para o backend (não expõe client_secret)
+  private enviarCodeParaBackend(code: string): void {
+    this.loginService.loginComGoogleCode(code).subscribe({
+      next: (response) => {
+        this.carregando = false;
+        this.alertService.success(`Bem-vindo, ${response.usuario.nome}!`);
+        if (response.novoUsuario) {
+          this.router.navigate(['/termo']);
+        } else {
+          this.router.navigate(['/inicio']);
+        }
+      },
+      error: (err) => {
+        this.exibirErro(err.error?.mensagem || 'Erro ao fazer login. Tente novamente.');
       }
-
-      const payload = JSON.parse(atob(data.id_token.split('.')[1]));
-
-      this.loginService.loginComGoogle(data.id_token, payload.sub, payload.name, payload.email)
-        .subscribe({
-          next: (response) => {
-            this.carregando = false;
-            this.alertService.success(`Bem-vindo, ${response.usuario.nome}!`);
-            if (response.novoUsuario) {
-              this.router.navigate(['/termo']);
-            } else {
-              this.router.navigate(['/inicio']);
-            }
-          },
-          error: (err) => {
-            this.exibirErro(err.error?.mensagem || 'Erro ao fazer login. Tente novamente.');
-          }
-        });
-    })
-    .catch(() => {
-      this.exibirErro('Erro ao conectar com o Google.');
     });
   }
 

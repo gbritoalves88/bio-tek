@@ -451,4 +451,10 @@ export class PerfilComponent implements OnInit {
 
   abrirConfirmacaoExclusao(id: string): void { this.livroParaExcluir = id; this.confirmarExclusao = true; }
   fecharConfirmacaoExclusao(): void { this.confirmarExclusao = false; this.livroParaExcluir = null; }
+
+  abrirContato(): void {
+    this.menuConfigAberto = false;
+    window.location.href = 'mailto:g.britoalves888@gmail.com?subject=Bliteca%20-%20Contato';
+  }
+
 }
