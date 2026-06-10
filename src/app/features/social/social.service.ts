@@ -62,4 +62,12 @@ export class SocialService {
   getTodosUsuarios(): Observable<UsuarioSocial[]> {
     return this.http.get<UsuarioSocial[]>(`${this.apiUsuario}/todos`);
   }
+
+  buscarUsuarios(termo: string): Observable<UsuarioSocial[]> {
+      return this.http.get<UsuarioSocial[]>(`${this.apiUsuario}/buscar?q=${encodeURIComponent(termo)}`);
+  }
+
+  seguir(idUsuario: string): Observable<any> {
+    return this.http.post(`${this.apiSeguidor}/seguir/${idUsuario}`, {});
+  }
 }

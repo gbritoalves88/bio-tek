@@ -25,6 +25,8 @@ export class SocialComponent implements OnInit {
   comentariosAberto = false;
   livroComentarioId = '';
   livroComentarioTitulo = '';
+  buscarUsuariosExternos: UsuarioSocial[] = [];
+  buscando = false;
 
 
   // Modo administrador
@@ -131,20 +133,61 @@ ngOnInit(): void {
     this.livrosUsuario = [];
   }
 
-    filtrarUsuarios(): void {
-    if (!this.termoBusca.trim()) {
+  seguirUsuario(id: string): void {
+    this.socialService.seguir(id).subscribe({
+      next: () => {
+        this.alertService.success('Agora você segue este usuário!');
+        // Atualiza a lista local
+        this.carregarUsuarios();
+      },
+      error: (err) => {
+        this.alertService.error('Erro ao seguir usuário');
+      }
+    });
+  }
+
+  filtrarUsuarios(): void {
+    const termo = this.termoBusca?.trim();
+
+    if (!termo) {
+      // Vazio = só seguidos
       this.usuariosFiltrados = [...this.seguindo];
+      this.buscarUsuariosExternos = [];
       return;
     }
 
-    const termo = this.termoBusca.toLowerCase();
+    // Filtra local nos seguidos
+    const termoLower = termo.toLowerCase();
     this.usuariosFiltrados = this.seguindo.filter(usuario =>
-      usuario.nome?.toLowerCase().includes(termo) ||
-      usuario.nickname?.toLowerCase().includes(termo)
+      usuario.nome?.toLowerCase().includes(termoLower) ||
+      usuario.nickname?.toLowerCase().includes(termoLower)
     );
+
+    // Busca externa (se tiver 2+ caracteres)
+    if (termo.length >= 2) {
+      this.buscando = true;
+      this.socialService.buscarUsuarios(termo).subscribe({
+        next: (usuarios) => {
+          // Remove quem já está nos seguidos
+          const idsSeguidos = new Set(this.seguindo.map(u => u.id));
+          this.buscarUsuariosExternos = usuarios.filter(u => !idsSeguidos.has(u.id));
+          this.buscando = false;
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.buscarUsuariosExternos = [];
+          this.buscando = false;
+          this.cdr.markForCheck();
+        }
+      });
+    } else {
+      this.buscarUsuariosExternos = [];
+    }
   }
 
-   limparBusca(): void {
+
+
+  limparBusca(): void {
     this.termoBusca = '';
     this.usuariosFiltrados = [...this.seguindo];
   }
