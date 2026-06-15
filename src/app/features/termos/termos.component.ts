@@ -153,8 +153,8 @@ export class TermoComponent {
   }
 
   recusar(): void {
-    localStorage.removeItem('token');
-    localStorage.removeItem('usuario');
-    this.router.navigate(['/']);
+      localStorage.removeItem('token');
+      localStorage.removeItem('usuario');
+      this.router.navigate(['/']);
   }
 }

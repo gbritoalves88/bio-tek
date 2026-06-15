@@ -97,7 +97,8 @@ export class LoginComponent {
       next: (response) => {
         this.carregando = false;
         this.alertService.success(`Bem-vindo, ${response.usuario.nome}!`);
-        if (response.novoUsuario) {
+
+         if (response.precisaAceitarTermos || response.novoUsuario) {
           this.router.navigate(['/termo']);
         } else {
           this.router.navigate(['/inicio']);
