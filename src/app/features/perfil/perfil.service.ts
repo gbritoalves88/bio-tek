@@ -73,6 +73,10 @@ export class PerfilService {
       comentario
     });
   }
+
+  desativarConta(): Observable<any> {
+      return this.http.post(`${this.apiUrl}/desativar`, {});
+  }
 }
 
 
