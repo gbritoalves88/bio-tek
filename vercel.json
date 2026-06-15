@@ -3,12 +3,12 @@
   "buildCommand": "ng build --configuration production",
   "outputDirectory": "dist/bio-tek/browser",
   "routes": [
+    { "src": "/privacy.html", "dest": "/privacy.html" },
+    { "src": "/delete-account.html", "dest": "/delete-account.html" },
     { "src": "/.well-known/(.*)", "dest": "/.well-known/$1" },
     { "src": "/manifest.json", "dest": "/manifest.json" },
     { "src": "/assets/(.*)", "dest": "/assets/$1" },
     { "src": "/(.*)\\.(js|css|png|jpg|jpeg|gif|ico|svg|woff2?|ttf|eot)", "dest": "/$1.$2" },
-    { "src": "/(.*)", "dest": "/index.html" },
-    { "src": "/privacy.html", "dest": "/privacy.html" },
-    { "src": "/delete-account.html", "dest": "/delete-account.html" }
+    { "src": "/(.*)", "dest": "/index.html" }
   ]
 }
