@@ -3,6 +3,9 @@
   "target": {
     "namespace": "android_app",
     "package_name": "com.bliteca.app",
-    "sha256_cert_fingerprints": ["24:EC:4C:96:D1:35:37:83:C1:76:71:29:76:CB:33:4B:C0:63:9D:69:A8:BF:A1:88:C6:BD:D6:FC:00:5E:C6:76"]
+    "sha256_cert_fingerprints": [
+      "24:EC:4C:96:D1:35:37:83:C1:76:71:29:76:CB:33:4B:C0:63:9D:69:A8:BF:A1:88:C6:BD:D6:FC:00:5E:C6:76",
+      "29:F8:46:11:2E:31:B4:68:F0:F2:05:E3:FF:74:0C:6F:51:40:1E:4D:FE:56:0C:80:AA:9A:4C:F1:0A:45:61:81"
+    ]
   }
 }]
