@@ -29,27 +29,27 @@
         [class.tipo-avaliado]="item.tipo === 'livro_avaliado'">
 
       <div class="feed-topo">
-        <img [src]="item.usuario.avatar || 'assets/capas/perfilSemFoto.png'" [alt]="item.usuario.nome" class="avatar" />
+        <img [src]="item.usuario?.avatar || 'assets/capas/perfilSemFoto.png'" [alt]="item.usuario?.nome || 'Usuário'" class="avatar" />
         <div class="feed-header">
           <div class="usuario-info">
-            <span class="usuario-nome">{{ item.usuario.nome }}</span>
-            <span class="usuario-nickname">{{ item.usuario.nickname || '@user' }}</span>
+            <span class="usuario-nome">{{ item.usuario?.nome || 'Usuário' }}</span>
+            <span class="usuario-nickname">{{ item.usuario?.nickname || '@user' }}</span>
           </div>
           <span class="feed-acao">{{ getTextoTipo(item.tipo) }}</span>
         </div>
       </div>
 
-      <!-- CONTEÚDO POR TIPO (mantido igual) -->
+      <!-- CONTEÚDO POR TIPO -->
       <ng-container [ngSwitch]="item.tipo">
         <!-- TIPO: ADICIONOU UM LIVRO -->
         <div class="feed-conteudo" *ngSwitchCase="'livro_novo'">
           <div class="livro-destaque" *ngIf="item.livro">
-            <img [src]="item.livro.imagem || 'assets/capas/perfilSemFoto.png'"
-                [alt]="item.livro.titulo"
+            <img [src]="item.livro?.imagem || 'assets/capas/perfilSemFoto.png'"
+                [alt]="item.livro?.titulo || 'Sem título'"
                 class="capa-destaque" />
             <div class="livro-info-destaque">
-              <strong class="titulo-destaque">{{ item.livro.titulo || 'Sem título' }}</strong>
-              <span class="autor-destaque">{{ item.livro.autor || 'Autor desconhecido' }}</span>
+              <strong class="titulo-destaque">{{ item.livro?.titulo || 'Sem título' }}</strong>
+              <span class="autor-destaque">{{ item.livro?.autor || 'Autor desconhecido' }}</span>
             </div>
           </div>
         </div>
@@ -57,12 +57,12 @@
         <!-- TIPO: ESTÁ LENDO -->
         <div class="feed-conteudo" *ngSwitchCase="'livro_lendo'">
           <div class="livro-padrao" *ngIf="item.livro">
-            <img [src]="item.livro.imagem || 'assets/capas/perfilSemFoto.png'"
-                [alt]="item.livro.titulo"
+            <img [src]="item.livro?.imagem || 'assets/capas/perfilSemFoto.png'"
+                [alt]="item.livro?.titulo || 'Sem título'"
                 class="capa-padrao" />
             <div class="livro-info-padrao">
-              <strong class="titulo-padrao">{{ item.livro.titulo || 'Sem título' }}</strong>
-              <span class="autor-padrao">{{ item.livro.autor || 'Autor desconhecido' }}</span>
+              <strong class="titulo-padrao">{{ item.livro?.titulo || 'Sem título' }}</strong>
+              <span class="autor-padrao">{{ item.livro?.autor || 'Autor desconhecido' }}</span>
             </div>
           </div>
         </div>
@@ -70,12 +70,12 @@
         <!-- TIPO: TERMINOU DE LER -->
         <div class="feed-conteudo" *ngSwitchCase="'livro_lido'">
           <div class="livro-concluido" *ngIf="item.livro">
-            <img [src]="item.livro.imagem || 'assets/capas/perfilSemFoto.png'"
-                [alt]="item.livro.titulo"
+            <img [src]="item.livro?.imagem || 'assets/capas/perfilSemFoto.png'"
+                [alt]="item.livro?.titulo || 'Sem título'"
                 class="capa-concluido" />
             <div class="livro-info-concluido">
-              <strong class="titulo-concluido">{{ item.livro.titulo || 'Sem título' }}</strong>
-              <span class="autor-concluido">{{ item.livro.autor || 'Autor desconhecido' }}</span>
+              <strong class="titulo-concluido">{{ item.livro?.titulo || 'Sem título' }}</strong>
+              <span class="autor-concluido">{{ item.livro?.autor || 'Autor desconhecido' }}</span>
               <div class="palmas-destaque">
                 <span class="palmas-icon">👏</span>
                 <span class="palmas-icon">👏</span>
@@ -88,12 +88,12 @@
         <!-- TIPO: AVALIOU -->
         <div class="feed-conteudo" *ngSwitchCase="'livro_avaliado'">
           <div class="livro-avaliado" *ngIf="item.livro">
-            <img [src]="item.livro.imagem || 'assets/capas/perfilSemFoto.png'"
-                [alt]="item.livro.titulo"
+            <img [src]="item.livro?.imagem || 'assets/capas/perfilSemFoto.png'"
+                [alt]="item.livro?.titulo || 'Sem título'"
                 class="capa-avaliado" />
             <div class="livro-info-avaliado">
-              <strong class="titulo-avaliado">{{ item.livro.titulo || 'Sem título' }}</strong>
-              <span class="autor-avaliado">{{ item.livro.autor || 'Autor desconhecido' }}</span>
+              <strong class="titulo-avaliado">{{ item.livro?.titulo || 'Sem título' }}</strong>
+              <span class="autor-avaliado">{{ item.livro?.autor || 'Autor desconhecido' }}</span>
               <div class="estrelas-destaque">
                 <div class="estrelas-grandes">
                   {{ '⭐'.repeat(item.avaliacao?.nota || 0) }}
@@ -142,25 +142,25 @@
     </div>
 
     <div class="comunidade-usuario">
-      <img [src]="itemSelecionado.usuario.avatar || 'assets/capas/perfilSemFoto.png'" [alt]="itemSelecionado.usuario.nome" class="avatar" />
+      <img [src]="itemSelecionado.usuario?.avatar || 'assets/capas/perfilSemFoto.png'" [alt]="itemSelecionado.usuario?.nome || 'Usuário'" class="avatar" />
       <div>
-        <span class="nome">{{ itemSelecionado.usuario.nome }}</span>
-        <span class="nickname">{{ itemSelecionado.usuario.nickname }}</span>
+        <span class="nome">{{ itemSelecionado.usuario?.nome || 'Usuário' }}</span>
+        <span class="nickname">{{ itemSelecionado.usuario?.nickname || '@user' }}</span>
       </div>
       <button class="btn-seguir-modal"
-              *ngIf="itemSelecionado.usuario.id !== meuId"
-              (click)="itemSelecionado.usuario.segue ? deixarDeSeguirUsuario(itemSelecionado.usuario.id) : seguirUsuario(itemSelecionado.usuario.id)"
-              [class.seguindo]="itemSelecionado.usuario.segue">
-        {{ itemSelecionado.usuario.segue ? 'Seguindo' : 'Seguir' }}
+              *ngIf="itemSelecionado.usuario?.id !== meuId"
+              (click)="itemSelecionado.usuario?.segue ? deixarDeSeguirUsuario(itemSelecionado.usuario.id) : seguirUsuario(itemSelecionado.usuario.id)"
+              [class.seguindo]="itemSelecionado.usuario?.segue">
+        {{ itemSelecionado.usuario?.segue ? 'Seguindo' : 'Seguir' }}
       </button>
     </div>
 
     <div class="comunidade-livro" *ngIf="itemSelecionado.livro">
-      <img [src]="itemSelecionado.livro.imagem || 'assets/capas/perfilSemFoto.png'" [alt]="itemSelecionado.livro.titulo" class="capa" />
+      <img [src]="itemSelecionado.livro?.imagem || 'assets/capas/perfilSemFoto.png'" [alt]="itemSelecionado.livro?.titulo || 'Sem título'" class="capa" />
       <div class="info">
-        <strong>{{ itemSelecionado.livro.titulo || 'Sem título' }}</strong>
-        <span>{{ itemSelecionado.livro.autor || 'Autor desconhecido' }}</span>
-        <p *ngIf="itemSelecionado.livro.descricao">{{ itemSelecionado.livro.descricao }}</p>
+        <strong>{{ itemSelecionado.livro?.titulo || 'Sem título' }}</strong>
+        <span>{{ itemSelecionado.livro?.autor || 'Autor desconhecido' }}</span>
+        <p *ngIf="itemSelecionado.livro?.descricao">{{ itemSelecionado.livro?.descricao }}</p>
       </div>
     </div>
 
