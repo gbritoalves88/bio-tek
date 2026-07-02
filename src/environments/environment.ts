@@ -4,7 +4,7 @@ export const environment = {
   //apiUrl: 'http://localhost:5081/api',
   google: {
     clientId: '3559837920-73a93ipuafg6ngsbhaqe8cuh1vhqqbql.apps.googleusercontent.com',
-    redirectUri: 'https://bliteca-three.vercel.app'
+    redirectUri: 'https://bliteca.com.br'
     //redirectUri: 'http://localhost:4200'
   }
 };
