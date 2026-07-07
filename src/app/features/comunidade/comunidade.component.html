@@ -166,7 +166,7 @@
       <div class="info">
         <strong>{{ itemSelecionado.livro?.titulo || 'Sem título' }}</strong>
         <span>{{ itemSelecionado.livro?.autor || 'Autor desconhecido' }}</span>
-        <p *ngIf="itemSelecionado.livro?.descricao">{{ itemSelecionado.livro?.descricao }}</p>
+        <p *ngIf="itemSelecionado.livro?.descricao">{{ itemSelecionado.livro.descricao }}</p>
       </div>
     </div>
 

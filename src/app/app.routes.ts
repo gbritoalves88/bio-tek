@@ -6,19 +6,18 @@ import { ComunidadeComponent } from './features/comunidade/comunidade.component'
 import { SocialComponent } from './features/social/social.component';
 import { PerfilComponent } from './features/perfil/perfil.component';
 import { LoginComponent } from './features/login/login.component';
-import { TermoComponent } from './features/termos/termos.component'; // ⬅️ Nome corrigido
+import { TermoComponent } from './features/termos/termos.component';
+import { AuthGuard } from './core/guards/auth.guard';
+import { AdminGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
-  // Tela inicial → Login
   { path: '', component: LoginComponent },
+  { path: 'termo', component: TermoComponent },
 
-  // Termos de uso
-  { path: 'termo', component: TermoComponent }, // ⬅️ Nome corrigido
-
-  // App interno
   {
     path: 'inicio',
     component: ShellComponent,
+    canActivate: [AuthGuard],
     children: [
       { path: '', component: HomeComponent },
       { path: 'biblioteca', component: BibliotecaComponent },
@@ -26,9 +25,13 @@ export const routes: Routes = [
       { path: 'social', component: SocialComponent },
       { path: 'perfil', component: PerfilComponent },
       { path: 'perfil/:id', component: PerfilComponent },
+      {
+        path: 'admin',
+        loadComponent: () => import('./features/admin/admin.component').then(m => m.AdminComponent),
+        canActivate: [AdminGuard]
+      }
     ]
   },
 
-  // Fallback
   { path: '**', redirectTo: '' }
 ];
