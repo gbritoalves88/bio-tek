@@ -362,3 +362,52 @@ $max-content-width: 900px;
     display: none;
   }
 }
+
+.admin-link {
+  color: var(--accent) !important;
+  font-weight: 500;
+
+  &:hover {
+    background: rgba(219, 124, 0, 0.1) !important;
+  }
+}
+
+// Admin toggle
+.admin-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  .seta {
+    width: 14px;
+    height: 14px;
+    transition: transform 0.2s;
+    flex-shrink: 0;
+
+    &.expandido {
+      transform: rotate(180deg);
+    }
+  }
+}
+
+// Subitens
+.admin-subitens {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+  padding-left: 12px;
+
+  &.expandido {
+    max-height: 200px;
+  }
+}
+
+.sub-item {
+  font-size: 13px !important;
+  padding: 8px 12px !important;
+  opacity: 0.85;
+
+  &:hover {
+    opacity: 1;
+  }
+}

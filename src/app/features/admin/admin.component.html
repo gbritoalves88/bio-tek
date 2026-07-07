@@ -1,0 +1,101 @@
+<div class="admin-layout">
+  <main class="admin-content">
+    <div class="loading" *ngIf="carregando">Carregando...</div>
+
+    <!-- Dashboard -->
+    <ng-container *ngIf="abaAtiva === 'dashboard' && dashboard">
+      <h1>📊 Dashboard</h1>
+      <div class="cards">
+        <div class="card">{{ dashboard.totalUsuarios }}<small>Usuários</small></div>
+        <div class="card">{{ dashboard.usuariosAtivos }}<small>Ativos</small></div>
+        <div class="card">{{ dashboard.totalComentarios }}<small>Comentários</small></div>
+        <div class="card warning">{{ dashboard.comentariosFlagged }}<small>Flagged 🚩</small></div>
+        <div class="card">{{ dashboard.totalLivros }}<small>Livros</small></div>
+      </div>
+    </ng-container>
+
+    <!-- Comentários -->
+    <ng-container *ngIf="abaAtiva === 'comentarios'">
+      <h1>💬 Comentários</h1>
+
+      <div class="filtros-admin">
+        <input type="text" placeholder="🔍 Buscar por texto ou usuário..." [(ngModel)]="filtroComentario" class="filtro-input" />
+        <div class="filtro-botoes">
+          <button [class.active]="filtroFlagged === null" (click)="filtroFlagged = null">Todos</button>
+          <button [class.active]="filtroFlagged === true" (click)="filtroFlagged = true">🚩 Flagged</button>
+          <button [class.active]="filtroFlagged === false" (click)="filtroFlagged = false">✅ OK</button>
+        </div>
+      </div>
+
+      <div class="tabela">
+        <div class="linha linha-comentarios header">
+          <span>Usuário</span><span>Comentário</span><span>Data</span><span>Flag</span><span>Ações</span>
+        </div>
+        <div class="linha linha-comentarios" *ngFor="let c of comentariosFiltrados" [class.flagged]="c.flagged">
+          <span>{{ c.usuario?.nickname || c.idUsuario }}</span>
+          <span class="texto" [title]="c.comentario">{{ c.comentario }}</span>
+          <span>{{ c.dataCriacao | date:'dd/MM HH:mm' }}</span>
+          <span>{{ c.flagged ? '🚩' : '✅' }}</span>
+          <span class="acoes">
+            <button *ngIf="c.flagged" (click)="aprovarComentario(c.id)" title="Aprovar">✅</button>
+            <button class="del" (click)="deletarComentario(c.id, c.comentario)" title="Excluir">🗑️</button>
+          </span>
+        </div>
+        <div class="linha vazia" *ngIf="comentariosFiltrados.length === 0">
+          <span style="grid-column: 1 / -1; text-align: center;">Nenhum comentário encontrado</span>
+        </div>
+      </div>
+
+      <div class="paginacao" *ngIf="totalPaginasComentarios > 1">
+        <button [disabled]="paginaComentarios <= 1" (click)="carregarComentarios(paginaComentarios - 1)">◀</button>
+        <span>{{ paginaComentarios }} / {{ totalPaginasComentarios }} ({{ totalComentarios }})</span>
+        <button [disabled]="paginaComentarios >= totalPaginasComentarios" (click)="carregarComentarios(paginaComentarios + 1)">▶</button>
+      </div>
+    </ng-container>
+
+    <!-- Usuários -->
+    <ng-container *ngIf="abaAtiva === 'usuarios'">
+      <h1>👥 Usuários</h1>
+
+      <div class="filtros-admin">
+        <input type="text" placeholder="🔍 Buscar por nome, nickname ou email..." [(ngModel)]="filtroUsuario" class="filtro-input" />
+        <div class="filtro-botoes">
+          <button [class.active]="filtroStatus === null" (click)="filtroStatus = null">Todos</button>
+          <button [class.active]="filtroStatus === true" (click)="filtroStatus = true">✅ Ativos</button>
+          <button [class.active]="filtroStatus === false" (click)="filtroStatus = false">❌ Inativos</button>
+        </div>
+      </div>
+
+      <div class="tabela">
+        <div class="linha linha-usuarios header">
+          <span>Nome</span><span>Email</span><span>Status</span><span>Livros</span><span>Ações</span>
+        </div>
+        <div class="linha linha-usuarios" *ngFor="let u of usuariosFiltrados" [class.inativo]="!u.ativo">
+          <span>
+            {{ u.nome }}
+            <small>{{ u.nickname }}</small>
+            <span class="badge-adm" *ngIf="u.adm">ADM</span>
+          </span>
+          <span class="texto" [title]="u.email">{{ u.email }}</span>
+          <span [class.ativo]="u.ativo" [class.inativo-texto]="!u.ativo">
+            {{ u.ativo ? '✅ Ativo' : '❌ Inativo' }}
+          </span>
+          <span>{{ u.quantidadeLivros }}</span>
+          <span class="acoes">
+            <button (click)="toggleAtivo(u)" [title]="u.ativo ? 'Desativar' : 'Ativar'">{{ u.ativo ? '❌' : '✅' }}</button>
+            <button class="del" (click)="excluirConta(u)" title="Excluir conta">🗑️</button>
+          </span>
+        </div>
+        <div class="linha vazia" *ngIf="usuariosFiltrados.length === 0">
+          <span style="grid-column: 1 / -1; text-align: center;">Nenhum usuário encontrado</span>
+        </div>
+      </div>
+
+      <div class="paginacao" *ngIf="totalPaginasUsuarios > 1">
+        <button [disabled]="paginaUsuarios <= 1" (click)="carregarUsuarios(paginaUsuarios - 1)">◀</button>
+        <span>{{ paginaUsuarios }} / {{ totalPaginasUsuarios }} ({{ totalUsuarios }})</span>
+        <button [disabled]="paginaUsuarios >= totalPaginasUsuarios" (click)="carregarUsuarios(paginaUsuarios + 1)">▶</button>
+      </div>
+    </ng-container>
+  </main>
+</div>
