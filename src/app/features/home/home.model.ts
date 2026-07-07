@@ -7,13 +7,15 @@ export interface Livro {
   descricao?: string;
   status: StatusLeitura;
   progresso?: number;
-  estrelas?: number;
+  paginaAtual?: number;      // 🆕
+  totalPaginas?: number;      // 🆕
+  pausado?: boolean;          // 🆕
+  ultimaLeitura?: string;     // 🆕
   dataCriacao?: string;
   avaliacao?: {
     nota: number;
   };
 }
-
 export interface LivroLeitura {
   id: string;
   titulo: string;

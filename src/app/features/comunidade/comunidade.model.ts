@@ -14,6 +14,8 @@ export interface Comentario {
 }
 
 export interface AtividadeComunidade {
+  curtidas: number;
+  curtiu: boolean;
   id: string;
   tipo: 'livro_novo' | 'livro_lido' | 'livro_lendo' | 'livro_avaliado';
   usuario: {

@@ -220,4 +220,26 @@ enviarComentario(): void {
   getEstrelas(nota: number): string {
     return '⭐'.repeat(nota);
   }
+
+  toggleCurtir(item: AtividadeComunidade): void {
+    if (item.curtiu) {
+      this.comunidadeService.descurtir(item.id).subscribe(() => {
+        item.curtiu = false;
+        item.curtidas--;
+        this.cdr.markForCheck();
+      });
+    } else {
+      const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+      this.comunidadeService.curtir(item.id, {
+        tipoAtividade: item.tipo === 'livro_avaliado' ? 'avaliacao' : 'livro',
+        idUsuarioDono: item.usuario?.id || '',
+        nomeCurtidor: usuario?.nickname || usuario?.nome || 'Usuário',
+        tituloLivro: item.livro?.titulo || 'Livro'
+      }).subscribe(() => {
+        item.curtiu = true;
+        item.curtidas++;
+        this.cdr.markForCheck();
+      });
+    }
+  }
 }
