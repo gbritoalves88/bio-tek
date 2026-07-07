@@ -422,13 +422,9 @@
 // ===== RODAPÉ =====
 .feed-rodape {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
+  align-items: center;
   margin-top: 8px;
-
-  .feed-data {
-    font-size: 11px;
-    color: var(--text-secondary);
-  }
 }
 
 .feed-header-actions {
@@ -729,4 +725,36 @@
     color: #e74c3c;
     opacity: 1;
   }
+}
+
+.btn-curtir {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 16px;
+  font-size: 12px;
+  transition: all 0.2s;
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  &:hover {
+    color: #e74c3c;
+  }
+
+  &.curtiu {
+    color: #e74c3c;
+  }
+}
+
+.feed-data {
+  font-size: 11px;
+  color: var(--text-secondary);
 }
