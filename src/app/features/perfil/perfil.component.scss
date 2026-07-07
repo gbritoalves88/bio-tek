@@ -1054,3 +1054,28 @@
     }
   }
 }
+
+.comentario-topo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.btn-deletar-comentario {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 2px;
+  opacity: 0.6;
+
+  svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  &:hover {
+    color: #e74c3c;
+    opacity: 1;
+  }
+}

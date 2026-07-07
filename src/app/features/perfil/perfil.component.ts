@@ -519,4 +519,20 @@ export class PerfilComponent implements OnInit {
     });
   }
 
+  deletarComentarioPerfil(id: string): void {
+    this.perfilService.deletarComentario(id).subscribe({
+      next: () => {
+        if (this.livroComentarioProntos) {
+          this.livroComentarioProntos = this.livroComentarioProntos.filter(c => c.id !== id);
+        }
+        this.alertService.success('Comentário removido!');
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        console.error('Erro:', err);
+        this.alertService.error('Erro ao remover comentário');
+      }
+    });
+  }
+
 }
