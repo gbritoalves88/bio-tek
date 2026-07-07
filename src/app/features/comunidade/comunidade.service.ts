@@ -69,4 +69,8 @@ export class ComunidadeService {
   deixarDeSeguir(idUsuario: string): Observable<any> {
     return this.http.delete(`${this.apiSeguidor}/deixar-de-seguir/${idUsuario}`);
   }
+
+  deletarComentario(id: string): Observable<any> {
+    return this.http.delete(`${environment.apiUrl}/ComentarioLivro/${id}`);
+  }
 }

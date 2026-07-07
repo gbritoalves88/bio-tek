@@ -220,4 +220,18 @@ enviarComentario(): void {
   getEstrelas(nota: number): string {
     return '⭐'.repeat(nota);
   }
+
+  deletarComentario(id: string): void {
+    this.comunidadeService.deletarComentario(id).subscribe({
+      next: () => {
+        this.comentarios = this.comentarios.filter(c => c.id !== id);
+        this.alertService.success('Comentário removido!');
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        console.error('Erro:', err);
+        this.alertService.error('Erro ao remover comentário');
+      }
+    });
+  }
 }
