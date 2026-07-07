@@ -82,4 +82,8 @@ curtir(id: string, dados: {
   descurtir(id: string): Observable<any> {
     return this.http.delete(`${this.apiComunidade}/${id}/curtir`);
   }
+
+  deletarComentario(id: string): Observable<any> {
+    return this.http.delete(`${environment.apiUrl}/ComentarioLivro/${id}`);
+  }
 }
