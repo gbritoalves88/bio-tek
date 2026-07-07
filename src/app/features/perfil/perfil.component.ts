@@ -53,6 +53,7 @@ export class PerfilComponent implements OnInit {
   confirmarExclusao = false;
   livroParaExcluir: string | null = null;
   novoComentarioPerfil = '';
+  meuId = '';
 
   @ViewChild('fileInputLivro') fileInputLivro!: ElementRef;
   @ViewChild('fileInputEdicaoLivro') fileInputEdicaoLivro!: ElementRef;
@@ -75,6 +76,8 @@ export class PerfilComponent implements OnInit {
 
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
+      const usuarioLogado = JSON.parse(localStorage.getItem('usuario') || '{}');
+      this.meuId = usuarioLogado.id || '';
       this.route.queryParams.subscribe(queryParams => {
         const forcarEdicao = queryParams['editar'] === 'true';
 
