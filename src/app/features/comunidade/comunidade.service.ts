@@ -70,6 +70,19 @@ export class ComunidadeService {
     return this.http.delete(`${this.apiSeguidor}/deixar-de-seguir/${idUsuario}`);
   }
 
+curtir(id: string, dados: {
+    tipoAtividade: string;
+    idUsuarioDono: string;
+    nomeCurtidor: string;
+    tituloLivro: string;
+  }): Observable<any> {
+    return this.http.post(`${this.apiComunidade}/${id}/curtir`, dados);
+  }
+
+  descurtir(id: string): Observable<any> {
+    return this.http.delete(`${this.apiComunidade}/${id}/curtir`);
+  }
+
   deletarComentario(id: string): Observable<any> {
     return this.http.delete(`${environment.apiUrl}/ComentarioLivro/${id}`);
   }

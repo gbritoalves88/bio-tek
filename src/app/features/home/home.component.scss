@@ -71,7 +71,7 @@
 
   .citacao-texto {
     margin: 0 0 8px;
-     font-family: 'Caveat', cursive;
+    font-family: 'Caveat', cursive;
     font-size: 20px;
     font-weight: 400;
     color: var(--text-primary);
@@ -87,12 +87,15 @@
   }
 }
 
+// ===== SEÇÃO COMUM =====
 .reading-now {
   background: var(--bg-card);
   padding: 20px;
   border-radius: 14px;
   margin-bottom: 24px;
   border: 1px solid var(--border-color);
+  overflow: hidden;
+  min-width: 0;
 
   h2 {
     margin: 0 0 14px;
@@ -102,48 +105,90 @@
     color: var(--accent);
     font-weight: 600;
   }
+
+  &:last-child {
+    margin-bottom: 0;
+  }
 }
 
+// ===== LENDO AGORA (DESTAQUE) =====
 .book-info {
   display: flex;
-  gap: 14px;
+  gap: 16px;
   align-items: center;
 
   .book-cover {
-    width: 150px;
-    height: 192px;
+    width: 180px;
+    aspect-ratio: 2 / 3;
     object-fit: cover;
-    border-radius: 6px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    transition: transform 0.2s ease;
+    flex-shrink: 0;
+
+    &:hover {
+      transform: scale(1.03);
+    }
   }
 
   .book-details {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+
     h3 {
-      margin: 0 0 4px;
-      font-size: 18px;
+      margin: 0 0 6px;
+      font-size: 20px;
       font-weight: 600;
+      line-height: 1.2;
     }
     p {
       margin: 0;
-      font-size: 13px;
+      font-size: 14px;
       color: var(--text-secondary);
     }
   }
 }
 
 .progress {
-  height: 4px;
+  height: 6px;
   background: var(--border-color);
-  border-radius: 999px;
-  margin-top: 16px;
+  border-radius: 3px;
   overflow: hidden;
+  margin-top: 4px;
+  max-width: 200px;
 }
 
 .bar {
   height: 100%;
   background: var(--accent);
-  border-radius: 999px;
+  border-radius: 3px;
   transition: width 0.5s ease;
+}
+
+.progress-texto {
+  font-size: 11px;
+  color: var(--accent);
+  font-weight: 500;
+}
+
+.progress-btn {
+  background: transparent;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-size: 11px;
+  cursor: pointer;
+  margin-top: 4px;
+  transition: all 0.2s;
+  width: fit-content;
+
+  &:hover {
+    background: var(--accent);
+    color: white;
+  }
 }
 
 .empty-state {
@@ -167,107 +212,64 @@
   overflow-x: auto;
   overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
+  padding-bottom: 8px;
+  max-width: 100%;
+  width: 100%;
 
   &::-webkit-scrollbar {
-    height: 3px;
+    height: 5px;
+    -webkit-appearance: none;
   }
   &::-webkit-scrollbar-track {
     background: var(--border-color);
-    border-radius: 3px;
+    border-radius: 5px;
   }
   &::-webkit-scrollbar-thumb {
     background: var(--accent);
-    border-radius: 3px;
+    border-radius: 5px;
   }
+
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent) var(--border-color);
 }
 
 .scroll-track {
   display: flex;
-  gap: 16px;
-  width: fit-content;
+  gap: 12px;
+  width: max-content;
+  min-width: 100%;
+  flex-wrap: nowrap;
 }
 
+// ===== LIVRO CARD (CAPAS - SEM TEXTO) =====
 .livro-card {
-  width: 100px;
+  width: 120px;
   flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
 }
 
 .livro-capa {
-  width: 100px;
-  height: 142px;
+  width: 120px;
+  aspect-ratio: 2 / 3;
   object-fit: cover;
-  border-radius: 8px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s;
+  border-radius: 10px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  display: block;
 
   &:hover {
-    transform: scale(1.02);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+  }
+
+  &:active {
+    transform: scale(0.97);
   }
 }
 
-.livro-titulo {
-  font-size: 11px;
-  font-weight: 600;
-  margin-top: 6px;
-  text-align: center;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 100%;
-  display: block;
-}
-
-.livro-autor {
-  font-size: 9px;
-  color: var(--text-secondary);
-  text-align: center;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 100%;
-  display: block;
-}
-
+.livro-titulo,
+.livro-autor,
 .livro-rating {
-  font-size: 9px;
-  color: var(--accent);
-  margin-top: 2px;
-  display: block;
-  white-space: nowrap;
-}
-
-// Responsivo
-@media (max-width: 600px) {
-  .livro-card {
-    width: 85px;
-  }
-  .livro-capa {
-    width: 85px;
-    height: 120px;
-  }
-  .livro-titulo {
-    font-size: 10px;
-  }
-  .livro-autor, .livro-rating {
-    font-size: 8px;
-  }
-}
-
-@media (max-width: 480px) {
-  .scroll-track {
-    gap: 12px;
-  }
-  .livro-card {
-    width: 75px;
-  }
-  .livro-capa {
-    width: 75px;
-    height: 106px;
-  }
+  display: none;
 }
 
 // ===== SKELETON LOADING =====
@@ -278,7 +280,7 @@
 .skeleton-reading {
   background: var(--bg-card);
   border-radius: 14px;
-  height: 180px;
+  height: 200px;
   margin-bottom: 24px;
   border: 1px solid var(--border-color);
   position: relative;
@@ -310,14 +312,14 @@
 
 .skeleton-cards {
   display: flex;
-  gap: 16px;
+  gap: 12px;
 }
 
 .skeleton-card {
-  width: 100px;
-  height: 160px;
+  width: 120px;
+  aspect-ratio: 2 / 3;
   background: var(--bg-card);
-  border-radius: 12px;
+  border-radius: 10px;
   border: 1px solid var(--border-color);
   position: relative;
   overflow: hidden;
@@ -344,17 +346,299 @@
   50% { opacity: 0.6; }
 }
 
-// Responsivo para skeleton
+// ===== BOTTOM SHEET - DESTAQUE LIVRO =====
+.bs-livro-destaque {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.bs-capa {
+  width: 80px;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  flex-shrink: 0;
+}
+
+.bs-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
+.bs-titulo {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.3;
+}
+
+.bs-autor {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.bs-rating {
+  font-size: 13px;
+  color: var(--accent);
+  margin-top: 2px;
+
+  small {
+    font-size: 10px;
+    color: var(--text-secondary);
+  }
+}
+
+// ===== AÇÕES =====
+.bs-acoes {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.bs-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+
+  svg {
+    width: 18px;
+    height: 18px;
+    stroke: currentColor;
+  }
+}
+
+.bs-btn-primary {
+  background: var(--accent);
+  color: white;
+
+  &:hover { opacity: 0.9; }
+}
+
+.bs-btn-outline {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+
+  &:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+}
+
+.bottom-sheet-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-color);
+
+  h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+}
+
+.bottom-sheet-close {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 4px;
+
+  svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  &:hover {
+    color: var(--accent);
+  }
+}
+
+// ===== LENDO AGORA - PROGRESSO =====
+.bs-progresso-bar {
+  height: 6px;
+  background: var(--border-color);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-top: 8px;
+}
+
+.bs-progresso-preenchido {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.bs-progresso-texto {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+// ===== PÁGINA =====
+.bs-pagina {
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.bs-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+  display: block;
+  text-align: center;
+}
+
+.bs-pagina-inputs {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.bs-input-pagina {
+  width: 80px;
+  flex: none;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 14px;
+  text-align: center;
+  outline: none;
+
+  &:focus {
+    border-color: var(--accent);
+  }
+}
+
+.bs-de {
+  color: var(--text-secondary);
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+.bs-btn-sm {
+  padding: 8px 16px;
+  font-size: 12px;
+  width: fit-content;
+}
+
+// ===== ÚLTIMA LEITURA =====
+.bs-ultima-leitura {
+  text-align: center;
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-top: 12px;
+  margin-bottom: 0;
+}
+
+// ===== RESPONSIVO =====
 @media (max-width: 600px) {
+  .book-info {
+    gap: 12px;
+
+    .book-cover {
+      width: 160px;
+    }
+
+    .book-details {
+      h3 {
+        font-size: 16px;
+      }
+      p {
+        font-size: 12px;
+      }
+    }
+  }
+
+  .livro-card {
+    width: 105px;
+  }
+
+  .livro-capa {
+    width: 105px;
+  }
+
   .skeleton-card {
-    width: 85px;
-    height: 140px;
+    width: 105px;
+  }
+
+  .skeleton-reading {
+    height: 160px;
+  }
+
+  .bs-btn {
+    max-width: 100%;
   }
 }
 
 @media (max-width: 480px) {
+  .book-info {
+    gap: 10px;
+
+    .book-cover {
+      width: 140px;
+    }
+
+    .book-details {
+      h3 {
+        font-size: 15px;
+      }
+      p {
+        font-size: 11px;
+      }
+    }
+  }
+
+  .scroll-track {
+    gap: 10px;
+  }
+
+  .livro-card {
+    width: 95px;
+  }
+
+  .livro-capa {
+    width: 95px;
+  }
+
   .skeleton-card {
-    width: 75px;
-    height: 125px;
+    width: 95px;
+  }
+
+  .skeleton-reading {
+    height: 150px;
   }
 }

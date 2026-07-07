@@ -25,7 +25,7 @@ import { NotificationService, Notificacao } from '../services/notification.servi
         </div>
         <div class="panel-body">
           <div class="notificacao-item" *ngFor="let n of notificacoes" [class.nao-lida]="!n.lida">
-            <span class="icone">{{ n.tipo === 'seguidor' ? '👤' : '💬' }}</span>
+            <span class="icone">{{ n.tipo === 'seguidor' ? '👤' : n.tipo === 'curtida_livro' || n.tipo === 'curtida_avaliacao' ? '❤️' : '💬' }}</span>
             <div class="mensagem">
               <span class="texto">{{ n.mensagem }}</span>
               <span class="data">{{ formatarData(n.dataCriacao) }}</span>

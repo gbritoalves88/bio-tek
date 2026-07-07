@@ -48,6 +48,8 @@
               </svg>
             </button>
 
+            <div class="menu-backdrop" *ngIf="menuConfigAberto" (click)="menuConfigAberto = false"></div>
+
             <div class="menu-config" *ngIf="menuConfigAberto">
               <button class="menu-item" (click)="abrirEdicao()">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -57,13 +59,41 @@
                 Editar perfil
               </button>
 
-              <!-- 🆕 Botão Contato -->
               <button class="menu-item" (click)="abrirContato()">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
                   <polyline points="22,6 12,13 2,6"/>
                 </svg>
                 Contato / Sugestões
+              </button>
+
+              <button class="menu-item" (click)="avaliarApp()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                </svg>
+                Avaliar App
+              </button>
+
+              <button class="menu-item" (click)="compartilharApp()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="18" cy="5" r="3"/>
+                  <circle cx="6" cy="12" r="3"/>
+                  <circle cx="18" cy="19" r="3"/>
+                  <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+                  <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+                </svg>
+                Compartilhar App
+              </button>
+
+              <button class="menu-item perigo" (click)="confirmarExcluirConta()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M3 6h18"/>
+                  <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>
+                  <line x1="10" y1="11" x2="10" y2="17"/>
+                  <line x1="14" y1="11" x2="14" y2="17"/>
+                </svg>
+                Desativar Conta
               </button>
 
               <button class="menu-item sair" (click)="sair()">
@@ -151,10 +181,10 @@
       </div>
     </div>
 
-    <!-- Biblioteca Pessoal -->
+    <!-- ========== BIBLIOTECA PESSOAL (NOVO DESIGN) ========== -->
     <div class="biblioteca-pessoal" *ngIf="usuario && !editando">
       <div class="biblioteca-header">
-        <h3>Biblioteca</h3>
+        <h3>{{ modoVisualizacao ? 'Biblioteca' : 'Minha Biblioteca' }}</h3>
         <button class="btn-circle" *ngIf="!modoVisualizacao" title="Adicionar livro" (click)="abrirModalAdicionarLivro()">
           <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
             <line x1="12" y1="5" x2="12" y2="19"/>
@@ -166,22 +196,27 @@
 
       <div class="filtros">
         <button class="filtro-btn" [class.active]="filtroStatus === null" (click)="filtroStatus = null">Todos</button>
-        <button class="filtro-btn" [class.active]="filtroStatus === 1" (click)="filtroStatus = 1">📕 Quero ler</button>
+        <button class="filtro-btn" [class.active]="filtroStatus === 1" (click)="filtroStatus = 1">📕 {{ modoVisualizacao ? 'Quer ler' : 'Quero ler' }}</button>
         <button class="filtro-btn" [class.active]="filtroStatus === 2" (click)="filtroStatus = 2">📖 Lendo</button>
-        <button class="filtro-btn" [class.active]="filtroStatus === 3" (click)="filtroStatus = 3">✅ Lidos</button>
+        <button class="filtro-btn" [class.active]="filtroStatus === 3" (click)="filtroStatus = 3">✅ {{ modoVisualizacao ? 'Leu' : 'Lidos' }}</button>
         <button class="filtro-btn" [class.active]="filtroAvaliado" (click)="filtroAvaliado = !filtroAvaliado">⭐ Avaliados</button>
       </div>
 
-      <div class="book-list">
+      <!-- NOVO BOOK LIST -->
+     <div class="book-list">
         <div class="book-item" *ngFor="let livro of livrosFiltrados">
-          <img [src]="livro.imagem || 'assets/capas/perfilSemFoto.png'" [alt]="livro.titulo" class="book-cover" />
-          <div class="book-info">
-            <span class="book-title">{{ livro.titulo || 'Sem título' }}</span>
-            <span class="book-author">{{ livro.autor || 'Autor desconhecido' }}</span>
-            <span class="book-status" [class]="getStatusClass(livro.status)">{{ getStatusTexto(livro.status) }}</span>
-            <span class="book-stars" *ngIf="livro.avaliacao">⭐ {{ livro.avaliacao.nota }}</span>
-            <span class="book-stars vazio" *ngIf="!livro.avaliacao">⭐ --</span>
+          <!-- Capa -->
+          <div class="book-cover-wrapper">
+            <img [src]="livro.imagem || 'assets/capas/perfilSemFoto.png'" [alt]="livro.titulo" class="book-cover" />
           </div>
+
+          <!-- Info: nome + status -->
+          <div class="book-info">
+            <span class="book-title" [title]="livro.titulo">{{ livro.titulo || 'Sem título' }}</span>
+            <span class="book-status" [class]="getStatusClass(livro.status)">{{ getStatusTexto(livro.status) }}</span>
+          </div>
+
+          <!-- Botões de ação (estilo original) -->
           <div class="book-actions">
             <button class="btn-icon-action btn-comentario" title="Comentários" *ngIf="livro.avaliacao" (click)="abrirComentarios(livro)">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -208,6 +243,22 @@
       </div>
     </div>
   </ng-container>
+
+  <!-- Modal de Confirmação Exclusão Conta -->
+  <div class="confirm-overlay" *ngIf="confirmarExclusaoConta" (click)="fecharConfirmacaoExclusaoConta()">
+    <div class="confirm-modal" (click)="$event.stopPropagation()">
+      <div class="confirm-icon">⚠️</div>
+      <p class="confirm-message">Tem certeza que deseja desativar sua conta?</p>
+      <p class="confirm-submessage">
+        Sua conta será desativada e você perderá o acesso imediatamente.<br/>
+        Seus dados ficarão preservados por 30 dias. Para reativar ou solicitar a exclusão definitiva, entre em contato pelo email: <strong>g.britoalves888&#64;gmail.com</strong>
+      </p>
+      <div class="confirm-actions">
+        <button class="confirm-btn cancel" (click)="fecharConfirmacaoExclusaoConta()">Cancelar</button>
+        <button class="confirm-btn delete" (click)="excluirConta()">Desativar Conta</button>
+      </div>
+    </div>
+  </div>
 </section>
 
 <!-- ========== BOTTOM SHEETS ========== -->
@@ -275,7 +326,6 @@
 </app-bottom-sheet>
 
 <!-- Bottom Sheet: Comentários -->
-<!-- Bottom Sheet: Comentários -->
 <app-bottom-sheet [aberto]="comentariosAberto" (fechar)="comentariosAberto = false">
   <div class="bottom-sheet-header">
     <h3>💬 {{ livroComentarioTitulo || 'Livro' }}</h3>
@@ -298,7 +348,6 @@
     Nenhum comentário ainda. Seja o primeiro!
   </div>
 
-  <!-- 🆕 Campo de novo comentário (igual comunidade) -->
   <div class="novo-comentario">
     <textarea
       [(ngModel)]="novoComentarioPerfil"
@@ -319,14 +368,14 @@
   </div>
 </app-bottom-sheet>
 
-<!-- Modal de Adicionar Livro (componente separado) -->
+<!-- Modal de Adicionar Livro -->
 <app-add-book-modal
   *ngIf="modalAdicionarAberto"
   (fechar)="modalAdicionarAberto = false"
   (livroAdicionado)="onLivroAdicionado()">
 </app-add-book-modal>
 
-<!-- Bottom Sheet: Confirmação Exclusão -->
+<!-- Modal de Confirmação Exclusão Livro -->
 <div class="confirm-overlay" *ngIf="confirmarExclusao" (click)="fecharConfirmacaoExclusao()">
   <div class="confirm-modal" (click)="$event.stopPropagation()">
     <div class="confirm-icon">🗑️</div>
