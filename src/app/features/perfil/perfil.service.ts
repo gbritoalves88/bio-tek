@@ -77,6 +77,10 @@ export class PerfilService {
   desativarConta(): Observable<any> {
       return this.http.post(`${this.apiUrl}/desativar`, {});
   }
+
+  deletarComentario(id: string): Observable<any> {
+    return this.http.delete(`${environment.apiUrl}/ComentarioLivro/${id}`);
+  }
 }
 
 
