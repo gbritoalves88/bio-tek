@@ -1,3 +1,4 @@
+// ===== PERFIL LAYOUT =====
 .perfil {
   padding: 20px 12px;
   background: var(--bg-primary);
@@ -8,6 +9,7 @@
   box-sizing: border-box;
 }
 
+// ===== LOADING =====
 .loading {
   text-align: center;
   padding: 40px;
@@ -27,6 +29,7 @@
   to { transform: rotate(360deg); }
 }
 
+// ===== PERFIL HEADER =====
 .perfil-container {
   width: 100%;
   max-width: 100%;
@@ -65,9 +68,7 @@
 
   &.editavel {
     cursor: pointer;
-    &:hover .avatar-overlay {
-      opacity: 1;
-    }
+    &:hover .avatar-overlay { opacity: 1; }
   }
 
   .avatar-overlay {
@@ -91,23 +92,9 @@
 .perfil-info {
   flex: 1;
 
-  .nome {
-    margin: 0;
-    font-size: 16px;
-    font-weight: 600;
-  }
-
-  .nickname {
-    font-size: 11px;
-    color: var(--accent);
-  }
-
-  .bio {
-    margin: 4px 0 0;
-    font-size: 11px;
-    color: var(--text-secondary);
-    line-height: 1.3;
-  }
+  .nome { margin: 0; font-size: 16px; font-weight: 600; }
+  .nickname { font-size: 11px; color: var(--accent); }
+  .bio { margin: 4px 0 0; font-size: 11px; color: var(--text-secondary); line-height: 1.3; }
 }
 
 .perfil-actions {
@@ -115,6 +102,7 @@
   flex-shrink: 0;
 }
 
+// ===== BOTÃO CONFIG =====
 .btn-config {
   width: 36px;
   height: 36px;
@@ -127,26 +115,26 @@
   justify-content: center;
   transition: all 0.2s;
 
-  svg {
-    width: 18px;
-    height: 18px;
-    stroke: var(--text-secondary);
-  }
+  svg { width: 18px; height: 18px; stroke: var(--text-secondary); }
 
   &:hover {
     border-color: var(--accent);
-    svg {
-      stroke: var(--accent);
-    }
+    svg { stroke: var(--accent); }
   }
 
   &.active {
     background: var(--accent);
     border-color: var(--accent);
-    svg {
-      stroke: white;
-    }
+    svg { stroke: white; }
   }
+}
+
+// ===== MENU CONFIG =====
+.menu-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 99;
+  background: transparent;
 }
 
 .menu-config {
@@ -159,7 +147,7 @@
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   z-index: 100;
-  min-width: 140px;
+  min-width: 180px;
   overflow: hidden;
 
   .menu-item {
@@ -176,29 +164,30 @@
     transition: background 0.2s;
     white-space: nowrap;
 
-    svg {
-      width: 16px;
-      height: 16px;
-      stroke: var(--text-secondary);
-      flex-shrink: 0;
-    }
+    svg { width: 16px; height: 16px; stroke: var(--text-secondary); flex-shrink: 0; }
 
     &:hover {
       background: rgba(0, 0, 0, 0.05);
-      svg {
-        stroke: var(--accent);
-      }
+      svg { stroke: var(--accent); }
     }
 
     &.sair:hover {
       color: #e74c3c;
-      svg {
-        stroke: #e74c3c;
+      svg { stroke: #e74c3c; }
+    }
+
+    &.perigo {
+      color: var(--text-secondary);
+      &:hover {
+        color: #e74c3c;
+        background: rgba(231, 76, 60, 0.08);
+        svg { stroke: #e74c3c; }
       }
     }
   }
 }
 
+// ===== STATS =====
 .stats {
   display: flex;
   gap: 20px;
@@ -209,26 +198,16 @@
 .stat-item {
   text-align: center;
 
-  .stat-valor {
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--accent);
-  }
-
-  .stat-label {
-    font-size: 10px;
-    color: var(--text-secondary);
-  }
+  .stat-valor { font-size: 16px; font-weight: 700; color: var(--accent); }
+  .stat-label { font-size: 10px; color: var(--text-secondary); }
 }
 
+// ===== BIBLIOTECA =====
 .biblioteca-pessoal {
   margin-top: 24px;
   width: 100%;
 
-  h3 {
-    font-size: 16px;
-    margin-bottom: 12px;
-  }
+  h3 { font-size: 16px; margin-bottom: 12px; }
 }
 
 .biblioteca-header {
@@ -238,12 +217,7 @@
   margin-bottom: 16px;
   padding: 0 4px;
 
-  h3 {
-    font-size: 18px;
-    font-weight: 600;
-    margin: 0;
-    color: var(--text-primary);
-  }
+  h3 { font-size: 18px; font-weight: 600; margin: 0; color: var(--text-primary); }
 }
 
 .btn-circle {
@@ -263,33 +237,17 @@
   overflow: hidden;
   white-space: nowrap;
 
-  .btn-icon {
-    width: 20px;
-    height: 20px;
-    min-width: 20px;
-    flex-shrink: 0;
-    stroke: white;
-  }
-
-  .btn-label {
-    font-size: 14px;
-    font-weight: 600;
-    max-width: 0;
-    opacity: 0;
-    overflow: hidden;
-    transition: all 0.3s ease;
-  }
+  .btn-icon { width: 20px; height: 20px; min-width: 20px; flex-shrink: 0; stroke: white; }
+  .btn-label { font-size: 14px; font-weight: 600; max-width: 0; opacity: 0; overflow: hidden; transition: all 0.3s ease; }
 
   &:hover {
     gap: 6px;
     padding: 10px 16px;
-    .btn-label {
-      max-width: 40px;
-      opacity: 1;
-    }
+    .btn-label { max-width: 40px; opacity: 1; }
   }
 }
 
+// ===== FILTROS =====
 .filtros {
   display: flex;
   gap: 6px;
@@ -306,18 +264,19 @@
   font-size: 10px;
   cursor: pointer;
 
-  &:hover, &.active {
-    border-color: var(--accent);
-    color: var(--accent);
-  }
+  &:hover, &.active { border-color: var(--accent); color: var(--accent); }
 }
+
+// ==========================================
+// 🆕 NOVO BOOK LIST - CAPAS GRANDES
+// ==========================================
 
 .book-list {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
+  gap: 16px;
   width: 100%;
-   box-sizing: border-box;
+  box-sizing: border-box;
 }
 
 .book-item {
@@ -328,7 +287,7 @@
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: 12px;
-  padding: 12px 8px;
+  padding: 10px 8px 12px;
   transition: transform 0.2s, box-shadow 0.2s;
   width: 100%;
   min-width: 0;
@@ -338,112 +297,100 @@
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   }
+}
+
+
+// Capa wrapper (aspect ratio 2:3 = livro)
+.book-cover-wrapper {
+  width: 100%;
+  max-width: 140px;
+  aspect-ratio: 2 / 3;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 
   .book-cover {
     width: 100%;
-    max-width: 100px;
-    aspect-ratio: 2 / 3;
+    height: 100%;
     object-fit: cover;
-    border-radius: 8px;
-    margin-bottom: 8px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-  }
-
-  .book-info {
-    width: 100%;
-    min-width: 0;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    margin-bottom: 8px;
-
-    .book-title {
-      font-size: 11px;
-      font-weight: 600;
-      margin: 0;
-      line-height: 1.3;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      width: 100%;
-    }
-
-    .book-author {
-      font-size: 9px;
-      color: var(--text-secondary);
-      margin: 0;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      width: 100%;
-    }
-
-    .book-status {
-      font-size: 9px;
-      margin: 0;
-    }
-
-    .book-stars {
-      font-size: 9px;
-      color: var(--accent);
-      margin: 0;
-      white-space: nowrap;
-
-      &.vazio {
-        color: var(--text-secondary);
-        opacity: 0.5;
-      }
-    }
-  }
-
-  .book-actions {
-    display: flex;
-    gap: 8px;
-    justify-content: center;
-    width: 100%;
+    display: block;
   }
 }
 
-.btn-icon-action {
-  flex: 1;
-  max-width: 30px;
-  min-width: 28px;
-  height: 28px;
-  border-radius: 6px;
-  border: 1px solid var(--border-color);
-  background: transparent;
+// Botões flutuantes
+.book-actions-float {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  display: flex;
+  gap: 6px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+
+  @media (hover: none) {
+    opacity: 0.85;
+  }
+}
+
+.btn-icon-float {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: none;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  transition: all 0.2s ease;
 
   svg {
-    width: 11px;
-    height: 11px;
-    stroke: var(--text-secondary);
+    width: 14px;
+    height: 14px;
+    stroke: white;
+    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));
   }
 
-  &:hover {
-    border-color: var(--accent);
-    svg {
-      stroke: var(--accent);
-    }
+  &.btn-comentario {
+    background: rgba(76, 175, 80, 0.8);
+    &:hover { background: rgba(76, 175, 80, 0.95); transform: scale(1.15); }
   }
 
-  &.btn-comentario:hover {
-    border-color: #4caf50;
-    svg {
-      stroke: #4caf50;
-    }
+  &.btn-editar {
+    background: rgba(219, 124, 0, 0.8);
+    &:hover { background: rgba(219, 124, 0, 0.95); transform: scale(1.15); }
   }
 
-  &.btn-delete:hover {
-    border-color: #e74c3c;
-    svg {
-      stroke: #e74c3c;
-    }
+  &.btn-excluir {
+    background: rgba(231, 76, 60, 0.8);
+    &:hover { background: rgba(231, 76, 60, 0.95); transform: scale(1.15); }
+  }
+}
+
+// Info (nome + status)
+.book-info {
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-bottom: 8px;
+
+  .book-title {
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.3;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .book-status {
+    font-size: 10px;
+    font-weight: 500;
   }
 }
 
@@ -458,7 +405,50 @@
   font-size: 12px;
   grid-column: 1 / -1;
 }
+.book-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  width: 100%;
+}
 
+.btn-icon-action {
+  flex: 1;
+  max-width: 32px;
+  min-width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+
+  svg {
+    width: 12px;
+    height: 12px;
+    stroke: var(--text-secondary);
+  }
+
+  &:hover {
+    border-color: var(--accent);
+    svg { stroke: var(--accent); }
+  }
+
+  &.btn-comentario:hover {
+    border-color: #4caf50;
+    svg { stroke: #4caf50; }
+  }
+
+  &.btn-delete:hover {
+    border-color: #e74c3c;
+    svg { stroke: #e74c3c; }
+  }
+}
+
+// ===== MODAIS GERAIS =====
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -491,12 +481,7 @@
   width: 100%;
   box-sizing: border-box;
 
-  h2 {
-    margin: 0;
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--text-primary);
-  }
+  h2 { margin: 0; font-size: 16px; font-weight: 600; color: var(--text-primary); }
 }
 
 .modal-close {
@@ -510,18 +495,9 @@
   border-radius: 6px;
   flex-shrink: 0;
 
-  svg {
-    width: 18px;
-    height: 18px;
-    stroke: var(--text-secondary);
-  }
+  svg { width: 18px; height: 18px; stroke: var(--text-secondary); }
 
-  &:hover {
-    background: rgba(0, 0, 0, 0.05);
-    svg {
-      stroke: var(--accent);
-    }
-  }
+  &:hover { background: rgba(0, 0, 0, 0.05); svg { stroke: var(--accent); } }
 }
 
 .modal-body {
@@ -542,16 +518,10 @@
     font-size: 13px;
     box-sizing: border-box;
 
-    &:focus {
-      border-color: var(--accent);
-      outline: none;
-    }
+    &:focus { border-color: var(--accent); outline: none; }
   }
 
-  textarea {
-    resize: vertical;
-    min-height: 50px;
-  }
+  textarea { resize: vertical; min-height: 50px; }
 }
 
 .modal-footer {
@@ -574,6 +544,7 @@
   }
 }
 
+// ===== FORMULÁRIOS =====
 .input-label {
   font-size: 10px;
   font-weight: 600;
@@ -603,15 +574,8 @@
   justify-content: center;
   flex-shrink: 0;
 
-  svg {
-    width: 14px;
-    height: 14px;
-  }
-
-  &:hover {
-    border-color: var(--accent);
-    color: var(--accent);
-  }
+  svg { width: 14px; height: 14px; }
+  &:hover { border-color: var(--accent); color: var(--accent); }
 }
 
 .preview-capa {
@@ -644,11 +608,7 @@
   padding-top: 8px;
   border-top: 1px solid var(--border-color);
 
-  label {
-    font-size: 10px;
-    margin-bottom: 4px;
-    display: block;
-  }
+  label { font-size: 10px; margin-bottom: 4px; display: block; }
 }
 
 .btn-salvar {
@@ -662,15 +622,11 @@
   background: transparent;
   border: 1px solid var(--border-color);
   color: var(--text-secondary);
-  &:hover {
-    border-color: var(--accent);
-    color: var(--accent);
-  }
+  &:hover { border-color: var(--accent); color: var(--accent); }
 }
 
-.perfil-info-edicao {
-  width: 100%;
-}
+// ===== EDIÇÃO PERFIL =====
+.perfil-info-edicao { width: 100%; }
 
 .form-edicao {
   display: flex;
@@ -704,10 +660,7 @@
     &::placeholder { color: var(--text-secondary); }
   }
 
-  textarea {
-    resize: vertical;
-    min-height: 80px;
-  }
+  textarea { resize: vertical; min-height: 80px; }
 }
 
 .nickname-input-wrapper {
@@ -718,9 +671,7 @@
   background: var(--bg-card);
   overflow: hidden;
 
-  &:focus-within {
-    border-color: var(--accent);
-  }
+  &:focus-within { border-color: var(--accent); }
 }
 
 .nickname-prefix {
@@ -761,12 +712,7 @@
   }
 }
 
-.upload-erro {
-  color: #e74c3c;
-  font-size: 12px;
-  margin: 4px 0 0;
-  text-align: center;
-}
+.upload-erro { color: #e74c3c; font-size: 12px; margin: 4px 0 0; text-align: center; }
 
 .perfil-edicao-row {
   display: flex;
@@ -788,50 +734,18 @@
   justify-content: center;
   transition: all 0.2s;
 
-  svg {
-    width: 18px;
-    height: 18px;
-    stroke: var(--text-secondary);
-  }
+  svg { width: 18px; height: 18px; stroke: var(--text-secondary); }
 
-  &:hover {
-    border-color: var(--accent);
-    svg {
-      stroke: var(--accent);
-    }
-  }
+  &:hover { border-color: var(--accent); svg { stroke: var(--accent); } }
 }
 
-.skeleton-container {
-  animation: pulse 1.5s ease-in-out infinite;
-}
+// ===== SKELETON LOADING =====
+.skeleton-container { animation: pulse 1.5s ease-in-out infinite; }
 
-.skeleton-header {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 20px;
-}
-
-.skeleton-avatar {
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  background: var(--border-color);
-}
-
-.skeleton-info {
-  flex: 1;
-  height: 50px;
-  background: var(--border-color);
-  border-radius: 8px;
-}
-
-.skeleton-button {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: var(--border-color);
-}
+.skeleton-header { display: flex; gap: 12px; margin-bottom: 20px; }
+.skeleton-avatar { width: 50px; height: 50px; border-radius: 50%; background: var(--border-color); }
+.skeleton-info { flex: 1; height: 50px; background: var(--border-color); border-radius: 8px; }
+.skeleton-button { width: 36px; height: 36px; border-radius: 50%; background: var(--border-color); }
 
 .skeleton-stats {
   display: flex;
@@ -839,32 +753,18 @@
   justify-content: center;
   margin-bottom: 24px;
 
-  div {
-    width: 60px;
-    height: 40px;
-    background: var(--border-color);
-    border-radius: 8px;
-  }
+  div { width: 60px; height: 40px; background: var(--border-color); border-radius: 8px; }
 }
 
-.skeleton-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-}
-
-.skeleton-card {
-  height: 200px;
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-}
+.skeleton-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.skeleton-card { aspect-ratio: 2 / 3; background: var(--border-color); border-radius: 12px; }
 
 @keyframes pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.5; }
 }
 
+// ===== MODAIS DE CONFIRMAÇÃO =====
 .confirm-overlay {
   position: fixed;
   inset: 0;
@@ -881,16 +781,12 @@
   border-radius: 20px;
   padding: 24px 28px;
   text-align: center;
-  max-width: 280px;
+  max-width: 320px;
   width: 90%;
   animation: fadeIn 0.2s ease;
 }
 
-.confirm-icon {
-  font-size: 48px;
-  margin-bottom: 12px;
-  opacity: 0.8;
-}
+.confirm-icon { font-size: 48px; margin-bottom: 12px; opacity: 0.8; }
 
 .confirm-message {
   font-size: 15px;
@@ -899,11 +795,18 @@
   line-height: 1.4;
 }
 
-.confirm-actions {
-  display: flex;
-  gap: 12px;
-  justify-content: center;
+.confirm-submessage {
+  font-size: 12px;
+  color: var(--text-secondary);
+  text-align: center;
+  margin: -16px 0 20px;
+  line-height: 1.5;
+  padding: 0 4px;
+
+  strong { color: var(--accent); font-weight: 600; }
 }
+
+.confirm-actions { display: flex; gap: 12px; justify-content: center; }
 
 .confirm-btn {
   padding: 8px 20px;
@@ -913,105 +816,29 @@
   cursor: pointer;
   transition: all 0.2s;
   border: none;
-}
 
-.confirm-btn.cancel {
-  background: transparent;
-  border: 1px solid var(--border-color);
-  color: var(--text-secondary);
-}
+  &.cancel {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
 
-.confirm-btn.cancel:hover {
-  border-color: var(--accent);
-  color: var(--accent);
-}
+    &:hover { border-color: var(--accent); color: var(--accent); }
+  }
 
-.confirm-btn.delete {
-  background: #e74c3c;
-  color: white;
-}
+  &.delete {
+    background: #e74c3c;
+    color: white;
 
-.confirm-btn.delete:hover {
-  background: #c0392b;
+    &:hover { background: #c0392b; }
+  }
 }
 
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
 }
 
-@media (max-width: 600px) {
-  .book-list {
-    gap: 12px;
-  }
-
-  .book-item {
-    padding: 8px 4px;
-
-    .book-cover {
-      max-width: 80px;
-    }
-
-    .book-info .book-title {
-      font-size: 10px;
-    }
-
-    .book-info .book-author {
-      font-size: 8px;
-    }
-  }
-}
-
-@media (max-width: 480px) {
-  .book-list {
-    gap: 8px;
-  }
-
-  .book-item {
-    padding: 6px 4px;
-
-    .book-cover {
-      max-width: 70px;
-    }
-
-    .book-info .book-title {
-      font-size: 9px;
-    }
-
-    .book-info .book-author {
-      font-size: 7px;
-    }
-
-    .book-status, .book-stars {
-      font-size: 8px;
-    }
-  }
-}
-
-.nickname-input-wrapper.disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-
-  input {
-    cursor: not-allowed;
-  }
-}
-
-.nickname-aviso {
-  font-size: 11px;
-  color: var(--accent);
-  margin-top: -8px;
-  margin-bottom: 8px;
-}
-
-// ========== BOTTOM SHEET STYLES ==========
-
+// ===== BOTTOM SHEET =====
 .bottom-sheet-header {
   display: flex;
   justify-content: space-between;
@@ -1020,12 +847,7 @@
   padding-bottom: 12px;
   border-bottom: 1px solid var(--border-color);
 
-  h3 {
-    margin: 0;
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--text-primary);
-  }
+  h3 { margin: 0; font-size: 16px; font-weight: 600; color: var(--text-primary); }
 }
 
 .bottom-sheet-close {
@@ -1035,17 +857,10 @@
   cursor: pointer;
   padding: 4px;
 
-  svg {
-    width: 20px;
-    height: 20px;
-  }
-
-  &:hover {
-    color: var(--accent);
-  }
+  svg { width: 20px; height: 20px; }
+  &:hover { color: var(--accent); }
 }
 
-// Inputs e selects dentro do bottom sheet
 .bs-input {
   width: 100%;
   padding: 10px 14px;
@@ -1058,13 +873,8 @@
   box-sizing: border-box;
   margin-bottom: 12px;
 
-  &:focus {
-    border-color: var(--accent);
-  }
-
-  &::placeholder {
-    color: var(--text-secondary);
-  }
+  &:focus { border-color: var(--accent); }
+  &::placeholder { color: var(--text-secondary); }
 }
 
 .bs-select {
@@ -1083,7 +893,6 @@
   box-sizing: border-box;
   margin-bottom: 12px;
 }
-
 .bs-actions {
   display: flex;
   gap: 10px;
@@ -1093,6 +902,8 @@
 
   button {
     flex: 1;
+    max-width: 200px;
+    margin: 0 auto;
     padding: 10px;
     border-radius: 20px;
     font-size: 13px;
@@ -1102,82 +913,18 @@
   }
 }
 
-// Estilos de comentários dentro do bottom sheet
+// ===== COMENTÁRIOS =====
 .comentario-item {
   padding: 10px;
   background: var(--bg-primary);
   border-radius: 8px;
   margin-bottom: 8px;
 
-  p {
-    margin: 0;
-    font-size: 13px;
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-    white-space: pre-wrap;
-  }
-
-  .data {
-    font-size: 11px;
-    color: var(--text-secondary);
-  }
+  p { margin: 0; font-size: 13px; word-wrap: break-word; overflow-wrap: break-word; white-space: pre-wrap; }
+  .data { font-size: 11px; color: var(--text-secondary); }
 }
 
-.comentario-autor {
-  font-weight: 600;
-  color: var(--accent);
-  margin-right: 4px;
-}
-
-// Confirmação de exclusão
-.confirm-icon {
-  font-size: 48px;
-  margin-bottom: 12px;
-  opacity: 0.8;
-}
-
-.confirm-message {
-  font-size: 15px;
-  color: var(--text-primary);
-  margin-bottom: 24px;
-  line-height: 1.4;
-}
-
-.confirm-actions {
-  display: flex;
-  gap: 12px;
-  justify-content: center;
-}
-
-.confirm-btn {
-  padding: 8px 20px;
-  border-radius: 30px;
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-  border: none;
-
-  &.cancel {
-    background: transparent;
-    border: 1px solid var(--border-color);
-    color: var(--text-secondary);
-
-    &:hover {
-      border-color: var(--accent);
-      color: var(--accent);
-    }
-  }
-
-  &.delete {
-    background: #e74c3c;
-    color: white;
-
-    &:hover {
-      background: #c0392b;
-    }
-  }
-}
+.comentario-autor { font-weight: 600; color: var(--accent); margin-right: 4px; }
 
 .novo-comentario {
   margin-top: 12px;
@@ -1197,9 +944,7 @@
     outline: none;
     box-sizing: border-box;
 
-    &:focus {
-      border-color: var(--accent);
-    }
+    &:focus { border-color: var(--accent); }
   }
 
   .comentario-actions {
@@ -1208,10 +953,7 @@
     align-items: center;
     margin-top: 6px;
 
-    .contador {
-      font-size: 11px;
-      color: var(--text-secondary);
-    }
+    .contador { font-size: 11px; color: var(--text-secondary); }
 
     button {
       padding: 6px 16px;
@@ -1222,10 +964,93 @@
       font-size: 13px;
       cursor: pointer;
 
-      &:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-      }
+      &:disabled { opacity: 0.5; cursor: not-allowed; }
+    }
+  }
+}
+
+// ===== NICKNAME =====
+.nickname-input-wrapper.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+
+  input { cursor: not-allowed; }
+}
+
+.nickname-aviso {
+  font-size: 11px;
+  color: var(--accent);
+  margin-top: -8px;
+  margin-bottom: 8px;
+}
+
+@media (min-width: 769px) {
+  .bs-actions {
+    justify-content: center;
+
+    button {
+      flex: 0 1 auto;
+      min-width: 160px;
+    }
+  }
+}
+
+// ===== RESPONSIVO =====
+@media (max-width: 600px) {
+  .book-list {
+    gap: 10px;
+  }
+
+  .book-item {
+    padding: 8px 6px 10px;
+  }
+
+  .book-info .book-title {
+    font-size: 10px;
+  }
+
+  .book-info .book-status {
+    font-size: 9px;
+  }
+
+  .btn-icon-action {
+    max-width: 28px;
+    min-width: 24px;
+    height: 26px;
+
+    svg {
+      width: 10px;
+      height: 10px;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .book-list {
+    gap: 8px;
+  }
+
+  .book-item {
+    padding: 6px 4px 8px;
+  }
+
+  .book-info .book-title {
+    font-size: 9px;
+  }
+
+  .book-info .book-status {
+    font-size: 8px;
+  }
+
+  .btn-icon-action {
+    max-width: 24px;
+    min-width: 22px;
+    height: 24px;
+    border-radius: 4px;
+
+    svg {
+      width: 9px;
+      height: 9px;
     }
   }
 }

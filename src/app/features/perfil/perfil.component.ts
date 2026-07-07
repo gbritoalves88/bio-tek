@@ -39,6 +39,7 @@ export class PerfilComponent implements OnInit {
   livroComentarioId = '';
   livroComentarioTitulo = '';
   livroComentarioProntos: any[] | null = null;
+  confirmarExclusaoConta = false;
 
   private primeiraCarga = true;
 
@@ -455,6 +456,67 @@ export class PerfilComponent implements OnInit {
   abrirContato(): void {
     this.menuConfigAberto = false;
     window.location.href = 'mailto:g.britoalves888@gmail.com?subject=Bliteca%20-%20Contato';
+  }
+
+  avaliarApp(): void {
+    this.menuConfigAberto = false;
+    // Link direto para avaliação na Play Store
+    const appId = 'com.bliteca.app'; // substitua pelo seu pacote real
+    const url = `https://play.google.com/store/apps/details?id=${appId}&review=true`;
+    window.open(url, '_blank');
+  }
+
+  compartilharApp(): void {
+    this.menuConfigAberto = false;
+    const url = 'https://bliteca.com.br';
+    const texto = '📚 Bliteca - Sua plataforma social de leitura!';
+
+    // Verifica se Web Share API está disponível (mobile/Android)
+    if (navigator.share) {
+      navigator.share({
+        title: 'Bliteca',
+        text: texto,
+        url: url
+      }).catch(() => {
+        // Fallback: copiar link
+        this.copiarLink(url);
+      });
+    } else {
+      // Desktop: copiar link
+      this.copiarLink(url);
+    }
+  }
+
+  private copiarLink(texto: string): void {
+    navigator.clipboard.writeText(texto).then(() => {
+      this.alertService.success('Link copiado!');
+    }).catch(() => {
+      this.alertService.info('Compartilhe: ' + texto);
+    });
+  }
+
+  confirmarExcluirConta(): void {
+    this.menuConfigAberto = false;
+    this.confirmarExclusaoConta = true;
+  }
+
+  fecharConfirmacaoExclusaoConta(): void {
+    this.confirmarExclusaoConta = false;
+  }
+
+  excluirConta(): void {
+    this.perfilService.desativarConta().subscribe({
+      next: () => {
+        this.confirmarExclusaoConta = false;
+        this.alertService.success('Conta excluída com sucesso');
+        localStorage.clear();
+        this.router.navigate(['/']);
+      },
+      error: (err) => {
+        console.error('Erro ao excluir conta:', err);
+        this.alertService.error('Erro ao excluir conta. Tente novamente.');
+      }
+    });
   }
 
 }

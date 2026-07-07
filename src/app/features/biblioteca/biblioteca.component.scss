@@ -3,7 +3,7 @@
   background: var(--bg-primary);
   color: var(--text-primary);
   min-height: 100%;
-  box-sizing: border-box; // ✅ Adicionar
+  box-sizing: border-box;
 }
 
 .header-section {
@@ -96,7 +96,7 @@
   padding: 12px 16px;
   margin-bottom: 24px;
   transition: all 0.3s;
-  box-sizing: border-box; // ✅ Adicionar
+  box-sizing: border-box;
 
   &:focus-within {
     border-color: var(--accent);
@@ -143,15 +143,16 @@
   }
 }
 
-// GRID DE LIVROS - 3 colunas
+// ===== BOOK GRID (3 COLUNAS) =====
 .book-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
+  gap: 16px;
   width: 100%;
-  box-sizing: border-box; // ✅ Adicionar
+  box-sizing: border-box;
 }
 
+// ===== BOOK CARD (PADRONIZADO) =====
 .book-card {
   display: flex;
   flex-direction: column;
@@ -160,11 +161,11 @@
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: 12px;
-  padding: 12px 8px;
+  padding: 10px 8px 12px;
   transition: transform 0.2s, box-shadow 0.2s;
   width: 100%;
   min-width: 0;
-  box-sizing: border-box; // ✅ Adicionar
+  box-sizing: border-box;
 
   &:hover {
     transform: translateY(-2px);
@@ -173,12 +174,12 @@
 
   .book-cover {
     width: 100%;
-    max-width: 90px;
+    max-width: 140px;
     aspect-ratio: 2 / 3;
     object-fit: cover;
     border-radius: 8px;
     margin-bottom: 8px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   }
 
   .book-info {
@@ -191,7 +192,7 @@
     margin-bottom: 8px;
 
     .book-title {
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 600;
       margin: 0;
       line-height: 1.3;
@@ -202,7 +203,7 @@
     }
 
     .book-author {
-      font-size: 9px;
+      font-size: 10px;
       color: var(--text-secondary);
       margin: 0;
       overflow: hidden;
@@ -215,7 +216,6 @@
       font-size: 9px;
       color: var(--text-secondary);
       margin: 0;
-      white-space: nowrap;
     }
   }
 
@@ -252,6 +252,7 @@
   }
 }
 
+// ===== EMPTY =====
 .empty {
   text-align: center;
   padding: 60px 20px;
@@ -267,20 +268,61 @@
   }
 }
 
-// RESPONSIVIDADE
+// ===== SKELETON LOADING =====
+.skeleton-container {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.skeleton-search {
+  height: 48px;
+  background: var(--bg-card);
+  border-radius: 12px;
+  margin-bottom: 24px;
+  border: 1px solid var(--border-color);
+  box-sizing: border-box;
+}
+
+.skeleton-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  box-sizing: border-box;
+}
+
+.skeleton-card {
+  aspect-ratio: 2 / 3;
+  max-width: 140px;
+  margin: 0 auto;
+  width: 100%;
+  background: var(--bg-card);
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  box-sizing: border-box;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+// ===== RESPONSIVO =====
 @media (max-width: 768px) {
   .book-grid {
     gap: 16px;
   }
 
   .book-card .book-cover {
-    max-width: 80px;
+    max-width: 100%;
+  }
+
+  .skeleton-card {
+    max-width: 100%;
   }
 }
 
 @media (max-width: 600px) {
   .catalogo {
-    padding: 16px 12px; // ✅ Já está bom
+    padding: 16px 12px;
   }
 
   .book-grid {
@@ -288,11 +330,7 @@
   }
 
   .book-card {
-    padding: 8px 4px;
-
-    .book-cover {
-      max-width: 75px;
-    }
+    padding: 8px 4px 10px;
 
     .book-info .book-title {
       font-size: 10px;
@@ -312,11 +350,15 @@
       }
     }
   }
+
+  .skeleton-grid {
+    gap: 12px;
+  }
 }
 
 @media (max-width: 480px) {
   .catalogo {
-    padding: 16px 8px; // ✅ Reduzir padding lateral
+    padding: 16px 8px;
   }
 
   .book-grid {
@@ -324,11 +366,7 @@
   }
 
   .book-card {
-    padding: 6px 4px;
-
-    .book-cover {
-      max-width: 65px;
-    }
+    padding: 6px 4px 8px;
 
     .book-info .book-title {
       font-size: 9px;
@@ -352,58 +390,8 @@
       }
     }
   }
-}
 
-// Skeleton Loading
-.skeleton-container {
-  animation: pulse 1.5s ease-in-out infinite;
-}
-
-.skeleton-search {
-  height: 48px;
-  background: var(--bg-card);
-  border-radius: 12px;
-  margin-bottom: 24px;
-  border: 1px solid var(--border-color);
-  box-sizing: border-box; // ✅ Adicionar
-}
-
-.skeleton-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
-  box-sizing: border-box; // ✅ Adicionar
-}
-
-.skeleton-card {
-  height: 250px;
-  background: var(--bg-card);
-  border-radius: 12px;
-  border: 1px solid var(--border-color);
-  box-sizing: border-box; // ✅ Adicionar
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
-}
-
-@media (max-width: 600px) {
-  .skeleton-grid {
-    gap: 12px;
-  }
-
-  .skeleton-card {
-    height: 220px;
-  }
-}
-
-@media (max-width: 480px) {
   .skeleton-grid {
     gap: 8px;
-  }
-
-  .skeleton-card {
-    height: 200px;
   }
 }
