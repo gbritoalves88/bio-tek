@@ -8,7 +8,7 @@ import { PerfilComponent } from './features/perfil/perfil.component';
 import { LoginComponent } from './features/login/login.component';
 import { TermoComponent } from './features/termos/termos.component';
 import { AuthGuard } from './core/guards/auth.guard';
-import { AdminGuard } from './core/guards/auth.guard';
+import { AdminGuard } from './core/guards/admin.guard';
 
 export const routes: Routes = [
   { path: '', component: LoginComponent },
