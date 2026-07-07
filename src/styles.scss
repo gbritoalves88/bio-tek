@@ -78,3 +78,66 @@ app-comunidade .feed-item {
     opacity: 1;
   }
 }
+
+// ===== SCROLLBAR GLOBAL =====
+
+// Mobile: esconder scrollbar completamente
+@media (max-width: 768px) {
+  body {
+    -ms-overflow-style: none;  // IE/Edge
+    scrollbar-width: none;     // Firefox
+
+    &::-webkit-scrollbar {
+      display: none;           // Chrome/Safari/Edge
+    }
+  }
+
+  // Garantir que containers com scroll também não mostrem barra
+  * {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+}
+
+// Desktop: scrollbar fina e discreta (mantém usabilidade)
+@media (min-width: 769px) {
+  // Scrollbar principal (body/html)
+  body {
+    &::-webkit-scrollbar {
+      width: 6px;
+    }
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    &::-webkit-scrollbar-thumb {
+      background: var(--border-color);
+      border-radius: 3px;
+
+      &:hover {
+        background: var(--text-secondary);
+      }
+    }
+  }
+
+  // Containers com scroll (sidebars, feeds, etc.)
+  .custom-scroll {
+    &::-webkit-scrollbar {
+      width: 4px;
+    }
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    &::-webkit-scrollbar-thumb {
+      background: var(--border-color);
+      border-radius: 2px;
+
+      &:hover {
+        background: var(--text-secondary);
+      }
+    }
+  }
+}
