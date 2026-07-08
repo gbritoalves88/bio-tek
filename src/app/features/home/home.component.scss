@@ -642,3 +642,38 @@
     height: 150px;
   }
 }
+
+.concluido-parabens {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  margin-top: 8px;
+  animation: bounceIn 0.5s ease;
+}
+
+.palmas {
+  font-size: 28px;
+  letter-spacing: 4px;
+}
+
+.palmas-inline {
+  font-size: 32px;
+  animation: bounceIn 0.5s ease;
+  flex-shrink: 0;
+  display: inline-block;
+  margin-top: 4px;
+}
+
+.texto-parabens {
+  font-size: 12px;
+  color: var(--accent);
+  font-weight: 600;
+  text-align: center;
+}
+
+@keyframes bounceIn {
+  0% { transform: scale(0); opacity: 0; }
+  50% { transform: scale(1.3); }
+  100% { transform: scale(1); opacity: 1; }
+}
