@@ -48,10 +48,17 @@
 
           <!-- Tem progresso: mostra barra -->
           <ng-container *ngIf="livroAtual.progresso; else semProgresso">
-            <div class="progress">
-              <div class="bar" [style.width.%]="livroAtual.progresso"></div>
+            <div class="progress-container">
+              <div class="progress">
+                <div class="bar" [style.width.%]="livroAtual.progresso"></div>
+              </div>
+
             </div>
-            <span class="progress-texto">{{ livroAtual.progresso }}% concluído</span>
+            <span class="progress-texto">
+              {{ livroAtual.progresso }}% concluído
+              <span *ngIf="livroAtual.progresso === 100">, Parabéns!</span>
+            </span>
+            <span class="palmas-inline" *ngIf="livroAtual.progresso === 100">👏👏👏</span>
           </ng-container>
 
           <!-- Sem progresso: convite para atualizar -->
