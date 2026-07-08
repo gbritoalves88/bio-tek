@@ -86,4 +86,8 @@ curtir(id: string, dados: {
   deletarComentario(id: string): Observable<any> {
     return this.http.delete(`${environment.apiUrl}/ComentarioLivro/${id}`);
   }
+
+  adicionarLivro(livro: { titulo: string; autor: string; imagem?: string | null }): Observable<any> {
+    return this.http.post(`${environment.apiUrl}/Livro`, livro);
+  }
 }

@@ -538,4 +538,21 @@ export class PerfilComponent implements OnInit {
     });
   }
 
+  adicionarLivroDoPerfil(livro: LivroDoUsuario): void {
+    this.perfilService.adicionarLivro({
+      titulo: livro.titulo,
+      autor: livro.autor,
+      imagem: livro.imagem || null,
+      descricao: livro.descricao || null
+    }).subscribe({
+      next: () => {
+        this.alertService.success(`"${livro.titulo}" adicionado à sua biblioteca!`);
+      },
+      error: (err) => {
+        console.error('Erro ao adicionar:', err);
+        this.alertService.error('Erro ao adicionar livro');
+      }
+    });
+  }
+
 }

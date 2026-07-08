@@ -1079,3 +1079,10 @@
     opacity: 1;
   }
 }
+
+.btn-icon-action.btn-adicionar {
+  &:hover {
+    border-color: var(--accent);
+    svg { stroke: var(--accent); }
+  }
+}

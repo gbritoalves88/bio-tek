@@ -256,4 +256,25 @@ enviarComentario(): void {
       }
     });
   }
+
+  adicionarDaComunidade(): void {
+    if (!this.itemSelecionado?.livro) return;
+
+    const livro = this.itemSelecionado.livro;
+
+    this.comunidadeService.adicionarLivro({
+      titulo: livro.titulo,
+      autor: livro.autor,
+      imagem: livro.imagem || null
+    }).subscribe({
+      next: () => {
+        this.fecharModal();
+        this.alertService.success(`"${livro.titulo}" adicionado à sua biblioteca!`);
+      },
+      error: (err) => {
+        console.error('Erro ao adicionar:', err);
+        this.alertService.error('Erro ao adicionar livro');
+      }
+    });
+  }
 }
