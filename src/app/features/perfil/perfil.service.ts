@@ -81,6 +81,10 @@ export class PerfilService {
   deletarComentario(id: string): Observable<any> {
     return this.http.delete(`${environment.apiUrl}/ComentarioLivro/${id}`);
   }
+
+  adicionarLivro(livro: { titulo: string; autor: string; imagem?: string | null; descricao?: string | null }): Observable<any> {
+    return this.http.post(`${environment.apiUrl}/Livro`, livro);
+  }
 }
 
 
