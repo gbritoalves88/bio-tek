@@ -471,22 +471,21 @@ export class PerfilComponent implements OnInit {
 
   compartilharApp(): void {
     this.menuConfigAberto = false;
-    const url = 'https://bliteca.com.br';
-    const texto = '📚 Bliteca - Sua plataforma social de leitura!';
 
-    // Verifica se Web Share API está disponível (mobile/Android)
+    // Link da Play Store (substitua pelo seu ID real)
+    const playStoreUrl = 'https://play.google.com/store/apps/details?id=com.bliteca.app';
+    const texto = '📚 Bliteca - Organize suas leituras, avalie livros e conecte-se com outros leitores!';
+
     if (navigator.share) {
       navigator.share({
         title: 'Bliteca',
         text: texto,
-        url: url
+        url: playStoreUrl
       }).catch(() => {
-        // Fallback: copiar link
-        this.copiarLink(url);
+        this.copiarLink(playStoreUrl);
       });
     } else {
-      // Desktop: copiar link
-      this.copiarLink(url);
+      this.copiarLink(playStoreUrl);
     }
   }
 
