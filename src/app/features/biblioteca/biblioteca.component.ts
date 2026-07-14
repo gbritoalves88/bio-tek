@@ -4,11 +4,12 @@ import { FormsModule } from '@angular/forms';
 import { CatalogoService, CatalogoLivro } from './catalogo.service';
 import { AddBookModalComponent } from '../../shared/add-book-modal/add-book-modal.component';
 import { AlertService } from '../../shared/services/alert.service';
+import { BottomSheetComponent } from '../../shared/bottom-sheet/bottom-sheet.component';
 
 @Component({
   selector: 'app-biblioteca',
   standalone: true,
-  imports: [CommonModule, FormsModule, AddBookModalComponent],
+  imports: [CommonModule, FormsModule, AddBookModalComponent, BottomSheetComponent],
   templateUrl: './biblioteca.component.html',
   styleUrl: './biblioteca.component.scss',
   host: { 'ngSkipHydration': 'true' }
@@ -20,6 +21,8 @@ export class BibliotecaComponent implements OnInit {
   carregando = true;
   modalAberto = false;
   adicionando: { [key: string]: boolean } = {};
+  bottomSheetAberto = false;
+  livroSelecionado: CatalogoLivro | null = null;
 
   constructor(
     private catalogoService: CatalogoService,
@@ -101,5 +104,24 @@ export class BibliotecaComponent implements OnInit {
 
   get livrosFiltrados(): CatalogoLivro[] {
     return this.livros;
+  }
+
+    // Novos métodos:
+  abrirBottomSheet(livro: CatalogoLivro): void {
+    this.livroSelecionado = livro;
+    this.bottomSheetAberto = true;
+    this.cdr.markForCheck();
+  }
+
+  fecharBottomSheet(): void {
+    this.bottomSheetAberto = false;
+    this.livroSelecionado = null;
+    this.cdr.markForCheck();
+  }
+
+  adicionarDoBottomSheet(): void {
+    if (!this.livroSelecionado) return;
+    this.adicionarBiblioteca(this.livroSelecionado.id);
+    this.fecharBottomSheet();
   }
 }

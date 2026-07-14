@@ -58,7 +58,6 @@
                 </svg>
                 Editar perfil
               </button>
-
               <button class="menu-item" (click)="abrirContato()">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
@@ -66,14 +65,12 @@
                 </svg>
                 Contato / Sugestões
               </button>
-
               <button class="menu-item" (click)="avaliarApp()">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
                 </svg>
                 Avaliar App
               </button>
-
               <button class="menu-item" (click)="compartilharApp()">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <circle cx="18" cy="5" r="3"/>
@@ -84,7 +81,6 @@
                 </svg>
                 Compartilhar App
               </button>
-
               <button class="menu-item perigo" (click)="confirmarExcluirConta()">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M3 6h18"/>
@@ -95,7 +91,6 @@
                 </svg>
                 Desativar Conta
               </button>
-
               <button class="menu-item sair" (click)="sair()">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
@@ -150,18 +145,9 @@
             <label class="input-label">@ Nickname</label>
             <div class="nickname-input-wrapper" [class.disabled]="!nicknameEditavel">
               <span class="nickname-prefix">@</span>
-              <input
-                type="text"
-                [(ngModel)]="usuarioEdit.nickname"
-                placeholder="seunickname (3 a 10 caracteres)"
-                maxlength="10"
-                (input)="limparArroba()"
-                [disabled]="!nicknameEditavel"
-                [title]="!nicknameEditavel ? 'Nickname não pode ser alterado após o cadastro' : ''">
+              <input type="text" [(ngModel)]="usuarioEdit.nickname" placeholder="seunickname (3 a 12 caracteres)" maxlength="12" (input)="limparArroba()" [disabled]="!nicknameEditavel">
             </div>
-            <p class="nickname-aviso" *ngIf="!nicknameEditavel">
-              ⚠️ O nickname não pode ser alterado após o cadastro.
-            </p>
+            <p class="nickname-aviso" *ngIf="!nicknameEditavel">⚠️ O nickname não pode ser alterado após o cadastro.</p>
 
             <label class="input-label">Biografia</label>
             <textarea [(ngModel)]="usuarioEdit.descricao" placeholder="Conte um pouco sobre você..." rows="3"></textarea>
@@ -181,16 +167,12 @@
       </div>
     </div>
 
-    <!-- ========== BIBLIOTECA PESSOAL (NOVO DESIGN) ========== -->
+    <!-- ========== BIBLIOTECA PESSOAL ========== -->
     <div class="biblioteca-pessoal" *ngIf="usuario && !editando">
       <div class="biblioteca-header">
         <h3>{{ modoVisualizacao ? 'Biblioteca' : 'Minha Biblioteca' }}</h3>
         <button class="btn-circle" *ngIf="!modoVisualizacao" title="Adicionar livro" (click)="abrirModalAdicionarLivro()">
-          <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-            <line x1="12" y1="5" x2="12" y2="19"/>
-            <line x1="5" y1="12" x2="19" y2="12"/>
-          </svg>
-          <span class="btn-label">Novo</span>
+          <span class="btn-label">Cadastrar Livro</span>
         </button>
       </div>
 
@@ -202,53 +184,15 @@
         <button class="filtro-btn" [class.active]="filtroAvaliado" (click)="filtroAvaliado = !filtroAvaliado">⭐ Avaliados</button>
       </div>
 
-      <!-- NOVO BOOK LIST -->
-     <div class="book-list">
-        <div class="book-item" *ngFor="let livro of livrosFiltrados">
-          <!-- Capa -->
+      <!-- BOOK LIST -->
+      <div class="book-list">
+        <div class="book-item" *ngFor="let livro of livrosFiltrados" (click)="abrirBottomSheetLivro(livro)">
           <div class="book-cover-wrapper">
             <img [src]="livro.imagem || 'assets/capas/perfilSemFoto.png'" [alt]="livro.titulo" class="book-cover" />
           </div>
-
-          <!-- Info: nome + status -->
           <div class="book-info">
             <span class="book-title" [title]="livro.titulo">{{ livro.titulo || 'Sem título' }}</span>
             <span class="book-status" [class]="getStatusClass(livro.status)">{{ getStatusTexto(livro.status) }}</span>
-          </div>
-
-          <!-- Botões de ação (estilo original) -->
-          <div class="book-actions">
-
-            <!-- 🆕 Botão Adicionar (só no modo visualização) -->
-            <button class="btn-icon-action btn-adicionar"
-                    *ngIf="modoVisualizacao"
-                    title="Adicionar à minha biblioteca"
-                    (click)="adicionarLivroDoPerfil(livro)">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="12" y1="5" x2="12" y2="19"/>
-                <line x1="5" y1="12" x2="19" y2="12"/>
-              </svg>
-            </button>
-
-            <button class="btn-icon-action btn-comentario" title="Comentários" *ngIf="livro.avaliacao" (click)="abrirComentarios(livro)">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-              </svg>
-            </button>
-            <ng-container *ngIf="!modoVisualizacao">
-              <button class="btn-icon-action" title="Editar" (click)="abrirEdicaoLivro(livro)">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                </svg>
-              </button>
-              <button class="btn-icon-action btn-delete" title="Remover" (click)="abrirConfirmacaoExclusao(livro.id)">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <polyline points="3 6 5 6 21 6"/>
-                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                </svg>
-              </button>
-            </ng-container>
           </div>
         </div>
         <p class="empty" *ngIf="livros.length === 0">Nenhum livro na biblioteca.</p>
@@ -273,7 +217,67 @@
   </div>
 </section>
 
-<!-- ========== BOTTOM SHEETS ========== -->
+<!-- ========== BOTTOM SHEET: LIVRO (UNIFICADO) ========== -->
+<app-bottom-sheet [aberto]="bottomSheetLivroAberto" (fechar)="fecharBottomSheetLivro()">
+  <ng-container *ngIf="livroSelecionado">
+    <div class="bottom-sheet-header">
+      <h3>{{ livroSelecionado.titulo || 'Livro' }}</h3>
+      <button class="bottom-sheet-close" (click)="fecharBottomSheetLivro()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Capa + Info -->
+    <div class="bs-livro-destaque">
+      <img [src]="livroSelecionado.imagem || 'assets/capas/perfilSemFoto.png'" [alt]="livroSelecionado.titulo" class="bs-capa" />
+      <div class="bs-info">
+        <strong class="bs-titulo">{{ livroSelecionado.titulo || 'Sem título' }}</strong>
+        <span class="bs-autor">{{ livroSelecionado.autor || 'Autor desconhecido' }}</span>
+        <span class="bs-status" [class]="getStatusClass(livroSelecionado.status)">{{ getStatusTexto(livroSelecionado.status) }}</span>
+      </div>
+    </div>
+
+    <!-- Ações -->
+    <div class="bs-acoes">
+      <!-- Comentários (se avaliado) -->
+      <button class="bs-btn bs-btn-outline" *ngIf="livroSelecionado.avaliacao" (click)="abrirComentarios(livroSelecionado); fecharBottomSheetLivro()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+        </svg>
+        Comentários
+      </button>
+
+      <!-- Adicionar à minha biblioteca (só visualizando outro perfil) -->
+      <button class="bs-btn bs-btn-primary" *ngIf="modoVisualizacao" (click)="adicionarLivroDoPerfil(livroSelecionado); fecharBottomSheetLivro()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="5" x2="12" y2="19"/>
+          <line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        Adicionar à minha biblioteca
+      </button>
+
+      <!-- Editar (só meu perfil) -->
+      <button class="bs-btn bs-btn-outline" *ngIf="!modoVisualizacao" (click)="abrirEdicaoLivro(livroSelecionado); fecharBottomSheetLivro()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+        </svg>
+        Editar livro
+      </button>
+
+      <!-- Remover (só meu perfil) -->
+      <button class="bs-btn bs-btn-perigo" *ngIf="!modoVisualizacao" (click)="abrirConfirmacaoExclusao(livroSelecionado.id); fecharBottomSheetLivro()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="3 6 5 6 21 6"/>
+          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+        </svg>
+        Remover livro
+      </button>
+    </div>
+  </ng-container>
+</app-bottom-sheet>
 
 <!-- Bottom Sheet: Editar Livro -->
 <app-bottom-sheet [aberto]="modalEdicaoLivroAberto" (fechar)="fecharEdicaoLivro()">
@@ -289,13 +293,10 @@
   <ng-container *ngIf="livroEditando">
     <label class="input-label">Título</label>
     <input type="text" [(ngModel)]="livroEditando.titulo" class="bs-input">
-
     <label class="input-label">Autor</label>
     <input type="text" [(ngModel)]="livroEditando.autor" class="bs-input">
-
     <label class="input-label">Descrição</label>
     <input type="text" [(ngModel)]="livroEditando.descricao" class="bs-input">
-
     <label class="input-label">Capa do Livro</label>
     <div class="upload-capa-simples">
       <button type="button" class="btn-upload-small" (click)="tirarFotoEdicaoLivro()" title="Tirar foto">
@@ -311,25 +312,22 @@
       <input type="file" #fileInputEdicaoLivro hidden (change)="onFileSelectedEdicaoLivro($event)" accept="image/*">
     </div>
     <img *ngIf="edicaoCapaPreview" [src]="edicaoCapaPreview" class="preview-capa" />
-
     <label class="input-label">Status</label>
     <select [(ngModel)]="livroEditando.status" class="bs-select">
       <option [ngValue]="1">📕 Quero ler</option>
       <option [ngValue]="2">📖 Lendo</option>
       <option [ngValue]="3">✅ Lido</option>
     </select>
-
     <div *ngIf="livroEditando.status === 3" class="avaliacao-box">
       <label class="input-label">Avaliação</label>
       <select [(ngModel)]="livroEditando.estrelas" class="bs-select">
-        <option [ngValue]="1">⭐ 1 - Muito Ruim</option>
-        <option [ngValue]="2">⭐⭐ 2 - Ruim</option>
-        <option [ngValue]="3">⭐⭐⭐ 3 - Regular</option>
-        <option [ngValue]="4">⭐⭐⭐⭐ 4 - Bom</option>
-        <option [ngValue]="5">⭐⭐⭐⭐⭐ 5 - Excelente</option>
+        <option [ngValue]="1">⭐ 1</option>
+        <option [ngValue]="2">⭐⭐ 2</option>
+        <option [ngValue]="3">⭐⭐⭐ 3</option>
+        <option [ngValue]="4">⭐⭐⭐⭐ 4</option>
+        <option [ngValue]="5">⭐⭐⭐⭐⭐ 5</option>
       </select>
     </div>
-
     <div class="bs-actions">
       <button class="btn-cancelar" (click)="fecharEdicaoLivro()">Cancelar</button>
       <button class="btn-salvar" (click)="salvarEdicaoLivro()">Salvar alterações</button>
@@ -351,10 +349,7 @@
   <div class="comentario-item" *ngFor="let c of livroComentarioProntos">
     <div class="comentario-topo">
       <span class="comentario-autor">{{ c.usuarioNickname || '@user' }}</span>
-      <button class="btn-deletar-comentario"
-              *ngIf="c.idUsuario === meuId"
-              (click)="deletarComentarioPerfil(c.id)"
-              title="Excluir comentário">
+      <button class="btn-deletar-comentario" *ngIf="c.idUsuario === meuId" (click)="deletarComentarioPerfil(c.id)" title="Excluir comentário">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <polyline points="3 6 5 6 21 6"/>
           <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
@@ -365,36 +360,19 @@
     <span class="data">{{ c.dataCriacao | date:'dd/MM/yyyy HH:mm' }}</span>
   </div>
 
-  <div class="empty" *ngIf="!livroComentarioProntos?.length">
-    Nenhum comentário ainda. Seja o primeiro!
-  </div>
+  <div class="empty" *ngIf="!livroComentarioProntos?.length">Nenhum comentário ainda. Seja o primeiro!</div>
 
   <div class="novo-comentario">
-    <textarea
-      [(ngModel)]="novoComentarioPerfil"
-      name="comentario-perfil"
-      placeholder="Escreva um comentário..."
-      rows="2"
-      maxlength="200"
-      (input)="cdr.markForCheck()">
-    </textarea>
+    <textarea [(ngModel)]="novoComentarioPerfil" name="comentario-perfil" placeholder="Escreva um comentário..." rows="2" maxlength="200" (input)="cdr.markForCheck()"></textarea>
     <div class="comentario-actions">
       <span class="contador">{{ novoComentarioPerfil.length }}/200</span>
-      <button
-        [disabled]="!novoComentarioPerfil.trim()"
-        (click)="enviarComentarioPerfil()">
-        Enviar
-      </button>
+      <button [disabled]="!novoComentarioPerfil.trim()" (click)="enviarComentarioPerfil()">Enviar</button>
     </div>
   </div>
 </app-bottom-sheet>
 
 <!-- Modal de Adicionar Livro -->
-<app-add-book-modal
-  *ngIf="modalAdicionarAberto"
-  (fechar)="modalAdicionarAberto = false"
-  (livroAdicionado)="onLivroAdicionado()">
-</app-add-book-modal>
+<app-add-book-modal *ngIf="modalAdicionarAberto" (fechar)="modalAdicionarAberto = false" (livroAdicionado)="onLivroAdicionado()"></app-add-book-modal>
 
 <!-- Modal de Confirmação Exclusão Livro -->
 <div class="confirm-overlay" *ngIf="confirmarExclusao" (click)="fecharConfirmacaoExclusao()">

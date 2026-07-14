@@ -10,15 +10,22 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 28px;
+  gap: 12px;
 
   h1 {
     margin: 0;
-    font-size: 26px;
+    font-size: 22px;
     font-weight: 700;
   }
 }
 
+.saudacao-nick {
+
+}
+
+
 .btn-circle {
+  flex-shrink: 0;
   height: 44px;
   min-width: 44px;
   border-radius: 22px;
@@ -29,35 +36,19 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0;
-  padding: 10px;
+  gap: 8px;
+  padding: 10px 18px;
   transition: all 0.3s ease;
-  overflow: hidden;
-  white-space: nowrap;
-
-  .btn-icon {
-    width: 20px;
-    height: 20px;
-    min-width: 20px;
-    flex-shrink: 0;
-  }
 
   .btn-label {
     font-size: 14px;
     font-weight: 600;
-    max-width: 0;
-    opacity: 0;
-    overflow: hidden;
-    transition: all 0.3s ease;
+    white-space: nowrap;
   }
 
   &:hover {
-    gap: 6px;
-    padding: 10px 16px;
-    .btn-label {
-      max-width: 40px;
-      opacity: 1;
-    }
+    opacity: 0.9;
+    transform: scale(1.02);
   }
 }
 
