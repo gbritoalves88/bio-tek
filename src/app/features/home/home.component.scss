@@ -19,11 +19,6 @@
   }
 }
 
-.saudacao-nick {
-
-}
-
-
 .btn-circle {
   flex-shrink: 0;
   height: 44px;
@@ -51,7 +46,6 @@
     transform: scale(1.02);
   }
 }
-
 .citacao {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
@@ -596,6 +590,22 @@
 }
 
 @media (max-width: 480px) {
+  .hero {
+    gap: 8px;
+  }
+
+  .hero h1 {
+    font-size: 17px;
+  }
+
+  .btn-circle {
+    padding: 8px 12px;
+
+    .btn-label {
+      font-size: 12px;
+    }
+  }
+
   .book-info {
     gap: 10px;
 
@@ -631,6 +641,30 @@
 
   .skeleton-reading {
     height: 150px;
+  }
+}
+
+
+@media (max-width: 380px) {
+  .btn-circle {
+    padding: 8px 12px;
+
+    .btn-label {
+      font-size: 12px;
+    }
+  }
+}
+
+.hero h1 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+@media (max-width: 380px) {
+  .hero h1 {
+    font-size: 18px;
   }
 }
 
