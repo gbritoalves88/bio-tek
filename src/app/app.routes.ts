@@ -9,6 +9,7 @@ import { LoginComponent } from './features/login/login.component';
 import { TermoComponent } from './features/termos/termos.component';
 import { AuthGuard } from './core/guards/auth.guard';
 import { AdminGuard } from './core/guards/admin.guard';
+import { PerfilCompletoGuard } from './core/guards/perfil-completo.guard';
 
 export const routes: Routes = [
   { path: '', component: LoginComponent },
@@ -19,12 +20,34 @@ export const routes: Routes = [
     component: ShellComponent,
     canActivate: [AuthGuard],
     children: [
-      { path: '', component: HomeComponent },
-      { path: 'biblioteca', component: BibliotecaComponent },
-      { path: 'comunidade', component: ComunidadeComponent },
-      { path: 'social', component: SocialComponent },
-      { path: 'perfil', component: PerfilComponent },
-      { path: 'perfil/:id', component: PerfilComponent },
+      {
+        path: '',
+        component: HomeComponent,
+        canActivate: [PerfilCompletoGuard]
+      },
+      {
+        path: 'biblioteca',
+        component: BibliotecaComponent,
+        canActivate: [PerfilCompletoGuard]
+      },
+      {
+        path: 'comunidade',
+        component: ComunidadeComponent,
+        canActivate: [PerfilCompletoGuard]
+      },
+      {
+        path: 'social',
+        component: SocialComponent,
+        canActivate: [PerfilCompletoGuard]
+      },
+      {
+        path: 'perfil',
+        component: PerfilComponent
+      },
+      {
+        path: 'perfil/:id',
+        component: PerfilComponent
+      },
       {
         path: 'admin',
         loadComponent: () => import('./features/admin/admin.component').then(m => m.AdminComponent),

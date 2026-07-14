@@ -4,11 +4,7 @@
   <div class="header-section">
     <h1>Biblioteca</h1>
     <button class="btn-circle" title="Adicionar livro" (click)="abrirModal()">
-      <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-        <line x1="12" y1="5" x2="12" y2="19"/>
-        <line x1="5" y1="12" x2="19" y2="12"/>
-      </svg>
-      <span class="btn-label">Novo</span>
+      <span class="btn-label">Cadastrar Livro</span>
     </button>
   </div>
 
@@ -43,20 +39,12 @@
 
     <!-- Grid de livros - 3 colunas -->
     <div class="book-grid">
-      <div class="book-card" *ngFor="let livro of livrosFiltrados">
+      <div class="book-card" *ngFor="let livro of livrosFiltrados" (click)="abrirBottomSheet(livro)">
         <img [src]="livro.imagem || 'assets/capas/perfilSemFoto.png'" [alt]="livro.titulo" class="book-cover" />
         <div class="book-info">
           <h3 class="book-title">{{ livro.titulo || 'Sem título' }}</h3>
           <p class="book-author">{{ livro.autor || 'Autor desconhecido' }}</p>
-          <p class="book-year" *ngIf="livro.anoPublicacao">📅 {{ livro.anoPublicacao }}</p>
         </div>
-        <!-- Botão minimalista - apenas ícone -->
-        <button class="btn-add-minimal" (click)="adicionarBiblioteca(livro.id)" [disabled]="adicionando[livro.id]" title="Adicionar à biblioteca">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <line x1="12" y1="5" x2="12" y2="19"/>
-            <line x1="5" y1="12" x2="19" y2="12"/>
-          </svg>
-        </button>
       </div>
     </div>
 
@@ -73,3 +61,42 @@
   (fechar)="modalAberto = false"
   (livroAdicionado)="onLivroAdicionado($event)">
 </app-add-book-modal>
+
+<!-- Bottom Sheet: Detalhes do Livro -->
+<app-bottom-sheet [aberto]="bottomSheetAberto" (fechar)="fecharBottomSheet()">
+  <ng-container *ngIf="livroSelecionado">
+    <div class="bottom-sheet-header">
+      <h3>📖 Biblioteca </h3>
+      <button class="bottom-sheet-close" (click)="fecharBottomSheet()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Capa + Info -->
+    <div class="bs-livro-destaque">
+      <img [src]="livroSelecionado.imagem || 'assets/capas/perfilSemFoto.png'"
+           [alt]="livroSelecionado.titulo"
+           class="bs-capa" />
+      <div class="bs-info">
+        <strong class="bs-titulo">{{ livroSelecionado.titulo || 'Sem título' }}</strong>
+        <span class="bs-autor">{{ livroSelecionado.autor || 'Autor desconhecido' }}</span>
+        <span class="bs-rating" *ngIf="livroSelecionado.anoPublicacao">📅 {{ livroSelecionado.anoPublicacao }}</span>
+      </div>
+    </div>
+
+    <!-- Ações -->
+    <div class="bs-acoes">
+      <button class="bs-btn bs-btn-primary" (click)="adicionarDoBottomSheet()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="5" x2="12" y2="19"/>
+          <line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        Adicionar à minha biblioteca
+      </button>
+
+
+    </div>
+  </ng-container>
+</app-bottom-sheet>

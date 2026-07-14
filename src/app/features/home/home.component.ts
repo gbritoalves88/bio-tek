@@ -45,11 +45,10 @@ export class HomeComponent implements OnInit {
     }
   }
 
-  get saudacao(): string {
-    if (typeof localStorage === 'undefined') return 'Olá, Leitor 👋';
+
+  get nickname(): string {
     const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
-    const nickname = usuario?.nickname;
-    return nickname ? `Olá, ${nickname} 👋` : 'Olá, Leitor 👋';
+    return usuario?.nickname || '';
   }
 
   carregarDashboard(): void {

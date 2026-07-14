@@ -54,6 +54,8 @@ export class PerfilComponent implements OnInit {
   livroParaExcluir: string | null = null;
   novoComentarioPerfil = '';
   meuId = '';
+  bottomSheetLivroAberto = false;
+  livroSelecionado: LivroDoUsuario | null = null;
 
   @ViewChild('fileInputLivro') fileInputLivro!: ElementRef;
   @ViewChild('fileInputEdicaoLivro') fileInputEdicaoLivro!: ElementRef;
@@ -212,10 +214,17 @@ export class PerfilComponent implements OnInit {
     if (!this.usuarioEdit || !this.usuario) return;
 
     if (this.nicknameEditavel) {
-      const nick = (this.usuarioEdit.nickname || '').replace('@', '').trim();
+      let nick = (this.usuarioEdit.nickname || '').trim();
+      nick = nick.replace(/^@+/, '').replace(/@/g, '').toLowerCase();
+
       if (!nick) { this.alertService.warning('Nickname é obrigatório'); return; }
       if (nick.length < 3) { this.alertService.warning('Mínimo 3 caracteres'); return; }
-      if (nick.length > 10) { this.alertService.warning('Máximo 10 caracteres'); return; }
+      if (nick.length > 20) { this.alertService.warning('Máximo 20 caracteres'); return; }
+      if (!/^[a-z0-9._]+$/.test(nick)) {
+        this.alertService.warning('Apenas letras minúsculas, números, . e _');
+        return;
+      }
+
       this.usuarioEdit.nickname = '@' + nick;
     } else {
       this.usuarioEdit.nickname = this.usuario?.nickname || '';
@@ -268,7 +277,9 @@ export class PerfilComponent implements OnInit {
 
   limparArroba(): void {
     if (this.usuarioEdit.nickname && this.nicknameEditavel) {
-      this.usuarioEdit.nickname = this.usuarioEdit.nickname.replace(/@/g, '');
+      this.usuarioEdit.nickname = this.usuarioEdit.nickname
+        .replace(/@/g, '')
+        .toLowerCase();
     }
   }
 
@@ -552,6 +563,18 @@ export class PerfilComponent implements OnInit {
         this.alertService.error('Erro ao adicionar livro');
       }
     });
+  }
+
+  abrirBottomSheetLivro(livro: LivroDoUsuario): void {
+    this.livroSelecionado = livro;
+    this.bottomSheetLivroAberto = true;
+    this.cdr.markForCheck();
+  }
+
+  fecharBottomSheetLivro(): void {
+    this.bottomSheetLivroAberto = false;
+    this.livroSelecionado = null;
+    this.cdr.markForCheck();
   }
 
 }
