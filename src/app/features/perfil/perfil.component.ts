@@ -419,20 +419,21 @@ export class PerfilComponent implements OnInit {
   }
 
  enviarComentarioPerfil(): void {
-    if (!this.novoComentarioPerfil?.trim() || !this.livroComentarioId) return;
+  if (!this.novoComentarioPerfil?.trim() || !this.livroComentarioId) return;
 
-    const comentarioTexto = this.novoComentarioPerfil.trim(); // 🆕 Guarda antes de limpar
+  const comentarioTexto = this.novoComentarioPerfil.trim();
+  const usuarioLogado = JSON.parse(localStorage.getItem('usuario') || '{}');
 
-    this.perfilService.enviarComentario(this.livroComentarioId, comentarioTexto).subscribe({
+  this.perfilService.enviarComentario(this.livroComentarioId, comentarioTexto).subscribe({
       next: () => {
         this.novoComentarioPerfil = '';
         this.alertService.success('Comentário enviado!');
 
         const novoComentario = {
           id: 'temp-' + Date.now(),
-          idUsuario: JSON.parse(localStorage.getItem('usuario') || '{}').id,
-          usuarioNickname: this.usuario?.nickname || '@user',
-          comentario: comentarioTexto, // 🆕 Usa a variável guardada
+          idUsuario: usuarioLogado.id,
+          usuarioNickname: usuarioLogado?.nickname || '@user',  // 🆕 pega do localStorage
+          comentario: comentarioTexto,
           dataCriacao: new Date().toISOString()
         };
 
@@ -450,7 +451,6 @@ export class PerfilComponent implements OnInit {
       }
     });
   }
-
 
 
   toggleMenuConfig(): void { this.menuConfigAberto = !this.menuConfigAberto; }
