@@ -122,6 +122,10 @@
 
     <!-- Edição do perfil -->
     <div class="perfil-container" *ngIf="editando && usuarioEdit">
+
+      <div class="alerta-cadastro" *ngIf="nicknameEditavel">
+        ⚠️ Finalize o cadastro para continuar usando o app.
+      </div>
       <div class="perfil-edicao-row">
         <div class="perfil-avatar">
           <div class="avatar-pequeno editavel" (click)="fileInput.click()">
@@ -162,7 +166,7 @@
       </div>
 
       <div class="perfil-actions-edicao">
-        <button class="btn-cancelar" (click)="fecharEdicao()">Cancelar</button>
+        <button class="btn-cancelar" *ngIf="!nicknameEditavel" (click)="fecharEdicao()">Cancelar</button>
         <button class="btn-salvar" (click)="salvarPerfil()">Salvar</button>
       </div>
     </div>
@@ -329,7 +333,7 @@
       </select>
     </div>
     <div class="bs-actions">
-      <button class="btn-cancelar" (click)="fecharEdicaoLivro()">Cancelar</button>
+      <button class="btn-cancelar" *ngIf="!nicknameEditavel" (click)="fecharEdicao()">Cancelar</button>
       <button class="btn-salvar" (click)="salvarEdicaoLivro()">Salvar alterações</button>
     </div>
   </ng-container>
