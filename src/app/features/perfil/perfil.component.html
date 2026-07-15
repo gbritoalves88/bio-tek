@@ -122,7 +122,6 @@
 
     <!-- Edição do perfil -->
     <div class="perfil-container" *ngIf="editando && usuarioEdit">
-
       <div class="alerta-cadastro" *ngIf="nicknameEditavel">
         ⚠️ Finalize o cadastro para continuar usando o app.
       </div>
@@ -131,10 +130,7 @@
           <div class="avatar-pequeno editavel" (click)="fileInput.click()">
             <img [src]="usuarioEdit.avatar || 'assets/capas/perfilSemFoto.png'" [alt]="usuarioEdit.nome" />
             <div class="avatar-overlay">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-                <circle cx="12" cy="13" r="4"/>
-              </svg>
+              <span class="avatar-texto">📷</span>
             </div>
             <input type="file" #fileInput hidden (change)="onAvatarSelected($event)" accept="image/*">
           </div>
@@ -188,7 +184,6 @@
         <button class="filtro-btn" [class.active]="filtroAvaliado" (click)="filtroAvaliado = !filtroAvaliado">⭐ Avaliados</button>
       </div>
 
-      <!-- BOOK LIST -->
       <div class="book-list">
         <div class="book-item" *ngFor="let livro of livrosFiltrados" (click)="abrirBottomSheetLivro(livro)">
           <div class="book-cover-wrapper">
@@ -233,7 +228,6 @@
       </button>
     </div>
 
-    <!-- Capa + Info -->
     <div class="bs-livro-destaque">
       <img [src]="livroSelecionado.imagem || 'assets/capas/perfilSemFoto.png'" [alt]="livroSelecionado.titulo" class="bs-capa" />
       <div class="bs-info">
@@ -243,17 +237,13 @@
       </div>
     </div>
 
-    <!-- Ações -->
     <div class="bs-acoes">
-      <!-- Comentários (se avaliado) -->
       <button class="bs-btn bs-btn-outline" *ngIf="livroSelecionado.avaliacao" (click)="abrirComentarios(livroSelecionado); fecharBottomSheetLivro()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
         </svg>
         Comentários
       </button>
-
-      <!-- Adicionar à minha biblioteca (só visualizando outro perfil) -->
       <button class="bs-btn bs-btn-primary" *ngIf="modoVisualizacao" (click)="adicionarLivroDoPerfil(livroSelecionado); fecharBottomSheetLivro()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <line x1="12" y1="5" x2="12" y2="19"/>
@@ -261,8 +251,6 @@
         </svg>
         Adicionar à minha biblioteca
       </button>
-
-      <!-- Editar (só meu perfil) -->
       <button class="bs-btn bs-btn-outline" *ngIf="!modoVisualizacao" (click)="abrirEdicaoLivro(livroSelecionado); fecharBottomSheetLivro()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
@@ -270,8 +258,6 @@
         </svg>
         Editar livro
       </button>
-
-      <!-- Remover (só meu perfil) -->
       <button class="bs-btn bs-btn-perigo" *ngIf="!modoVisualizacao" (click)="abrirConfirmacaoExclusao(livroSelecionado.id); fecharBottomSheetLivro()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <polyline points="3 6 5 6 21 6"/>
