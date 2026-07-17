@@ -2,13 +2,15 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
-import { AdminService, AdminDashboard, AdminComentario, AdminUsuario } from './admin.service';
+import { AdminService } from './admin.service';
+import { AdminDashboard, AdminComentario, AdminUsuario, Paginado } from './admin.model';
 import { AlertService } from '../../shared/services/alert.service';
+import { BottomSheetComponent } from '../../shared/bottom-sheet/bottom-sheet.component';
 
 @Component({
   selector: 'app-admin',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule,BottomSheetComponent],
   templateUrl: './admin.component.html',
   styleUrls: ['./admin.component.scss']
 })
@@ -19,8 +21,9 @@ export class AdminComponent implements OnInit {
   comentarios: AdminComentario[] = [];
   usuarios: AdminUsuario[] = [];
   carregando = false;
+  detalheUsuarioAberto = false;
+  usuarioDetalhe: AdminUsuario | null = null;
 
-  // Paginação
   paginaComentarios = 1;
   totalPaginasComentarios = 1;
   totalComentarios = 0;
@@ -28,22 +31,18 @@ export class AdminComponent implements OnInit {
   totalPaginasUsuarios = 1;
   totalUsuarios = 0;
 
-  // Filtros
   filtroComentario = '';
   filtroFlagged: boolean | null = null;
   filtroUsuario = '';
   filtroStatus: boolean | null = null;
 
-  // Getters para filtros locais
   get comentariosFiltrados(): AdminComentario[] {
     return this.comentarios.filter(c => {
       const matchTexto = !this.filtroComentario ||
         c.comentario.toLowerCase().includes(this.filtroComentario.toLowerCase()) ||
         (c.usuario?.nickname || '').toLowerCase().includes(this.filtroComentario.toLowerCase()) ||
         (c.usuario?.nome || '').toLowerCase().includes(this.filtroComentario.toLowerCase());
-
       const matchFlag = this.filtroFlagged === null || c.flagged === this.filtroFlagged;
-
       return matchTexto && matchFlag;
     });
   }
@@ -54,9 +53,7 @@ export class AdminComponent implements OnInit {
         u.nome.toLowerCase().includes(this.filtroUsuario.toLowerCase()) ||
         (u.nickname || '').toLowerCase().includes(this.filtroUsuario.toLowerCase()) ||
         u.email.toLowerCase().includes(this.filtroUsuario.toLowerCase());
-
       const matchStatus = this.filtroStatus === null || u.ativo === this.filtroStatus;
-
       return matchTexto && matchStatus;
     });
   }
@@ -93,16 +90,8 @@ export class AdminComponent implements OnInit {
   carregarDashboard(): void {
     this.carregando = true;
     this.adminService.getDashboard().subscribe({
-      next: (d) => {
-        this.dashboard = d;
-        this.carregando = false;
-        this.cdr.markForCheck();
-      },
-      error: () => {
-        this.carregando = false;
-        this.alertService.error('Erro ao carregar dashboard');
-        this.cdr.markForCheck();
-      }
+      next: (d) => { this.dashboard = d; this.carregando = false; this.cdr.markForCheck(); },
+      error: () => { this.carregando = false; this.alertService.error('Erro ao carregar dashboard'); this.cdr.markForCheck(); }
     });
   }
 
@@ -117,11 +106,7 @@ export class AdminComponent implements OnInit {
         this.carregando = false;
         this.cdr.markForCheck();
       },
-      error: () => {
-        this.carregando = false;
-        this.alertService.error('Erro ao carregar comentários');
-        this.cdr.markForCheck();
-      }
+      error: () => { this.carregando = false; this.alertService.error('Erro ao carregar comentários'); this.cdr.markForCheck(); }
     });
   }
 
@@ -136,11 +121,7 @@ export class AdminComponent implements OnInit {
         this.carregando = false;
         this.cdr.markForCheck();
       },
-      error: () => {
-        this.carregando = false;
-        this.alertService.error('Erro ao carregar usuários');
-        this.cdr.markForCheck();
-      }
+      error: () => { this.carregando = false; this.alertService.error('Erro ao carregar usuários'); this.cdr.markForCheck(); }
     });
   }
 
@@ -153,10 +134,7 @@ export class AdminComponent implements OnInit {
           this.alertService.success('Comentário excluído!');
           this.cdr.markForCheck();
         },
-        error: () => {
-          this.alertService.error('Erro ao excluir');
-          this.cdr.markForCheck();
-        }
+        error: () => { this.alertService.error('Erro ao excluir'); this.cdr.markForCheck(); }
       });
     }
   }
@@ -165,17 +143,11 @@ export class AdminComponent implements OnInit {
     this.adminService.aprovarComentario(id).subscribe({
       next: () => {
         const c = this.comentarios.find(x => x.id === id);
-        if (c) {
-          c.flagged = false;
-          c.toxicidadeScore = null;
-        }
+        if (c) { c.flagged = false; c.toxicidadeScore = null; }
         this.alertService.success('Comentário aprovado!');
         this.cdr.markForCheck();
       },
-      error: () => {
-        this.alertService.error('Erro ao aprovar');
-        this.cdr.markForCheck();
-      }
+      error: () => { this.alertService.error('Erro ao aprovar'); this.cdr.markForCheck(); }
     });
   }
 
@@ -188,10 +160,7 @@ export class AdminComponent implements OnInit {
           this.alertService.success(`Usuário ${usuario.ativo ? 'ativado' : 'desativado'}!`);
           this.cdr.markForCheck();
         },
-        error: () => {
-          this.alertService.error('Erro ao alterar status');
-          this.cdr.markForCheck();
-        }
+        error: () => { this.alertService.error('Erro ao alterar status'); this.cdr.markForCheck(); }
       });
     }
   }
@@ -205,15 +174,24 @@ export class AdminComponent implements OnInit {
           this.alertService.success('Conta e todos os dados excluídos!');
           this.cdr.markForCheck();
         },
-        error: () => {
-          this.alertService.error('Erro ao excluir conta');
-          this.cdr.markForCheck();
-        }
+        error: () => { this.alertService.error('Erro ao excluir conta'); this.cdr.markForCheck(); }
       });
     }
   }
 
   voltar(): void {
     this.router.navigate(['/inicio']);
+  }
+
+  abrirDetalheUsuario(usuario: AdminUsuario): void {
+    this.usuarioDetalhe = usuario;
+    this.detalheUsuarioAberto = true;
+    this.cdr.markForCheck();
+  }
+
+  fecharDetalheUsuario(): void {
+    this.detalheUsuarioAberto = false;
+    this.usuarioDetalhe = null;
+    this.cdr.markForCheck();
   }
 }
