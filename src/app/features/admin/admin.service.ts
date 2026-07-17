@@ -2,37 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-
-export interface AdminDashboard {
-  totalUsuarios: number;
-  usuariosAtivos: number;
-  totalComentarios: number;
-  comentariosFlagged: number;
-  totalLivros: number;
-}
-
-export interface AdminComentario {
-  id: string;
-  idLivro: string;
-  idUsuario: string;
-  comentario: string;
-  dataCriacao: string;
-  flagged: boolean;
-  toxicidadeScore: number | null;
-  usuario: { id: string; nome: string; nickname: string } | null;
-}
-
-export interface AdminUsuario {
-  id: string;
-  nome: string;
-  nickname: string;
-  email: string;
-  ativo: boolean;
-  adm: boolean;
-  dataCriacao: string;
-  quantidadeLivros: number;
-  quantidadeLivrosLidos: number;
-}
+import { AdminDashboard, AdminComentario, AdminUsuario, Paginado } from './admin.model';
 
 @Injectable({ providedIn: 'root' })
 export class AdminService {
@@ -44,12 +14,8 @@ export class AdminService {
     return this.http.get<AdminDashboard>(`${this.api}/dashboard`);
   }
 
-  getComentarios(pagina: number = 1): Observable<{ dados: AdminComentario[], total: number, totalPaginas: number, pagina: number }> {
-    return this.http.get<any>(`${this.api}/comentarios?pagina=${pagina}&limite=20`);
-  }
-
-  getUsuarios(pagina: number = 1): Observable<{ dados: AdminUsuario[], total: number, totalPaginas: number, pagina: number }> {
-    return this.http.get<any>(`${this.api}/usuarios?pagina=${pagina}&limite=20`);
+  getComentarios(pagina: number = 1): Observable<Paginado<AdminComentario>> {
+    return this.http.get<Paginado<AdminComentario>>(`${this.api}/comentarios?pagina=${pagina}&limite=20`);
   }
 
   deletarComentario(id: string): Observable<void> {
@@ -58,6 +24,10 @@ export class AdminService {
 
   aprovarComentario(id: string): Observable<any> {
     return this.http.put(`${this.api}/comentarios/${id}/aprovar`, {});
+  }
+
+  getUsuarios(pagina: number = 1): Observable<Paginado<AdminUsuario>> {
+    return this.http.get<Paginado<AdminUsuario>>(`${this.api}/usuarios?pagina=${pagina}&limite=20`);
   }
 
   toggleAtivo(id: string): Observable<any> {

@@ -68,9 +68,9 @@
 
       <div class="tabela">
         <div class="linha linha-usuarios header">
-          <span>Nome</span><span>Email</span><span>Status</span><span>Livros</span><span>Ações</span>
+          <span>Nome</span><span>Email</span><span>Status</span><span>Livros</span>
         </div>
-        <div class="linha linha-usuarios" *ngFor="let u of usuariosFiltrados" [class.inativo]="!u.ativo">
+        <div class="linha linha-usuarios" *ngFor="let u of usuariosFiltrados" [class.inativo]="!u.ativo" (click)="abrirDetalheUsuario(u)">
           <span>
             {{ u.nome }}
             <small>{{ u.nickname }}</small>
@@ -80,11 +80,7 @@
           <span [class.ativo]="u.ativo" [class.inativo-texto]="!u.ativo">
             {{ u.ativo ? '✅ Ativo' : '❌ Inativo' }}
           </span>
-          <span>{{ u.quantidadeLivros }}</span>
-          <span class="acoes">
-            <button (click)="toggleAtivo(u)" [title]="u.ativo ? 'Desativar' : 'Ativar'">{{ u.ativo ? '❌' : '✅' }}</button>
-            <button class="del" (click)="excluirConta(u)" title="Excluir conta">🗑️</button>
-          </span>
+          <span>{{ u.totalLivros || u.quantidadeLivros || 0 }} livros ({{ u.totalLivrosLidos || u.quantidadeLivrosLidos || 0 }} lidos)</span>
         </div>
         <div class="linha vazia" *ngIf="usuariosFiltrados.length === 0">
           <span style="grid-column: 1 / -1; text-align: center;">Nenhum usuário encontrado</span>
@@ -99,3 +95,40 @@
     </ng-container>
   </main>
 </div>
+
+<!-- Bottom Sheet: Detalhes do Usuário -->
+<app-bottom-sheet [aberto]="detalheUsuarioAberto" (fechar)="fecharDetalheUsuario()">
+  <ng-container *ngIf="usuarioDetalhe">
+    <div class="bottom-sheet-header">
+      <h3>👤 {{ usuarioDetalhe.nome }}</h3>
+      <button class="bottom-sheet-close" (click)="fecharDetalheUsuario()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="bs-usuario-detalhe">
+      <img [src]="usuarioDetalhe.avatar || 'assets/capas/perfilSemFoto.png'" class="bs-avatar" />
+      <div class="bs-dados">
+        <div class="bs-linha"><span>Nickname</span><strong>{{ usuarioDetalhe.nickname || '@sem-nickname' }}</strong></div>
+        <div class="bs-linha"><span>Email</span><strong>{{ usuarioDetalhe.email }}</strong></div>
+        <div class="bs-linha"><span>Status</span><strong [class.ativo]="usuarioDetalhe.ativo" [class.inativo-texto]="!usuarioDetalhe.ativo">{{ usuarioDetalhe.ativo ? '✅ Ativo' : '❌ Inativo' }}</strong></div>
+        <div class="bs-linha"><span>Admin</span><strong>{{ usuarioDetalhe.adm ? '✅ Sim' : '❌ Não' }}</strong></div>
+        <div class="bs-linha"><span>Livros</span><strong>{{ usuarioDetalhe.totalLivros || usuarioDetalhe.quantidadeLivros || 0 }} ({{ usuarioDetalhe.totalLivrosLidos || usuarioDetalhe.quantidadeLivrosLidos || 0 }} lidos)</strong></div>
+        <div class="bs-linha"><span>Cadastro</span><strong>{{ usuarioDetalhe.dataCriacao | date:'dd/MM/yyyy HH:mm' }}</strong></div>
+        <div class="bs-linha"><span>Termos aceitos</span><strong>{{ usuarioDetalhe.aceitouTermos ? '✅ Sim' : '❌ Não' }}</strong></div>
+        <div class="bs-linha" *ngIf="usuarioDetalhe.dataAceiteTermos"><span>Data aceite</span><strong>{{ usuarioDetalhe.dataAceiteTermos | date:'dd/MM/yyyy' }}</strong></div>
+      </div>
+    </div>
+
+    <div class="bs-acoes">
+      <button class="bs-btn bs-btn-outline" (click)="toggleAtivo(usuarioDetalhe); fecharDetalheUsuario()">
+        {{ usuarioDetalhe.ativo ? '❌ Desativar' : '✅ Ativar' }}
+      </button>
+      <button class="bs-btn bs-btn-perigo" (click)="excluirConta(usuarioDetalhe); fecharDetalheUsuario()">
+        🗑️ Excluir conta
+      </button>
+    </div>
+  </ng-container>
+</app-bottom-sheet>
