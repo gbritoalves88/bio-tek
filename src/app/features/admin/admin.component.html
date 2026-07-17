@@ -3,9 +3,18 @@
     <div class="loading" *ngIf="carregando">Carregando...</div>
 
     <!-- Dashboard -->
-    <ng-container *ngIf="abaAtiva === 'dashboard' && dashboard">
+    <ng-container *ngIf="abaAtiva === 'dashboard'">
       <h1>📊 Dashboard</h1>
-      <div class="cards">
+
+      <div class="filtros-admin" style="margin-bottom:16px">
+        <input type="date" [(ngModel)]="dataInicio" class="filtro-input" style="max-width:180px" />
+        <span style="color:var(--text-secondary)">até</span>
+        <input type="date" [(ngModel)]="dataFim" class="filtro-input" style="max-width:180px" />
+        <button (click)="carregarDashboard()" style="padding:8px 16px; border:1px solid var(--accent); border-radius:20px; background:var(--accent); color:#fff; cursor:pointer; font-size:12px">Filtrar</button>
+        <button *ngIf="dataInicio || dataFim" (click)="dataInicio=''; dataFim=''; carregarDashboard()" style="padding:8px 16px; border:1px solid var(--border-color); border-radius:20px; background:transparent; color:var(--text-secondary); cursor:pointer; font-size:12px">Limpar</button>
+      </div>
+
+      <div class="cards" *ngIf="dashboard">
         <div class="card">{{ dashboard.totalUsuarios }}<small>Usuários</small></div>
         <div class="card">{{ dashboard.usuariosAtivos }}<small>Ativos</small></div>
         <div class="card">{{ dashboard.totalComentarios }}<small>Comentários</small></div>
@@ -13,7 +22,6 @@
         <div class="card">{{ dashboard.totalLivros }}<small>Livros</small></div>
       </div>
     </ng-container>
-
     <!-- Comentários -->
     <ng-container *ngIf="abaAtiva === 'comentarios'">
       <h1>💬 Comentários</h1>
@@ -29,18 +37,16 @@
 
       <div class="tabela">
         <div class="linha linha-comentarios header">
-          <span>Usuário</span><span>Comentário</span><span>Data</span><span>Flag</span><span>Ações</span>
+          <span>Usuário</span><span>Comentário</span><span>Data</span><span>Flag</span>
         </div>
-        <div class="linha linha-comentarios" *ngFor="let c of comentariosFiltrados" [class.flagged]="c.flagged">
-          <span>{{ c.usuario?.nickname || c.idUsuario }}</span>
-          <span class="texto" [title]="c.comentario">{{ c.comentario }}</span>
-          <span>{{ c.dataCriacao | date:'dd/MM HH:mm' }}</span>
-          <span>{{ c.flagged ? '🚩' : '✅' }}</span>
-          <span class="acoes">
-            <button *ngIf="c.flagged" (click)="aprovarComentario(c.id)" title="Aprovar">✅</button>
-            <button class="del" (click)="deletarComentario(c.id, c.comentario)" title="Excluir">🗑️</button>
-          </span>
-        </div>
+        <ng-container *ngFor="let c of comentariosFiltrados">
+          <div class="linha linha-comentarios" [class.flagged]="c.flagged" (click)="abrirDetalheComentario(c)">
+            <span>{{ c.usuario?.nickname || c.idUsuario }}</span>
+            <span class="texto" [title]="c.comentario">{{ c.comentario }}</span>
+            <span>{{ c.dataCriacao | date:'dd/MM HH:mm' }}</span>
+            <span>{{ c.flagged ? '🚩' : '✅' }}</span>
+          </div>
+        </ng-container>
         <div class="linha vazia" *ngIf="comentariosFiltrados.length === 0">
           <span style="grid-column: 1 / -1; text-align: center;">Nenhum comentário encontrado</span>
         </div>
@@ -93,42 +99,60 @@
         <button [disabled]="paginaUsuarios >= totalPaginasUsuarios" (click)="carregarUsuarios(paginaUsuarios + 1)">▶</button>
       </div>
     </ng-container>
+
+    <!-- Bottom Sheet: Detalhes do Usuário -->
+    <app-bottom-sheet [aberto]="detalheUsuarioAberto" (fechar)="fecharDetalheUsuario()">
+      <ng-container *ngIf="usuarioDetalhe">
+        <div class="bottom-sheet-header">
+          <h3>👤 {{ usuarioDetalhe.nome }}</h3>
+          <button class="bottom-sheet-close" (click)="fecharDetalheUsuario()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+        <div class="bs-usuario-detalhe">
+          <img [src]="usuarioDetalhe.avatar || 'assets/capas/perfilSemFoto.png'" class="bs-avatar" />
+          <div class="bs-dados">
+            <div class="bs-linha"><span>Nickname</span><strong>{{ usuarioDetalhe.nickname || '@sem-nickname' }}</strong></div>
+            <div class="bs-linha"><span>Email</span><strong>{{ usuarioDetalhe.email }}</strong></div>
+            <div class="bs-linha"><span>Status</span><strong [class.ativo]="usuarioDetalhe.ativo" [class.inativo-texto]="!usuarioDetalhe.ativo">{{ usuarioDetalhe.ativo ? '✅ Ativo' : '❌ Inativo' }}</strong></div>
+            <div class="bs-linha"><span>Admin</span><strong>{{ usuarioDetalhe.adm ? '✅ Sim' : '❌ Não' }}</strong></div>
+            <div class="bs-linha"><span>Livros</span><strong>{{ usuarioDetalhe.totalLivros || usuarioDetalhe.quantidadeLivros || 0 }} ({{ usuarioDetalhe.totalLivrosLidos || usuarioDetalhe.quantidadeLivrosLidos || 0 }} lidos)</strong></div>
+            <div class="bs-linha"><span>Cadastro</span><strong>{{ usuarioDetalhe.dataCriacao | date:'dd/MM/yyyy HH:mm' }}</strong></div>
+            <div class="bs-linha"><span>Termos aceitos</span><strong>{{ usuarioDetalhe.aceitouTermos ? '✅ Sim' : '❌ Não' }}</strong></div>
+            <div class="bs-linha" *ngIf="usuarioDetalhe.dataAceiteTermos"><span>Data aceite</span><strong>{{ usuarioDetalhe.dataAceiteTermos | date:'dd/MM/yyyy' }}</strong></div>
+          </div>
+        </div>
+        <div class="bs-acoes">
+          <button class="bs-btn bs-btn-outline" (click)="toggleAtivo(usuarioDetalhe); fecharDetalheUsuario()">{{ usuarioDetalhe.ativo ? '❌ Desativar' : '✅ Ativar' }}</button>
+          <button class="bs-btn bs-btn-perigo" (click)="excluirConta(usuarioDetalhe); fecharDetalheUsuario()">🗑️ Excluir conta</button>
+        </div>
+      </ng-container>
+    </app-bottom-sheet>
+
+    <!-- Bottom Sheet: Detalhes do Comentário -->
+    <app-bottom-sheet [aberto]="detalheComentarioAberto" (fechar)="fecharDetalheComentario()">
+      <ng-container *ngIf="comentarioDetalhe">
+        <div class="bottom-sheet-header">
+          <h3>💬 Comentário</h3>
+          <button class="bottom-sheet-close" (click)="fecharDetalheComentario()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+        <p class="bs-comentario-texto">{{ comentarioDetalhe.comentario }}</p>
+        <div class="bs-dados" style="margin-bottom:16px">
+          <div class="bs-linha"><span>Usuário</span><strong>{{ comentarioDetalhe.usuario?.nickname || comentarioDetalhe.idUsuario }}</strong></div>
+          <div class="bs-linha"><span>Data</span><strong>{{ comentarioDetalhe.dataCriacao | date:'dd/MM/yyyy HH:mm' }}</strong></div>
+          <div class="bs-linha"><span>Flagged</span><strong>{{ comentarioDetalhe.flagged ? '🚩 Sim' : '✅ Não' }}</strong></div>
+        </div>
+        <div class="bs-acoes">
+          <button class="bs-btn bs-btn-outline" *ngIf="comentarioDetalhe.flagged" (click)="aprovarComentario(comentarioDetalhe.id); fecharDetalheComentario()">✅ Aprovar</button>
+          <button class="bs-btn bs-btn-perigo" (click)="deletarComentario(comentarioDetalhe.id, comentarioDetalhe.comentario); fecharDetalheComentario()">🗑️ Excluir</button>
+        </div>
+      </ng-container>
+    </app-bottom-sheet>
   </main>
 </div>
-
-<!-- Bottom Sheet: Detalhes do Usuário -->
-<app-bottom-sheet [aberto]="detalheUsuarioAberto" (fechar)="fecharDetalheUsuario()">
-  <ng-container *ngIf="usuarioDetalhe">
-    <div class="bottom-sheet-header">
-      <h3>👤 {{ usuarioDetalhe.nome }}</h3>
-      <button class="bottom-sheet-close" (click)="fecharDetalheUsuario()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-        </svg>
-      </button>
-    </div>
-
-    <div class="bs-usuario-detalhe">
-      <img [src]="usuarioDetalhe.avatar || 'assets/capas/perfilSemFoto.png'" class="bs-avatar" />
-      <div class="bs-dados">
-        <div class="bs-linha"><span>Nickname</span><strong>{{ usuarioDetalhe.nickname || '@sem-nickname' }}</strong></div>
-        <div class="bs-linha"><span>Email</span><strong>{{ usuarioDetalhe.email }}</strong></div>
-        <div class="bs-linha"><span>Status</span><strong [class.ativo]="usuarioDetalhe.ativo" [class.inativo-texto]="!usuarioDetalhe.ativo">{{ usuarioDetalhe.ativo ? '✅ Ativo' : '❌ Inativo' }}</strong></div>
-        <div class="bs-linha"><span>Admin</span><strong>{{ usuarioDetalhe.adm ? '✅ Sim' : '❌ Não' }}</strong></div>
-        <div class="bs-linha"><span>Livros</span><strong>{{ usuarioDetalhe.totalLivros || usuarioDetalhe.quantidadeLivros || 0 }} ({{ usuarioDetalhe.totalLivrosLidos || usuarioDetalhe.quantidadeLivrosLidos || 0 }} lidos)</strong></div>
-        <div class="bs-linha"><span>Cadastro</span><strong>{{ usuarioDetalhe.dataCriacao | date:'dd/MM/yyyy HH:mm' }}</strong></div>
-        <div class="bs-linha"><span>Termos aceitos</span><strong>{{ usuarioDetalhe.aceitouTermos ? '✅ Sim' : '❌ Não' }}</strong></div>
-        <div class="bs-linha" *ngIf="usuarioDetalhe.dataAceiteTermos"><span>Data aceite</span><strong>{{ usuarioDetalhe.dataAceiteTermos | date:'dd/MM/yyyy' }}</strong></div>
-      </div>
-    </div>
-
-    <div class="bs-acoes">
-      <button class="bs-btn bs-btn-outline" (click)="toggleAtivo(usuarioDetalhe); fecharDetalheUsuario()">
-        {{ usuarioDetalhe.ativo ? '❌ Desativar' : '✅ Ativar' }}
-      </button>
-      <button class="bs-btn bs-btn-perigo" (click)="excluirConta(usuarioDetalhe); fecharDetalheUsuario()">
-        🗑️ Excluir conta
-      </button>
-    </div>
-  </ng-container>
-</app-bottom-sheet>

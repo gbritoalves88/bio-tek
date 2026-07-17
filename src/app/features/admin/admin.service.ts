@@ -10,8 +10,8 @@ export class AdminService {
 
   constructor(private http: HttpClient) {}
 
-  getDashboard(): Observable<AdminDashboard> {
-    return this.http.get<AdminDashboard>(`${this.api}/dashboard`);
+  getDashboard(params?: any): Observable<AdminDashboard> {
+    return this.http.get<AdminDashboard>(`${this.api}/dashboard`, { params });
   }
 
   getComentarios(pagina: number = 1): Observable<Paginado<AdminComentario>> {

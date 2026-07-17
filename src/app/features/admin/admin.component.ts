@@ -36,6 +36,12 @@ export class AdminComponent implements OnInit {
   filtroUsuario = '';
   filtroStatus: boolean | null = null;
 
+  dataInicio = '';
+  dataFim = '';
+
+  detalheComentarioAberto = false;
+  comentarioDetalhe: AdminComentario | null = null;
+
   get comentariosFiltrados(): AdminComentario[] {
     return this.comentarios.filter(c => {
       const matchTexto = !this.filtroComentario ||
@@ -89,7 +95,11 @@ export class AdminComponent implements OnInit {
 
   carregarDashboard(): void {
     this.carregando = true;
-    this.adminService.getDashboard().subscribe({
+    let params: any = {};
+    if (this.dataInicio) params.dataInicio = this.dataInicio;
+    if (this.dataFim) params.dataFim = this.dataFim;
+
+    this.adminService.getDashboard(params).subscribe({
       next: (d) => { this.dashboard = d; this.carregando = false; this.cdr.markForCheck(); },
       error: () => { this.carregando = false; this.alertService.error('Erro ao carregar dashboard'); this.cdr.markForCheck(); }
     });
@@ -192,6 +202,18 @@ export class AdminComponent implements OnInit {
   fecharDetalheUsuario(): void {
     this.detalheUsuarioAberto = false;
     this.usuarioDetalhe = null;
+    this.cdr.markForCheck();
+  }
+
+abrirDetalheComentario(comentario: AdminComentario): void {
+  this.comentarioDetalhe = comentario;
+  this.detalheComentarioAberto = true;
+  this.cdr.markForCheck();
+}
+
+  fecharDetalheComentario(): void {
+    this.detalheComentarioAberto = false;
+    this.comentarioDetalhe = null;
     this.cdr.markForCheck();
   }
 }
