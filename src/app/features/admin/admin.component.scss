@@ -188,16 +188,17 @@ nav {
   align-items: center;
   font-size: 13px;
   min-width: 580px;
+  cursor: pointer;
 
   &:last-child { border-bottom: none; }
-  &.header { font-weight: 600; font-size: 11px; color: var(--text-secondary); text-transform: uppercase; background: var(--bg-primary); }
+  &.header { font-weight: 600; font-size: 11px; color: var(--text-secondary); text-transform: uppercase; background: var(--bg-primary); cursor: default; }
   &.flagged { background: rgba(255,152,0,0.05); }
   &.inativo { opacity: 0.6; }
-  &.vazia { color: var(--text-secondary); font-style: italic; }
+  &.vazia { color: var(--text-secondary); font-style: italic; cursor: default; }
 }
 
 .linha-comentarios {
-  grid-template-columns: 1fr 2.5fr 0.8fr 0.4fr 0.8fr;
+  grid-template-columns: 1fr 3fr 0.8fr 0.4fr;
 }
 
 .linha-usuarios {
@@ -208,28 +209,6 @@ nav {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.acoes {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  align-items: center;
-
-  button {
-    background: none;
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    padding: 5px 10px;
-    cursor: pointer;
-    font-size: 13px;
-    transition: all 0.15s;
-    white-space: nowrap;
-    width: 100%;
-
-    &:hover { border-color: var(--accent); background: rgba(219,124,0,0.1); }
-    &.del:hover { border-color: #e74c3c; background: rgba(231,76,60,0.1); }
-  }
 }
 
 .badge-adm {
@@ -285,37 +264,21 @@ small {
   }
 }
 
-// ===== RESPONSIVO =====
-@media (max-width: 768px) {
-  .admin-content { padding: 16px 12px; }
-
-  .filtros-admin {
-    flex-direction: column;
-    gap: 8px;
-    .filtro-input { max-width: 100%; }
-    .filtro-botoes { width: 100%; }
-  }
-
-  .linha {
-    min-width: 500px;
-    font-size: 12px;
-    padding: 10px 12px;
-    gap: 6px;
-  }
-
-  .linha-usuarios {
-    grid-template-columns: 1fr 1.4fr 0.7fr 0.6fr 0.6fr;
-  }
-
-  .acoes button {
-    padding: 4px 6px;
-    font-size: 11px;
-  }
+// ===== BOTTOM SHEET =====
+.bottom-sheet-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-color);
+  h3 { margin: 0; font-size: 16px; font-weight: 600; color: var(--text-primary); }
 }
 
-@media (max-width: 480px) {
-  .cards { grid-template-columns: 1fr 1fr; }
-  .linha { min-width: 450px; font-size: 11px; }
+.bottom-sheet-close {
+  background: none; border: none; color: var(--text-secondary); cursor: pointer; padding: 4px;
+  svg { width: 20px; height: 20px; }
+  &:hover { color: var(--accent); }
 }
 
 .bs-usuario-detalhe {
@@ -345,9 +308,19 @@ small {
   display: flex;
   justify-content: space-between;
   font-size: 13px;
-
   span { color: var(--text-secondary); }
   strong { color: var(--text-primary); text-align: right; }
+}
+
+.bs-comentario-texto {
+  font-size: 14px;
+  color: var(--text-primary);
+  line-height: 1.5;
+  padding: 12px;
+  background: var(--bg-primary);
+  border-radius: 8px;
+  margin-top: 8px;
+  word-wrap: break-word;
 }
 
 .bs-acoes {
@@ -387,21 +360,39 @@ small {
   &:hover { background: rgba(231, 76, 60, 0.1); border-color: #e74c3c; }
 }
 
-.bottom-sheet-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid var(--border-color);
-  h3 { margin: 0; font-size: 16px; font-weight: 600; color: var(--text-primary); }
+// ===== RESPONSIVO =====
+@media (max-width: 768px) {
+  .admin-content { padding: 16px 12px; }
+
+  .filtros-admin {
+    flex-direction: column;
+    gap: 8px;
+    .filtro-input { max-width: 100%; }
+    .filtro-botoes { width: 100%; }
+  }
+
+  .linha {
+    min-width: 500px;
+    font-size: 12px;
+    padding: 10px 12px;
+    gap: 6px;
+  }
+
+  .linha-usuarios {
+    grid-template-columns: 1fr 1.4fr 0.7fr 0.9fr;
+  }
+
+  .bs-btn { max-width: 100%; }
 }
 
-.bottom-sheet-close {
-  background: none; border: none; color: var(--text-secondary); cursor: pointer; padding: 4px;
-  svg { width: 20px; height: 20px; }
-  &:hover { color: var(--accent); }
+@media (max-width: 480px) {
+  .cards { grid-template-columns: 1fr 1fr; }
+  .linha { min-width: 450px; font-size: 11px; }
 }
 
-.ativo { color: #4caf50; }
-.inativo-texto { color: #e74c3c; }
+input[type="date"] {
+  color-scheme: dark;
+  &::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+  }
+}
