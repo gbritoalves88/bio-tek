@@ -559,8 +559,11 @@ export class PerfilComponent implements OnInit {
         this.alertService.success(`"${livro.titulo}" adicionado à sua biblioteca!`);
       },
       error: (err) => {
-        console.error('Erro ao adicionar:', err);
-        this.alertService.error('Erro ao adicionar livro');
+        if (err.status === 400 && err.error?.mensagem) {
+          this.alertService.warning(err.error.mensagem);  // "Você já tem este livro"
+        } else {
+          this.alertService.error('Erro ao adicionar livro');
+        }
       }
     });
   }
