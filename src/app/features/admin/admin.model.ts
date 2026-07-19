@@ -4,6 +4,11 @@ export interface AdminDashboard {
   totalComentarios: number;
   comentariosFlagged: number;
   totalLivros: number;
+  totalAcessos: number;           // 🆕
+  acessos7Dias: number;           // 🆕
+  acessos30Dias: number;          // 🆕
+  mediaAcessosPorUsuario: number; // 🆕
+  usuariosAtivos30Dias: number;   // 🆕
 }
 
 export interface AdminComentario {
@@ -29,11 +34,14 @@ export interface AdminUsuario {
   quantidadeLivrosLidos: number;
   totalLivros?: number;
   totalLivrosLidos?: number;
-  avatar?: string;           // 🆕
-  aceitouTermos?: boolean;    // 🆕
-  dataAceiteTermos?: string;  // 🆕
-  descricao?: string;         // 🆕
-  mediaAvaliacoes?: number;   // 🆕
+  avatar?: string;
+  aceitouTermos?: boolean;
+  dataAceiteTermos?: string;
+  descricao?: string;
+  mediaAvaliacoes?: number;
+  totalAcessos?: number;      // 🆕
+  ultimoAcesso?: string;       // 🆕
+  acessos30Dias?: number;      // 🆕
 }
 
 export interface Paginado<T> {
