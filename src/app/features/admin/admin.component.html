@@ -13,13 +13,53 @@
         <button (click)="carregarDashboard()" style="padding:8px 16px; border:1px solid var(--accent); border-radius:20px; background:var(--accent); color:#fff; cursor:pointer; font-size:12px">Filtrar</button>
         <button *ngIf="dataInicio || dataFim" (click)="dataInicio=''; dataFim=''; carregarDashboard()" style="padding:8px 16px; border:1px solid var(--border-color); border-radius:20px; background:transparent; color:var(--text-secondary); cursor:pointer; font-size:12px">Limpar</button>
       </div>
+      <div style="display:flex; justify-content:flex-end; margin-bottom:16px">
+        <button (click)="exportarDados()" style="padding:8px 16px; border:1px solid var(--accent); border-radius:20px; background:transparent; color:var(--accent); cursor:pointer; font-size:12px">
+          📥 Exportar CSV
+        </button>
+      </div>
 
       <div class="cards" *ngIf="dashboard">
-        <div class="card">{{ dashboard.totalUsuarios }}<small>Usuários</small></div>
-        <div class="card">{{ dashboard.usuariosAtivos }}<small>Ativos</small></div>
-        <div class="card">{{ dashboard.totalComentarios }}<small>Comentários</small></div>
-        <div class="card warning">{{ dashboard.comentariosFlagged }}<small>Flagged 🚩</small></div>
-        <div class="card">{{ dashboard.totalLivros }}<small>Livros</small></div>
+        <div class="card" (click)="tooltipCard = tooltipCard === 'usuarios' ? '' : 'usuarios'">
+          {{ dashboard.totalUsuarios }}<small>Usuários</small>
+          <span class="tooltip" *ngIf="tooltipCard === 'usuarios'">Total de contas criadas</span>
+        </div>
+        <div class="card" (click)="tooltipCard = tooltipCard === 'ativos' ? '' : 'ativos'">
+          {{ dashboard.usuariosAtivos }}<small>Ativos</small>
+          <span class="tooltip" *ngIf="tooltipCard === 'ativos'">Contas com status Ativo = true</span>
+        </div>
+        <div class="card" (click)="tooltipCard = tooltipCard === 'comentarios' ? '' : 'comentarios'">
+          {{ dashboard.totalComentarios }}<small>Comentários</small>
+          <span class="tooltip" *ngIf="tooltipCard === 'comentarios'">Total de comentários postados</span>
+        </div>
+        <div class="card warning" (click)="tooltipCard = tooltipCard === 'flagged' ? '' : 'flagged'">
+          {{ dashboard.comentariosFlagged }}<small>Flagged 🚩</small>
+          <span class="tooltip" *ngIf="tooltipCard === 'flagged'">Comentários marcados como ofensivos pela moderação</span>
+        </div>
+        <div class="card" (click)="tooltipCard = tooltipCard === 'livros' ? '' : 'livros'">
+          {{ dashboard.totalLivros }}<small>Livros</small>
+          <span class="tooltip" *ngIf="tooltipCard === 'livros'">Total de livros cadastrados</span>
+        </div>
+        <div class="card" (click)="tooltipCard = tooltipCard === 'acessos' ? '' : 'acessos'">
+          {{ dashboard.totalAcessos }}<small>Acessos</small>
+          <span class="tooltip" *ngIf="tooltipCard === 'acessos'">Total de logins realizados</span>
+        </div>
+        <div class="card" (click)="tooltipCard = tooltipCard === '7dias' ? '' : '7dias'">
+          {{ dashboard.acessos7Dias }}<small>7 dias</small>
+          <span class="tooltip" *ngIf="tooltipCard === '7dias'">Logins nos últimos 7 dias</span>
+        </div>
+        <div class="card" (click)="tooltipCard = tooltipCard === '30dias' ? '' : '30dias'">
+          {{ dashboard.acessos30Dias }}<small>30 dias</small>
+          <span class="tooltip" *ngIf="tooltipCard === '30dias'">Logins nos últimos 30 dias</span>
+        </div>
+        <div class="card" (click)="tooltipCard = tooltipCard === 'media' ? '' : 'media'">
+          {{ dashboard.mediaAcessosPorUsuario }}<small>Média/Usuário</small>
+          <span class="tooltip" *ngIf="tooltipCard === 'media'">Média de logins por usuário</span>
+        </div>
+        <div class="card" (click)="tooltipCard = tooltipCard === 'ativos30d' ? '' : 'ativos30d'">
+          {{ dashboard.usuariosAtivos30Dias }}<small>Ativos 30d</small>
+          <span class="tooltip" *ngIf="tooltipCard === 'ativos30d'">Usuários que acessaram nos últimos 30 dias</span>
+        </div>
       </div>
     </ng-container>
     <!-- Comentários -->
@@ -74,7 +114,7 @@
 
       <div class="tabela">
         <div class="linha linha-usuarios header">
-          <span>Nome</span><span>Email</span><span>Status</span><span>Livros</span>
+          <span>Nome</span><span>Email</span><span>Status</span><span>Acessos</span>
         </div>
         <div class="linha linha-usuarios" *ngFor="let u of usuariosFiltrados" [class.inativo]="!u.ativo" (click)="abrirDetalheUsuario(u)">
           <span>
@@ -86,7 +126,7 @@
           <span [class.ativo]="u.ativo" [class.inativo-texto]="!u.ativo">
             {{ u.ativo ? '✅ Ativo' : '❌ Inativo' }}
           </span>
-          <span>{{ u.totalLivros || u.quantidadeLivros || 0 }} livros ({{ u.totalLivrosLidos || u.quantidadeLivrosLidos || 0 }} lidos)</span>
+          <span>{{ u.totalAcessos || 0 }} acessos</span>
         </div>
         <div class="linha vazia" *ngIf="usuariosFiltrados.length === 0">
           <span style="grid-column: 1 / -1; text-align: center;">Nenhum usuário encontrado</span>
@@ -122,6 +162,9 @@
             <div class="bs-linha"><span>Cadastro</span><strong>{{ usuarioDetalhe.dataCriacao | date:'dd/MM/yyyy HH:mm' }}</strong></div>
             <div class="bs-linha"><span>Termos aceitos</span><strong>{{ usuarioDetalhe.aceitouTermos ? '✅ Sim' : '❌ Não' }}</strong></div>
             <div class="bs-linha" *ngIf="usuarioDetalhe.dataAceiteTermos"><span>Data aceite</span><strong>{{ usuarioDetalhe.dataAceiteTermos | date:'dd/MM/yyyy' }}</strong></div>
+            <div class="bs-linha"><span>Acessos (total)</span><strong>{{ usuarioDetalhe.totalAcessos || 0 }}</strong></div>
+            <div class="bs-linha"><span>Acessos (30 dias)</span><strong>{{ usuarioDetalhe.acessos30Dias || 0 }}</strong></div>
+            <div class="bs-linha"><span>Último acesso</span><strong>{{ usuarioDetalhe.ultimoAcesso ? (usuarioDetalhe.ultimoAcesso | date:'dd/MM/yyyy HH:mm') : 'Nunca' }}</strong></div>
           </div>
         </div>
         <div class="bs-acoes">

@@ -37,4 +37,8 @@ export class AdminService {
   excluirConta(id: string): Observable<void> {
     return this.http.delete<void>(`${this.api}/usuarios/${id}`);
   }
+
+  exportarDados(): Observable<Blob> {
+    return this.http.get(`${this.api}/exportar`, { responseType: 'blob' });
+  }
 }

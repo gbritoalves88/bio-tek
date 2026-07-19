@@ -202,7 +202,7 @@ nav {
 }
 
 .linha-usuarios {
-  grid-template-columns: 1.2fr 1.6fr 0.7fr 0.9fr;
+  grid-template-columns: 1.2fr 1.6fr 0.7fr 0.7fr;
 }
 
 .texto {
@@ -395,4 +395,42 @@ input[type="date"] {
   &::-webkit-calendar-picker-indicator {
     filter: invert(1);
   }
+}
+
+.card {
+  position: relative;
+  cursor: pointer;
+  overflow: visible;
+}
+
+.tooltip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 11px;
+  font-weight: 400;
+  white-space: nowrap;
+  z-index: 10;
+  animation: fadeIn 0.15s ease;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: var(--accent);
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(4px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
 }

@@ -38,6 +38,7 @@ export class AdminComponent implements OnInit {
 
   dataInicio = '';
   dataFim = '';
+  tooltipCard = '';
 
   detalheComentarioAberto = false;
   comentarioDetalhe: AdminComentario | null = null;
@@ -205,15 +206,27 @@ export class AdminComponent implements OnInit {
     this.cdr.markForCheck();
   }
 
-abrirDetalheComentario(comentario: AdminComentario): void {
-  this.comentarioDetalhe = comentario;
-  this.detalheComentarioAberto = true;
-  this.cdr.markForCheck();
-}
+  abrirDetalheComentario(comentario: AdminComentario): void {
+    this.comentarioDetalhe = comentario;
+    this.detalheComentarioAberto = true;
+    this.cdr.markForCheck();
+  }
 
   fecharDetalheComentario(): void {
     this.detalheComentarioAberto = false;
     this.comentarioDetalhe = null;
     this.cdr.markForCheck();
+  }
+
+  exportarDados(): void {
+    this.adminService.exportarDados().subscribe((blob) => {
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `bliteca-relatorio-${new Date().toISOString().split('T')[0]}.csv`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+      this.alertService.success('Relatório exportado!');
+    });
   }
 }
