@@ -38,4 +38,7 @@ export interface AtividadeComunidade {
   };
   comentarios?: Comentario[];
   data: string;
+  progresso?: number;        // 🆕
+  paginaAtual?: number;      // 🆕
+  totalPaginas?: number;     // 🆕
 }

@@ -580,6 +580,40 @@
   }
 }
 
+.progresso-mini {
+  margin-top: 8px;
+}
+
+.progresso-barra {
+  height: 8px;
+  background: var(--border-color);
+  border-radius: 2px;
+  overflow: hidden;
+  max-width: 200px;
+}
+
+.progresso-preenchido {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 5px;
+  transition: width 0.3s ease;
+}
+
+.progresso-texto {
+  font-size: 11px;
+  color: var(--accent);
+  font-weight: 500;
+  display: block;
+  margin-top: 4px;
+}
+
+.progresso-paginas {
+  font-size: 10px;
+  color: var(--text-secondary);
+  display: block;
+  margin-top: 3px;
+}
+
 
 // ===== RESPONSIVO =====
 @media (max-width: 768px) {

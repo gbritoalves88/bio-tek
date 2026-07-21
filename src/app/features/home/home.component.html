@@ -142,7 +142,7 @@
     <ng-container *ngIf="livroSelecionado">
       <div class="bottom-sheet-header">
         <h3>
-          {{ ($any(livroSelecionado).media > 0) ? '⭐ Recomendado' : '📚 Próxima leitura' }}
+          {{ ($any(livroSelecionado).media > 0) ? '⭐ Recomendado' : '📖 Próxima leitura' }}
         </h3>
         <button class="bottom-sheet-close" (click)="fecharBottomSheet()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
