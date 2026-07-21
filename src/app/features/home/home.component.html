@@ -1,6 +1,9 @@
 <section class="home">
   <div class="hero">
-    <h1>Olá, {{ nickname }} 👋</h1>
+    <div>
+      <h1>Olá, {{ nickname }} 👋</h1>
+      <p class="saudacao-sub">Que bom te ver por aqui.</p>
+    </div>
     <button class="btn-circle" title="Adicionar livro" (click)="abrirModal()">
       <span class="btn-label">Cadastrar Livro</span>
     </button>
@@ -33,29 +36,32 @@
 
     <!-- Lendo agora -->
     <div class="reading-now" *ngIf="livroAtual; else semLeitura" (click)="abrirLendoAgora()">
-      <h2>Lendo agora</h2>
+      <h2>
+        <svg class="section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+        </svg>
+        Lendo agora
+      </h2>
       <div class="book-info">
         <img [src]="livroAtual.imagem || 'assets/capas/perfilSemFoto.png'" [alt]="livroAtual.titulo" class="book-cover" />
         <div class="book-details">
           <h3>{{ livroAtual.titulo }}</h3>
           <p>{{ livroAtual.autor }}</p>
 
-          <!-- Tem progresso: mostra barra -->
           <ng-container *ngIf="livroAtual.progresso; else semProgresso">
             <div class="progress-container">
               <div class="progress">
                 <div class="bar" [style.width.%]="livroAtual.progresso"></div>
               </div>
-
             </div>
             <span class="progress-texto">
-              {{ livroAtual.progresso }}% concluído
+              {{ livroAtual.paginaAtual || 0 }}/{{ livroAtual.totalPaginas || '?' }} pág • {{ livroAtual.progresso }}% concluído
               <span *ngIf="livroAtual.progresso === 100">, Parabéns!</span>
             </span>
             <span class="palmas-inline" *ngIf="livroAtual.progresso === 100">👏👏👏</span>
           </ng-container>
 
-          <!-- Sem progresso: convite para atualizar -->
           <ng-template #semProgresso>
             <button class="progress-btn" (click)="abrirLendoAgora(); $event.stopPropagation()">
               📖 Atualizar progresso
@@ -66,35 +72,53 @@
     </div>
     <ng-template #semLeitura>
       <div class="reading-now empty-state">
-        <h2>Lendo agora</h2>
+        <h2>📖 Lendo agora</h2>
         <p>Nenhum livro em leitura.</p>
+        <small>Adicione um livro e comece a ler!</small>
       </div>
     </ng-template>
 
     <!-- Livros recomendados pela comunidade -->
     <div class="reading-now" *ngIf="topAvaliados.length > 0; else semRecomendados">
-      <h2>Recomendações da Comunidade</h2>
+      <h2>
+        <svg class="section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+        </svg>
+        Recomendações da Comunidade
+      </h2>
       <div class="scroll-horizontal">
         <div class="scroll-track">
           <div class="livro-card" *ngFor="let livro of topAvaliados" (click)="abrirBottomSheet(livro)">
             <img [src]="livro.imagem || 'assets/capas/perfilSemFoto.png'" [alt]="livro.titulo" class="livro-capa" />
             <span class="livro-titulo">{{ livro.titulo || 'Sem título' }}</span>
             <span class="livro-autor">{{ livro.autor }}</span>
-            <span class="livro-rating">⭐ {{ livro.media }}</span>
+            <span class="livro-rating" *ngIf="livro.media > 0; else popular">
+              ⭐ {{ livro.media }}
+            </span>
+            <ng-template #popular>
+              <span class="livro-rating popular">📚 Popular</span>
+            </ng-template>
           </div>
         </div>
       </div>
     </div>
     <ng-template #semRecomendados>
       <div class="reading-now empty-state">
-        <h2>Recomendações da Comunidade</h2>
+        <h2>⭐ Recomendações da Comunidade</h2>
         <p>Nenhuma recomendação ainda.</p>
+        <small>Os livros mais bem avaliados aparecerão aqui.</small>
       </div>
     </ng-template>
 
     <!-- Próximas leituras -->
     <div class="reading-now" *ngIf="listaLeitura.length > 0; else semLista">
-      <h2>Próximas leituras</h2>
+      <h2>
+        <svg class="section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <polyline points="12 6 12 12 16 14"/>
+        </svg>
+        Próximas leituras
+      </h2>
       <div class="scroll-horizontal">
         <div class="scroll-track">
           <div class="livro-card" *ngFor="let livro of listaLeitura" (click)="abrirBottomSheet(livro)">
@@ -107,8 +131,9 @@
     </div>
     <ng-template #semLista>
       <div class="reading-now empty-state">
-        <h2>Próximas leituras</h2>
+        <h2>⏳ Próximas leituras</h2>
         <p>Nenhum livro na fila.</p>
+        <small>Adicione livros como "Quero ler" para vê-los aqui.</small>
       </div>
     </ng-template>
 
@@ -116,120 +141,97 @@
 
   <app-add-book-modal *ngIf="modalAberto" (fechar)="modalAberto = false" (livroAdicionado)="onLivroAdicionado($event)"></app-add-book-modal>
 
-
-<app-bottom-sheet [aberto]="bottomSheetAberto" (fechar)="fecharBottomSheet()">
-  <ng-container *ngIf="livroSelecionado">
-    <div class="bottom-sheet-header">
-      {{ ($any(livroSelecionado).media) ? '⭐ Recomendado pela comunidade' : '📚 Sua próxima leitura' }}
-      <button class="bottom-sheet-close" (click)="fecharBottomSheet()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-        </svg>
-      </button>
-    </div>
-
-    <!-- Capa + Info -->
-    <div class="bs-livro-destaque">
-      <img [src]="livroSelecionado.imagem || 'assets/capas/perfilSemFoto.png'"
-           [alt]="livroSelecionado.titulo"
-           class="bs-capa" />
-      <div class="bs-info">
-        <strong class="bs-titulo">{{ livroSelecionado.titulo || 'Sem título' }}</strong>
-        <span class="bs-autor">{{ livroSelecionado.autor || 'Autor desconhecido' }}</span>
+  <!-- Bottom Sheet: Recomendados / Próximas leituras -->
+  <app-bottom-sheet [aberto]="bottomSheetAberto" (fechar)="fecharBottomSheet()">
+    <ng-container *ngIf="livroSelecionado">
+      <div class="bottom-sheet-header">
+        <h3>
+          {{ ($any(livroSelecionado).media > 0) ? '⭐ Recomendado' : '📚 Popular' }}
+        </h3>
+        <button class="bottom-sheet-close" (click)="fecharBottomSheet()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
       </div>
-    </div>
 
-    <!-- Ações -->
-    <div class="bs-acoes">
-      <!-- Botão Adicionar (só para Recomendados) -->
-     <button class="bs-btn bs-btn-primary"
-              *ngIf="($any(livroSelecionado).media)"
-              (click)="adicionarABiblioteca(livroSelecionado)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <line x1="12" y1="5" x2="12" y2="19"/>
-          <line x1="5" y1="12" x2="19" y2="12"/>
-        </svg>
-        Adicionar à minha biblioteca
-      </button>
-
-      <!-- Ver detalhes
-      <button class="bs-btn bs-btn-outline"
-        *ngIf="($any(livroSelecionado).media)"
-        (click)="verDetalhes(livroSelecionado)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="11" cy="11" r="8"/>
-          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-        </svg>
-        Ver detalhes
-      </button>-->
-
-
-    </div>
-  </ng-container>
-</app-bottom-sheet>
-
-<!-- Bottom Sheet: Lendo Agora -->
-<app-bottom-sheet [aberto]="lendoAgoraAberto" (fechar)="fecharLendoAgora()">
-  <ng-container *ngIf="livroAtual">
-    <div class="bottom-sheet-header">
-      <h3>📖 Lendo agora</h3>
-      <button class="bottom-sheet-close" (click)="fecharLendoAgora()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-        </svg>
-      </button>
-    </div>
-
-    <!-- Capa + Info -->
-    <div class="bs-livro-destaque">
-      <img [src]="livroAtual.imagem || 'assets/capas/perfilSemFoto.png'"
-           [alt]="livroAtual.titulo"
-           class="bs-capa" />
-      <div class="bs-info">
-        <strong class="bs-titulo">{{ livroAtual.titulo }}</strong>
-        <span class="bs-autor">{{ livroAtual.autor }}</span>
-        <div class="bs-progresso-bar">
-          <div class="bs-progresso-preenchido" [style.width.%]="livroAtual.progresso || 0"></div>
+      <div class="bs-livro-destaque">
+        <img [src]="livroSelecionado.imagem || 'assets/capas/perfilSemFoto.png'" [alt]="livroSelecionado.titulo" class="bs-capa" />
+        <div class="bs-info">
+          <strong class="bs-titulo">{{ livroSelecionado.titulo || 'Sem título' }}</strong>
+          <span class="bs-autor">{{ livroSelecionado.autor || 'Autor desconhecido' }}</span>
+          <span class="bs-rating" *ngIf="($any(livroSelecionado).media)">⭐ {{ ($any(livroSelecionado).media) }}</span>
         </div>
-        <span class="bs-progresso-texto">{{ livroAtual.progresso || 0 }}% concluído</span>
       </div>
-    </div>
 
-    <!-- Página atual -->
-    <div class="bs-pagina">
-      <label class="bs-label">📄 Página atual</label>
-      <div class="bs-pagina-inputs">
-        <input type="number" [(ngModel)]="paginaAtual" placeholder="Página" min="0" class="bs-input-pagina" />
-        <span class="bs-de">de</span>
-        <input type="number" [(ngModel)]="totalPaginas" placeholder="Total" min="0" class="bs-input-pagina" />
+      <div class="bs-acoes">
+        <button class="bs-btn bs-btn-primary" (click)="adicionarABiblioteca(livroSelecionado)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"/>
+            <line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          Adicionar à minha biblioteca
+        </button>
       </div>
-      <button class="bs-btn bs-btn-sm bs-btn-outline" (click)="atualizarProgresso()" [disabled]="!paginaAtual && !totalPaginas">
-        Atualizar progresso
-      </button>
-    </div>
+    </ng-container>
+  </app-bottom-sheet>
 
-    <!-- Ações -->
-    <div class="bs-acoes">
-    <button class="bs-btn bs-btn-outline" (click)="togglePausar()">
-      <ng-container *ngIf="!livroAtual.pausado">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>
-        </svg>
-         Parar leitura
-      </ng-container>
-      <ng-container *ngIf="livroAtual.pausado">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <polygon points="5 3 19 12 5 21 5 3"/>
-        </svg>
-         Continuar leitura
-      </ng-container>
-    </button>
-    </div>
+  <!-- Bottom Sheet: Lendo Agora -->
+  <app-bottom-sheet [aberto]="lendoAgoraAberto" (fechar)="fecharLendoAgora()">
+    <ng-container *ngIf="livroAtual">
+      <div class="bottom-sheet-header">
+        <h3>📖 Lendo agora</h3>
+        <button class="bottom-sheet-close" (click)="fecharLendoAgora()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
 
-    <!-- Última leitura -->
-    <p class="bs-ultima-leitura" *ngIf="livroAtual.ultimaLeitura">
-      📅 Última leitura: {{ livroAtual.ultimaLeitura | date:'dd/MM/yyyy HH:mm' }}
-    </p>
-  </ng-container>
-</app-bottom-sheet>
+      <div class="bs-livro-destaque">
+        <img [src]="livroAtual.imagem || 'assets/capas/perfilSemFoto.png'" [alt]="livroAtual.titulo" class="bs-capa" />
+        <div class="bs-info">
+          <strong class="bs-titulo">{{ livroAtual.titulo }}</strong>
+          <span class="bs-autor">{{ livroAtual.autor }}</span>
+          <div class="bs-progresso-bar">
+            <div class="bs-progresso-preenchido" [style.width.%]="livroAtual.progresso || 0"></div>
+          </div>
+          <span class="bs-progresso-texto">{{ livroAtual.progresso || 0 }}% concluído</span>
+        </div>
+      </div>
+
+      <div class="bs-pagina">
+        <label class="bs-label">📄 Página atual</label>
+        <div class="bs-pagina-inputs">
+          <input type="number" [(ngModel)]="paginaAtual" placeholder="Página" min="0" class="bs-input-pagina" />
+          <span class="bs-de">de</span>
+          <input type="number" [(ngModel)]="totalPaginas" placeholder="Total" min="0" class="bs-input-pagina" />
+        </div>
+        <button class="bs-btn bs-btn-sm bs-btn-outline" (click)="atualizarProgresso()" [disabled]="!paginaAtual && !totalPaginas">
+          Atualizar progresso
+        </button>
+      </div>
+
+      <div class="bs-acoes">
+        <button class="bs-btn bs-btn-outline" (click)="togglePausar()">
+          <ng-container *ngIf="!livroAtual.pausado">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>
+            </svg>
+            Parar leitura
+          </ng-container>
+          <ng-container *ngIf="livroAtual.pausado">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="5 3 19 12 5 21 5 3"/>
+            </svg>
+            Continuar leitura
+          </ng-container>
+        </button>
+      </div>
+
+      <p class="bs-ultima-leitura" *ngIf="livroAtual.ultimaLeitura">
+        📅 Última leitura: {{ livroAtual.ultimaLeitura | date:'dd/MM/yyyy HH:mm' }}
+      </p>
+    </ng-container>
+  </app-bottom-sheet>
 </section>
