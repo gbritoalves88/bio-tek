@@ -276,7 +276,7 @@
   border-radius: 16px;
   background: transparent;
   color: var(--text-secondary);
-  font-size: 10px;
+  font-size: 11px;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 
@@ -1000,8 +1000,8 @@
 
   .book-item { padding: 6px 4px 8px; }
 
-  .book-info .book-title { font-size: 11px; }
-  .book-info .book-status { font-size: 12px; }
+  .book-info .book-title { font-size: 12px; }
+  .book-info .book-status { font-size: 11px; }
 
   .btn-icon-action {
     max-width: 24px;

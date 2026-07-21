@@ -15,7 +15,7 @@
 
   h1 {
     margin: 0;
-    font-size: 22px;
+    font-size: 24px;
     font-weight: 700;
     white-space: nowrap;
   }
@@ -133,7 +133,7 @@
   align-items: center;
 
   .book-cover {
-    width: 160px;
+    width: 180px;
     aspect-ratio: 2 / 3;
     object-fit: cover;
     border-radius: 10px;
@@ -154,13 +154,13 @@
 
     h3 {
       margin: 0;
-      font-size: 18px;
+      font-size: 20px;
       font-weight: 600;
       line-height: 1.2;
     }
     p {
       margin: 0;
-      font-size: 13px;
+      font-size: 14px;
       color: var(--text-secondary);
     }
   }
@@ -594,7 +594,7 @@
 @media (max-width: 600px) {
   .book-info {
     gap: 12px;
-    .book-cover { width: 140px; }
+    .book-cover { width: 160px; }
     .book-details h3 { font-size: 16px; }
     .book-details p { font-size: 12px; }
   }
@@ -607,12 +607,12 @@
 
 @media (max-width: 480px) {
   .hero { gap: 8px; }
-  .hero h1 { font-size: 17px; }
-  .saudacao-sub { font-size: 11px; }
+  .hero h1 { font-size: 24px; }
+  .saudacao-sub { font-size: 14px; }
   .btn-circle { padding: 8px 12px; .btn-label { font-size: 12px; } }
   .book-info {
     gap: 10px;
-    .book-cover { width: 120px; }
+    .book-cover { width: 140px; }
     .book-details h3 { font-size: 15px; }
     .book-details p { font-size: 11px; }
   }
