@@ -1,117 +1,293 @@
 <!-- src/app/shared/add-book-modal/add-book-modal.component.html -->
 
-<div class="modal-overlay" (click)="fecharModal()">
+<!-- ========== MODAL: ESCOLHER MÉTODO ========== -->
+<div class="modal-overlay" *ngIf="!scannerAtivo && etapa === 'escolha'" (click)="fecharModal()">
   <div class="modal-content" (click)="$event.stopPropagation()">
-
     <div class="modal-header">
-      <h2>Cadastrar Livro</h2>
+      <h2>Adicionar Livro</h2>
       <button class="modal-close" (click)="fecharModal()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <line x1="18" y1="6" x2="6" y2="18"/>
-          <line x1="6" y1="6" x2="18" y2="18"/>
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
         </svg>
       </button>
     </div>
 
-    <div class="tab-content">
+    <div class="metodo-ilustracao">
+      <svg viewBox="-10 0 200 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="70" y="35" width="55" height="65" rx="3" fill="var(--accent)" opacity="0.2" stroke="var(--accent)" stroke-width="2"/>
+        <line x1="80" y1="50" x2="110" y2="50" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round"/>
+        <line x1="80" y1="60" x2="110" y2="60" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round"/>
+        <line x1="80" y1="70" x2="100" y2="70" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round"/>
+        <rect x="95" y="35" width="3" height="20" rx="1" fill="var(--accent)"/>
+        <circle cx="50" cy="50" r="18" stroke="var(--accent)" stroke-width="2"/>
+        <line x1="63" y1="63" x2="75" y2="75" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round"/>
+        <rect x="30" y="80" width="50" height="25" rx="3" stroke="var(--text-secondary)" stroke-width="1.5" fill="none"/>
+        <line x1="42" y1="88" x2="55" y2="88" stroke="var(--text-secondary)" stroke-width="1" stroke-linecap="round"/>
+        <line x1="42" y1="95" x2="55" y2="95" stroke="var(--text-secondary)" stroke-width="1" stroke-linecap="round"/>
+        <rect x="130" y="80" width="6" height="25" rx="1" fill="var(--text-secondary)" transform="rotate(-30 133 92)"/>
+        <polygon points="133,57 138,72 128,72" fill="var(--accent)" opacity="0.6"/>
+      </svg>
+    </div>
 
-      <p class="tab-placeholder" [hidden]="scannerAtivo || escaneando || buscandoInfo || livroEncontrado || livroNaoEncontrado">
-        📷 Escaneie o código de barras do livro
-      </p>
-
-      <div class="codigo-resultado" [hidden]="!(novoLivro.codigoBarras && !scannerAtivo && !livroEncontrado && !livroNaoEncontrado)">
-        <span>Código: {{ novoLivro.codigoBarras }}</span>
-      </div>
-
-      <button class="btn-submit" [hidden]="scannerAtivo || buscandoInfo || livroEncontrado || livroNaoEncontrado" (click)="ativarScanner()">
-        {{ novoLivro.codigoBarras ? 'Escanear novamente' : 'Escanear código' }}
+    <div class="modal-body metodo-body">
+      <button class="metodo-btn" (click)="etapa = 'scanner'; ativarScanner()">
+        <span class="metodo-icone">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <rect x="3" y="3" width="18" height="18" rx="2"/><line x1="8" y1="8" x2="8" y2="16"/><line x1="16" y1="8" x2="16" y2="16"/><line x1="12" y1="3" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="21"/>
+          </svg>
+        </span>
+        <div class="metodo-info">
+          <strong>Escanear código de barras</strong>
+          <span>Use a câmera para ler o ISBN</span>
+        </div>
+        <svg class="metodo-seta" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="9 18 15 12 9 6"/>
+        </svg>
       </button>
 
-      <div class="manual-divider" [hidden]="!(novoLivro.codigoBarras && !livroEncontrado && !livroNaoEncontrado)">
-        <span>ou digite o código</span>
-      </div>
-
-      <input type="text" placeholder="Código de barras" [(ngModel)]="novoLivro.codigoBarras" name="codigoBarras"
-             [hidden]="scannerAtivo || livroEncontrado || livroNaoEncontrado">
-
-      <button class="btn-submit"
-              [hidden]="!(novoLivro.codigoBarras && !scannerAtivo && !buscandoInfo && !livroEncontrado && !livroNaoEncontrado)"
-              (click)="buscarPorCodigo()">
-        Buscar informações
+      <button class="metodo-btn" (click)="etapa = 'digitar'">
+        <span class="metodo-icone">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <rect x="2" y="4" width="20" height="16" rx="2"/><line x1="6" y1="8" x2="18" y2="8"/><line x1="6" y1="12" x2="18" y2="12"/><line x1="6" y1="16" x2="12" y2="16"/>
+          </svg>
+        </span>
+        <div class="metodo-info">
+          <strong>Digitar código de barras</strong>
+          <span>Insira o ISBN manualmente</span>
+        </div>
+        <svg class="metodo-seta" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="9 18 15 12 9 6"/>
+        </svg>
       </button>
 
-      <div class="loading" [hidden]="!buscandoInfo">🔍 Buscando informações...</div>
-
-      <!-- ========== LIVRO ENCONTRADO ========== -->
-      <div class="livro-encontrado" [hidden]="!livroEncontrado">
-        <div class="status-icone sucesso">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-            <polyline points="22 4 12 14.01 9 11.01"/>
+      <button class="metodo-btn" (click)="etapa = 'manual'; abrirFormularioManual()">
+        <span class="metodo-icone">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
           </svg>
+        </span>
+        <div class="metodo-info">
+          <strong>Cadastrar manualmente</strong>
+          <span>Preencha os dados do livro</span>
         </div>
-        <img [src]="novoLivro.capa || 'assets/capas/perfilSemFoto.png'" [alt]="novoLivro.titulo" class="capa-preview" />
-        <div class="info-texto">
-          <strong>{{ novoLivro.titulo }}</strong>
-          <span>{{ novoLivro.autor }}</span>
-          <span *ngIf="novoLivro.descricao" class="descricao">{{ novoLivro.descricao }}</span>
-        </div>
-        <div class="upload-capa-simples">
-          <button type="button" class="btn-upload-small" (click)="tirarFoto()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-          </button>
-          <button type="button" class="btn-upload-small" (click)="fileInputFallback.click()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-          </button>
-          <input type="file" #fileInputFallback hidden (change)="onFileSelected($event)" accept="image/*">
-        </div>
-        <button class="btn-submit" (click)="adicionarLivroEncontrado()">Adicionar à biblioteca</button>
-      </div>
-
-      <!-- ========== LIVRO NÃO ENCONTRADO ========== -->
-      <div class="livro-encontrado erro" [hidden]="!livroNaoEncontrado">
-        <div class="status-icone erro-icone">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="10"/>
-            <line x1="15" y1="9" x2="9" y2="15"/>
-            <line x1="9" y1="9" x2="15" y2="15"/>
-          </svg>
-        </div>
-        <p>Livro não encontrado. Cadastre manualmente:</p>
-        <div class="manual-fallback">
-          <input type="text" placeholder="Título" [(ngModel)]="novoLivro.titulo" name="titulo_fallback">
-          <input type="text" placeholder="Autor" [(ngModel)]="novoLivro.autor" name="autor_fallback">
-          <input type="text" placeholder="Descrição (opcional)" [(ngModel)]="novoLivro.descricao" name="descricao_fallback">
-          <div class="upload-capa">
-            <div class="upload-capa-simples">
-            <button type="button" class="btn-upload-small" (click)="tirarFoto()">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-            </button>
-            <button type="button" class="btn-upload-small" (click)="fileInputFallback.click()">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-            </button>
-            <input type="file" #fileInputFallback hidden (change)="onFileSelected($event)" accept="image/*">
-          </div>
-            <input type="file" #fileInputFallback hidden (change)="onFileSelected($event)" accept="image/*">
-            <img *ngIf="novoLivro.capa" [src]="novoLivro.capa" class="preview-mini" />
-            <span *ngIf="!novoLivro.capa" class="upload-placeholder">Nenhuma capa</span>
-          </div>
-        </div>
-        <button class="btn-submit" (click)="adicionarLivroEncontrado()">Salvar manualmente</button>
-        <button class="btn-submit btn-outline" (click)="tentarNovamente()">Buscar novamente</button>
-      </div>
-
+        <svg class="metodo-seta" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="9 18 15 12 9 6"/>
+        </svg>
+      </button>
     </div>
   </div>
 </div>
 
-<!-- Scanner em tela cheia -->
+<!-- ========== MODAL: DIGITAR ISBN ========== -->
+<div class="modal-overlay" *ngIf="!scannerAtivo && etapa === 'digitar'" (click)="fecharModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <button class="modal-voltar" (click)="etapa = 'escolha'">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+      </button>
+      <h2>Buscar por ISBN</h2>
+      <button class="modal-close" (click)="fecharModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div class="isbn-ilustracao">
+        <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="10" y="10" width="4" height="40" rx="1" fill="var(--text-primary)"/>
+          <rect x="16" y="10" width="2" height="40" fill="var(--text-primary)"/>
+          <rect x="20" y="10" width="6" height="40" rx="1" fill="var(--text-primary)"/>
+          <rect x="28" y="10" width="2" height="40" fill="var(--text-primary)"/>
+          <rect x="32" y="10" width="8" height="40" rx="1" fill="var(--text-primary)"/>
+          <rect x="42" y="10" width="3" height="40" fill="var(--text-primary)"/>
+          <rect x="47" y="10" width="5" height="40" rx="1" fill="var(--text-primary)"/>
+          <rect x="54" y="10" width="2" height="40" fill="var(--text-primary)"/>
+          <rect x="58" y="10" width="7" height="40" rx="1" fill="var(--text-primary)"/>
+          <rect x="67" y="10" width="3" height="40" fill="var(--text-primary)"/>
+          <rect x="72" y="10" width="9" height="40" rx="1" fill="var(--text-primary)"/>
+          <rect x="83" y="10" width="2" height="40" fill="var(--text-primary)"/>
+          <rect x="87" y="10" width="6" height="40" rx="1" fill="var(--text-primary)"/>
+          <rect x="95" y="10" width="3" height="40" fill="var(--text-primary)"/>
+          <rect x="100" y="10" width="8" height="40" rx="1" fill="var(--text-primary)"/>
+          <rect x="110" y="10" width="2" height="40" fill="var(--text-primary)"/>
+          <rect x="114" y="10" width="5" height="40" rx="1" fill="var(--text-primary)"/>
+          <rect x="121" y="10" width="3" height="40" fill="var(--text-primary)"/>
+          <rect x="126" y="10" width="7" height="40" rx="1" fill="var(--text-primary)"/>
+          <rect x="135" y="10" width="2" height="40" fill="var(--text-primary)"/>
+          <rect x="139" y="10" width="9" height="40" rx="1" fill="var(--text-primary)"/>
+          <rect x="150" y="10" width="3" height="40" fill="var(--text-primary)"/>
+          <rect x="155" y="10" width="6" height="40" rx="1" fill="var(--text-primary)"/>
+          <rect x="163" y="10" width="2" height="40" fill="var(--text-primary)"/>
+          <rect x="167" y="10" width="8" height="40" rx="1" fill="var(--text-primary)"/>
+          <rect x="177" y="10" width="4" height="40" rx="1" fill="var(--text-primary)"/>
+          <rect x="183" y="10" width="2" height="40" fill="var(--text-primary)"/>
+          <rect x="187" y="10" width="5" height="40" rx="1" fill="var(--text-primary)"/>
+          <text x="100" y="70" text-anchor="middle" font-family="monospace" font-size="12" fill="var(--text-secondary)" font-weight="600">978-85-XXXX-XXX-X</text>
+        </svg>
+        <p class="isbn-dica">O ISBN fica no código de barras do livro</p>
+      </div>
+
+      <input type="text" placeholder="ISBN do livro" [(ngModel)]="novoLivro.codigoBarras" name="isbn" class="input-isbn" />
+      <button class="btn-submit" (click)="buscarPorCodigo()" [disabled]="!novoLivro.codigoBarras?.trim()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-icon">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        Buscar livro
+      </button>
+      <div class="loading" [hidden]="!buscandoInfo">
+        <span class="spinner-mini"></span> Buscando informações...
+      </div>
+    </div>
+
+    <div class="modal-body" *ngIf="livroNaoEncontrado">
+      <p class="erro-texto">Livro não encontrado.</p>
+      <button class="btn-submit btn-outline" (click)="etapa = 'manual'; abrirFormularioManual()">Cadastrar manualmente</button>
+      <button class="btn-submit btn-outline" (click)="tentarNovamente()">Tentar novamente</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== MODAL: CONFIRMAR LIVRO ========== -->
+<div class="modal-overlay" *ngIf="!scannerAtivo && etapa === 'confirmar'" (click)="fecharModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <button class="modal-voltar" (click)="voltarParaBusca()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+      </button>
+      <h2>Livro Encontrado</h2>
+      <button class="modal-close" (click)="fecharModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div class="confirmar-livro">
+        <img [src]="novoLivro.capa || 'assets/capas/perfilSemFoto.png'" [alt]="novoLivro.titulo" class="confirmar-capa" />
+        <div class="confirmar-info">
+          <h3>{{ novoLivro.titulo }}</h3>
+          <span class="confirmar-autor">{{ novoLivro.autor }}</span>
+        </div>
+      </div>
+
+      <div class="confirmar-detalhes">
+        <div class="detalhe-linha" *ngIf="novoLivro.descricao">
+          <span class="detalhe-label">Descrição</span>
+          <p class="detalhe-valor descricao">{{ novoLivro.descricao }}</p>
+        </div>
+        <div class="detalhe-linha" *ngIf="novoLivro.editora">
+          <span class="detalhe-label">Editora</span>
+          <span class="detalhe-valor">{{ novoLivro.editora }}</span>
+        </div>
+        <div class="detalhe-linha" *ngIf="novoLivro.anoPublicacao">
+          <span class="detalhe-label">Ano</span>
+          <span class="detalhe-valor">{{ novoLivro.anoPublicacao }}</span>
+        </div>
+        <div class="detalhe-linha" *ngIf="novoLivro.numeroPaginas">
+          <span class="detalhe-label">Páginas</span>
+          <span class="detalhe-valor">{{ novoLivro.numeroPaginas }}</span>
+        </div>
+        <div class="detalhe-linha" *ngIf="novoLivro.generos?.length">
+          <span class="detalhe-label">Gêneros</span>
+          <span class="detalhe-valor">{{ novoLivro.generos.join(' • ') }}</span>
+        </div>
+        <div class="detalhe-linha" *ngIf="novoLivro.codigoBarras">
+          <span class="detalhe-label">ISBN</span>
+          <span class="detalhe-valor isbn">{{ novoLivro.codigoBarras }}</span>
+        </div>
+        <div class="detalhe-linha" *ngIf="novoLivro.avaliacaoMedia">
+          <span class="detalhe-label">Avaliação</span>
+          <span class="detalhe-valor estrelas">⭐ {{ novoLivro.avaliacaoMedia }}</span>
+        </div>
+      </div>
+
+      <div class="upload-capa-simples">
+        <button type="button" class="btn-upload-small" (click)="tirarFoto()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        </button>
+        <button type="button" class="btn-upload-small" (click)="fileInputFallback.click()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        </button>
+        <input type="file" #fileInputFallback hidden (change)="onFileSelected($event)" accept="image/*">
+      </div>
+
+      <button class="btn-submit" (click)="adicionarLivroEncontrado()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Adicionar à biblioteca
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== MODAL: CADASTRO MANUAL ========== -->
+<div class="modal-overlay" *ngIf="!scannerAtivo && etapa === 'manual'" (click)="fecharModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <button class="modal-voltar" (click)="etapa = 'escolha'">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+      </button>
+      <h2>Cadastrar Livro</h2>
+      <button class="modal-close" (click)="fecharModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div class="manual-ilustracao">
+        <svg viewBox="0 0 200 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M60 20 L60 70 Q100 80 140 70 L140 20 Q100 30 60 20Z" fill="var(--accent)" opacity="0.15" stroke="var(--accent)" stroke-width="2"/>
+          <line x1="100" y1="20" x2="100" y2="80" stroke="var(--accent)" stroke-width="1.5" stroke-dasharray="4 3"/>
+          <line x1="72" y1="35" x2="94" y2="35" stroke="var(--text-secondary)" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="72" y1="44" x2="94" y2="44" stroke="var(--text-secondary)" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="72" y1="53" x2="88" y2="53" stroke="var(--text-secondary)" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="72" y1="62" x2="94" y2="62" stroke="var(--text-secondary)" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="106" y1="35" x2="128" y2="35" stroke="var(--text-secondary)" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="106" y1="44" x2="128" y2="44" stroke="var(--text-secondary)" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="106" y1="53" x2="122" y2="53" stroke="var(--text-secondary)" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="106" y1="62" x2="128" y2="62" stroke="var(--text-secondary)" stroke-width="1.5" stroke-linecap="round"/>
+          <rect x="140" y="60" width="5" height="25" rx="1" fill="var(--accent)" transform="rotate(-35 142 72)"/>
+          <polygon points="142,32 147,47 137,47" fill="var(--accent)" opacity="0.7"/>
+        </svg>
+        <p class="manual-dica">Preencha os dados do livro que deseja cadastrar</p>
+      </div>
+
+      <input type="text" placeholder="Título" [(ngModel)]="novoLivro.titulo" name="titulo">
+      <input type="text" placeholder="Autor" [(ngModel)]="novoLivro.autor" name="autor">
+      <input type="text" placeholder="Descrição (opcional)" [(ngModel)]="novoLivro.descricao" name="descricao">
+
+      <div class="upload-capa-simples">
+        <button type="button" class="btn-upload-small" (click)="tirarFoto()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        </button>
+        <button type="button" class="btn-upload-small" (click)="fileInputFallback.click()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        </button>
+        <input type="file" #fileInputFallback hidden (change)="onFileSelected($event)" accept="image/*">
+      </div>
+      <img *ngIf="novoLivro.capa" [src]="novoLivro.capa" class="preview-capa" />
+
+      <button class="btn-submit" (click)="adicionarLivroEncontrado()" [disabled]="!novoLivro.titulo?.trim() || !novoLivro.autor?.trim()">Salvar livro</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== SCANNER FULLSCREEN ========== -->
 <div class="scanner-fullscreen" *ngIf="scannerAtivo">
   <div class="scanner-topbar">
-    <button class="scanner-close-btn" (click)="desativarScanner()">
+    <button class="scanner-close-btn" (click)="desativarScanner(); etapa = 'escolha'">
       <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-        <line x1="18" y1="6" x2="6" y2="18"/>
-        <line x1="6" y1="6" x2="18" y2="18"/>
+        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
       </svg>
     </button>
     <span class="scanner-title">Escaneie o código de barras</span>

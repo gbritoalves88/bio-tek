@@ -62,6 +62,17 @@
             <div class="livro-info-padrao">
               <strong class="titulo-padrao">{{ item.livro?.titulo || 'Sem título' }}</strong>
               <span class="autor-padrao">{{ item.livro?.autor || 'Autor desconhecido' }}</span>
+
+              <!-- 🆕 Progresso -->
+              <div class="progresso-mini" *ngIf="item.progresso">
+                <div class="progresso-barra">
+                  <div class="progresso-preenchido" [style.width.%]="item.progresso"></div>
+                </div>
+                <span class="progresso-texto">{{ item.progresso }}% concluído</span>
+              </div>
+                <span class="progresso-paginas" *ngIf="item.paginaAtual">
+                📄 {{ item.paginaAtual }}/{{ item.totalPaginas || '?' }} pág
+                </span>
             </div>
           </div>
         </div>
