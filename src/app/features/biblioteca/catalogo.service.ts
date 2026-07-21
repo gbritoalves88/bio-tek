@@ -51,4 +51,12 @@ export class CatalogoService {
   limparCache(): void {
     this.catalogoCache$ = null;
   }
+
+  getCategorias(): Observable<string[]> {
+    return this.http.get<string[]>(`${this.apiUrl}/categorias`);
+  }
+
+  buscarExterno(termo: string, limite: number = 30): Observable<any> {
+    return this.http.post(`${this.apiUrl}/importar/termo/${termo}?limite=${limite}`, {});
+  }
 }
