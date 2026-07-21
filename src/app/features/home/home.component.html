@@ -2,7 +2,6 @@
   <div class="hero">
     <div>
       <h1>Olá, {{ nickname }} 👋</h1>
-      <p class="saudacao-sub">Que bom te ver por aqui.</p>
     </div>
     <button class="btn-circle" title="Adicionar livro" (click)="abrirModal()">
       <span class="btn-label">Cadastrar Livro</span>
@@ -92,12 +91,9 @@
             <img [src]="livro.imagem || 'assets/capas/perfilSemFoto.png'" [alt]="livro.titulo" class="livro-capa" />
             <span class="livro-titulo">{{ livro.titulo || 'Sem título' }}</span>
             <span class="livro-autor">{{ livro.autor }}</span>
-            <span class="livro-rating" *ngIf="livro.media > 0; else popular">
+            <span class="livro-rating" *ngIf="livro.media > 0">
               ⭐ {{ livro.media }}
             </span>
-            <ng-template #popular>
-              <span class="livro-rating popular">📚 Popular</span>
-            </ng-template>
           </div>
         </div>
       </div>
@@ -146,7 +142,7 @@
     <ng-container *ngIf="livroSelecionado">
       <div class="bottom-sheet-header">
         <h3>
-          {{ ($any(livroSelecionado).media > 0) ? '⭐ Recomendado' : '📚 Popular' }}
+          {{ ($any(livroSelecionado).media > 0) ? '⭐ Recomendado' : '📚 Próxima leitura' }}
         </h3>
         <button class="bottom-sheet-close" (click)="fecharBottomSheet()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -160,11 +156,11 @@
         <div class="bs-info">
           <strong class="bs-titulo">{{ livroSelecionado.titulo || 'Sem título' }}</strong>
           <span class="bs-autor">{{ livroSelecionado.autor || 'Autor desconhecido' }}</span>
-          <span class="bs-rating" *ngIf="($any(livroSelecionado).media)">⭐ {{ ($any(livroSelecionado).media) }}</span>
         </div>
       </div>
 
-      <div class="bs-acoes">
+      <!-- Botão só para Recomendados -->
+      <div class="bs-acoes" *ngIf="($any(livroSelecionado).media > 0)">
         <button class="bs-btn bs-btn-primary" (click)="adicionarABiblioteca(livroSelecionado)">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <line x1="12" y1="5" x2="12" y2="19"/>
