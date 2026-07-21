@@ -59,7 +59,7 @@ export class HomeComponent implements OnInit {
         this.livroAtual = data.livroAtual || null;
         this.listaLeitura = data.listaLeitura || [];
         // 🆕 Embaralha os top avaliados
-        this.topAvaliados = this.embaralhar(data.topAvaliados || []);
+        this.topAvaliados = data.topAvaliados || [];
         this.carregando = false;
         this.cdr.markForCheck();
       },
@@ -69,16 +69,6 @@ export class HomeComponent implements OnInit {
         this.alertService.error('Erro ao carregar dados da home');
       }
     });
-  }
-
-  // 🆕 Método Fisher-Yates shuffle
-  private embaralhar<T>(array: T[]): T[] {
-    const arr = [...array];
-    for (let i = arr.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [arr[i], arr[j]] = [arr[j], arr[i]];
-    }
-    return arr;
   }
 
   abrirModal(): void {
