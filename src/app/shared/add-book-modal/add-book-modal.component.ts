@@ -31,7 +31,18 @@ export class AddBookModalComponent {
   private readonly COMPRESSAO_MAX_WIDTH = 1200;
   private readonly COMPRESSAO_QUALIDADE = 0.7;
 
-  novoLivro = { titulo: '', autor: '', descricao: '', codigoBarras: '', capa: '' };
+  novoLivro = {
+    titulo: '',
+    autor: '',
+    descricao: '',
+    codigoBarras: '',
+    capa: '',
+    editora: '',
+    anoPublicacao: null as number | null,
+    numeroPaginas: null as number | null,
+    generos: [] as string[],
+    avaliacaoMedia: null as number | null
+  };
 
   allowedFormats = [BarcodeFormat.EAN_13, BarcodeFormat.EAN_8, BarcodeFormat.CODE_128, BarcodeFormat.UPC_A];
   scannerDisponivel = false;
@@ -53,7 +64,10 @@ export class AddBookModalComponent {
 
   private resetarEstado(): void {
     this.etapa = 'escolha';
-    this.novoLivro = { titulo: '', autor: '', descricao: '', codigoBarras: '', capa: '' };
+    this.novoLivro = {
+      titulo: '', autor: '', descricao: '', codigoBarras: '', capa: '',
+      editora: '', anoPublicacao: null, numeroPaginas: null, generos: [], avaliacaoMedia: null
+    };
     this.livroEncontrado = false;
     this.livroNaoEncontrado = false;
     this.buscandoInfo = false;
@@ -114,6 +128,11 @@ export class AddBookModalComponent {
           this.novoLivro.autor = livro.autor;
           this.novoLivro.descricao = livro.descricao || '';
           this.novoLivro.capa = livro.imagem || '';
+          this.novoLivro.editora = livro.editora || '';
+          this.novoLivro.anoPublicacao = livro.anoPublicacao || null;
+          this.novoLivro.numeroPaginas = livro.numeroPaginas || null;
+          this.novoLivro.generos = livro.generos || [];
+          this.novoLivro.avaliacaoMedia = livro.avaliacaoMedia || null;
           this.livroEncontrado = true;
           this.etapa = 'confirmar';
           this.alertService.success('Livro encontrado!');
