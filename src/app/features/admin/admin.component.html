@@ -14,58 +14,26 @@
         <button *ngIf="dataInicio || dataFim" (click)="dataInicio=''; dataFim=''; carregarDashboard()" style="padding:8px 16px; border:1px solid var(--border-color); border-radius:20px; background:transparent; color:var(--text-secondary); cursor:pointer; font-size:12px">Limpar</button>
       </div>
       <div style="display:flex; justify-content:flex-end; margin-bottom:16px">
-        <button (click)="exportarDados()" style="padding:8px 16px; border:1px solid var(--accent); border-radius:20px; background:transparent; color:var(--accent); cursor:pointer; font-size:12px">
-          📥 Exportar CSV
-        </button>
+        <button (click)="exportarDados()" style="padding:8px 16px; border:1px solid var(--accent); border-radius:20px; background:transparent; color:var(--accent); cursor:pointer; font-size:12px">📥 Exportar CSV</button>
       </div>
 
       <div class="cards" *ngIf="dashboard">
-        <div class="card" (click)="tooltipCard = tooltipCard === 'usuarios' ? '' : 'usuarios'">
-          {{ dashboard.totalUsuarios }}<small>Usuários</small>
-          <span class="tooltip" *ngIf="tooltipCard === 'usuarios'">Total de contas criadas</span>
-        </div>
-        <div class="card" (click)="tooltipCard = tooltipCard === 'ativos' ? '' : 'ativos'">
-          {{ dashboard.usuariosAtivos }}<small>Ativos</small>
-          <span class="tooltip" *ngIf="tooltipCard === 'ativos'">Contas com status Ativo = true</span>
-        </div>
-        <div class="card" (click)="tooltipCard = tooltipCard === 'comentarios' ? '' : 'comentarios'">
-          {{ dashboard.totalComentarios }}<small>Comentários</small>
-          <span class="tooltip" *ngIf="tooltipCard === 'comentarios'">Total de comentários postados</span>
-        </div>
-        <div class="card warning" (click)="tooltipCard = tooltipCard === 'flagged' ? '' : 'flagged'">
-          {{ dashboard.comentariosFlagged }}<small>Flagged 🚩</small>
-          <span class="tooltip" *ngIf="tooltipCard === 'flagged'">Comentários marcados como ofensivos pela moderação</span>
-        </div>
-        <div class="card" (click)="tooltipCard = tooltipCard === 'livros' ? '' : 'livros'">
-          {{ dashboard.totalLivros }}<small>Livros</small>
-          <span class="tooltip" *ngIf="tooltipCard === 'livros'">Total de livros cadastrados</span>
-        </div>
-        <div class="card" (click)="tooltipCard = tooltipCard === 'acessos' ? '' : 'acessos'">
-          {{ dashboard.totalAcessos }}<small>Acessos</small>
-          <span class="tooltip" *ngIf="tooltipCard === 'acessos'">Total de logins realizados</span>
-        </div>
-        <div class="card" (click)="tooltipCard = tooltipCard === '7dias' ? '' : '7dias'">
-          {{ dashboard.acessos7Dias }}<small>7 dias</small>
-          <span class="tooltip" *ngIf="tooltipCard === '7dias'">Logins nos últimos 7 dias</span>
-        </div>
-        <div class="card" (click)="tooltipCard = tooltipCard === '30dias' ? '' : '30dias'">
-          {{ dashboard.acessos30Dias }}<small>30 dias</small>
-          <span class="tooltip" *ngIf="tooltipCard === '30dias'">Logins nos últimos 30 dias</span>
-        </div>
-        <div class="card" (click)="tooltipCard = tooltipCard === 'media' ? '' : 'media'">
-          {{ dashboard.mediaAcessosPorUsuario }}<small>Média/Usuário</small>
-          <span class="tooltip" *ngIf="tooltipCard === 'media'">Média de logins por usuário</span>
-        </div>
-        <div class="card" (click)="tooltipCard = tooltipCard === 'ativos30d' ? '' : 'ativos30d'">
-          {{ dashboard.usuariosAtivos30Dias }}<small>Ativos 30d</small>
-          <span class="tooltip" *ngIf="tooltipCard === 'ativos30d'">Usuários que acessaram nos últimos 30 dias</span>
-        </div>
+        <div class="card" (click)="tooltipCard = tooltipCard === 'usuarios' ? '' : 'usuarios'">{{ dashboard.totalUsuarios }}<small>Usuários</small><span class="tooltip" *ngIf="tooltipCard === 'usuarios'">Total de contas criadas</span></div>
+        <div class="card" (click)="tooltipCard = tooltipCard === 'ativos' ? '' : 'ativos'">{{ dashboard.usuariosAtivos }}<small>Ativos</small><span class="tooltip" *ngIf="tooltipCard === 'ativos'">Contas com status Ativo = true</span></div>
+        <div class="card" (click)="tooltipCard = tooltipCard === 'comentarios' ? '' : 'comentarios'">{{ dashboard.totalComentarios }}<small>Comentários</small><span class="tooltip" *ngIf="tooltipCard === 'comentarios'">Total de comentários postados</span></div>
+        <div class="card warning" (click)="tooltipCard = tooltipCard === 'flagged' ? '' : 'flagged'">{{ dashboard.comentariosFlagged }}<small>Flagged 🚩</small><span class="tooltip" *ngIf="tooltipCard === 'flagged'">Comentários marcados como ofensivos</span></div>
+        <div class="card" (click)="tooltipCard = tooltipCard === 'livros' ? '' : 'livros'">{{ dashboard.totalLivros }}<small>Livros</small><span class="tooltip" *ngIf="tooltipCard === 'livros'">Total de livros cadastrados</span></div>
+        <div class="card" (click)="tooltipCard = tooltipCard === 'acessos' ? '' : 'acessos'">{{ dashboard.totalAcessos }}<small>Acessos</small><span class="tooltip" *ngIf="tooltipCard === 'acessos'">Total de logins realizados</span></div>
+        <div class="card" (click)="tooltipCard = tooltipCard === '7dias' ? '' : '7dias'">{{ dashboard.acessos7Dias }}<small>7 dias</small><span class="tooltip" *ngIf="tooltipCard === '7dias'">Logins nos últimos 7 dias</span></div>
+        <div class="card" (click)="tooltipCard = tooltipCard === '30dias' ? '' : '30dias'">{{ dashboard.acessos30Dias }}<small>30 dias</small><span class="tooltip" *ngIf="tooltipCard === '30dias'">Logins nos últimos 30 dias</span></div>
+        <div class="card" (click)="tooltipCard = tooltipCard === 'media' ? '' : 'media'">{{ dashboard.mediaAcessosPorUsuario }}<small>Média/Usuário</small><span class="tooltip" *ngIf="tooltipCard === 'media'">Média de logins por usuário</span></div>
+        <div class="card" (click)="tooltipCard = tooltipCard === 'ativos30d' ? '' : 'ativos30d'">{{ dashboard.usuariosAtivos30Dias }}<small>Ativos 30d</small><span class="tooltip" *ngIf="tooltipCard === 'ativos30d'">Usuários que acessaram nos últimos 30 dias</span></div>
       </div>
     </ng-container>
+
     <!-- Comentários -->
     <ng-container *ngIf="abaAtiva === 'comentarios'">
       <h1>💬 Comentários</h1>
-
       <div class="filtros-admin">
         <input type="text" placeholder="🔍 Buscar por texto ou usuário..." [(ngModel)]="filtroComentario" class="filtro-input" />
         <div class="filtro-botoes">
@@ -74,11 +42,8 @@
           <button [class.active]="filtroFlagged === false" (click)="filtroFlagged = false">✅ OK</button>
         </div>
       </div>
-
       <div class="tabela">
-        <div class="linha linha-comentarios header">
-          <span>Usuário</span><span>Comentário</span><span>Data</span><span>Flag</span>
-        </div>
+        <div class="linha linha-comentarios header"><span>Usuário</span><span>Comentário</span><span>Data</span><span>Flag</span></div>
         <ng-container *ngFor="let c of comentariosFiltrados">
           <div class="linha linha-comentarios" [class.flagged]="c.flagged" (click)="abrirDetalheComentario(c)">
             <span>{{ c.usuario?.nickname || c.idUsuario }}</span>
@@ -87,11 +52,8 @@
             <span>{{ c.flagged ? '🚩' : '✅' }}</span>
           </div>
         </ng-container>
-        <div class="linha vazia" *ngIf="comentariosFiltrados.length === 0">
-          <span style="grid-column: 1 / -1; text-align: center;">Nenhum comentário encontrado</span>
-        </div>
+        <div class="linha vazia" *ngIf="comentariosFiltrados.length === 0"><span style="grid-column:1/-1;text-align:center">Nenhum comentário encontrado</span></div>
       </div>
-
       <div class="paginacao" *ngIf="totalPaginasComentarios > 1">
         <button [disabled]="paginaComentarios <= 1" (click)="carregarComentarios(paginaComentarios - 1)">◀</button>
         <span>{{ paginaComentarios }} / {{ totalPaginasComentarios }} ({{ totalComentarios }})</span>
@@ -102,7 +64,6 @@
     <!-- Usuários -->
     <ng-container *ngIf="abaAtiva === 'usuarios'">
       <h1>👥 Usuários</h1>
-
       <div class="filtros-admin">
         <input type="text" placeholder="🔍 Buscar por nome, nickname ou email..." [(ngModel)]="filtroUsuario" class="filtro-input" />
         <div class="filtro-botoes">
@@ -111,28 +72,16 @@
           <button [class.active]="filtroStatus === false" (click)="filtroStatus = false">❌ Inativos</button>
         </div>
       </div>
-
       <div class="tabela">
-        <div class="linha linha-usuarios header">
-          <span>Nome</span><span>Email</span><span>Status</span><span>Acessos</span>
-        </div>
+        <div class="linha linha-usuarios header"><span>Nome</span><span>Email</span><span>Status</span><span>Acessos</span></div>
         <div class="linha linha-usuarios" *ngFor="let u of usuariosFiltrados" [class.inativo]="!u.ativo" (click)="abrirDetalheUsuario(u)">
-          <span>
-            {{ u.nome }}
-            <small>{{ u.nickname }}</small>
-            <span class="badge-adm" *ngIf="u.adm">ADM</span>
-          </span>
+          <span>{{ u.nome }}<small>{{ u.nickname }}</small><span class="badge-adm" *ngIf="u.adm">ADM</span></span>
           <span class="texto" [title]="u.email">{{ u.email }}</span>
-          <span [class.ativo]="u.ativo" [class.inativo-texto]="!u.ativo">
-            {{ u.ativo ? '✅ Ativo' : '❌ Inativo' }}
-          </span>
+          <span [class.ativo]="u.ativo" [class.inativo-texto]="!u.ativo">{{ u.ativo ? '✅ Ativo' : '❌ Inativo' }}</span>
           <span>{{ u.totalAcessos || 0 }} acessos</span>
         </div>
-        <div class="linha vazia" *ngIf="usuariosFiltrados.length === 0">
-          <span style="grid-column: 1 / -1; text-align: center;">Nenhum usuário encontrado</span>
-        </div>
+        <div class="linha vazia" *ngIf="usuariosFiltrados.length === 0"><span style="grid-column:1/-1;text-align:center">Nenhum usuário encontrado</span></div>
       </div>
-
       <div class="paginacao" *ngIf="totalPaginasUsuarios > 1">
         <button [disabled]="paginaUsuarios <= 1" (click)="carregarUsuarios(paginaUsuarios - 1)">◀</button>
         <span>{{ paginaUsuarios }} / {{ totalPaginasUsuarios }} ({{ totalUsuarios }})</span>
@@ -140,17 +89,36 @@
       </div>
     </ng-container>
 
-    <!-- Bottom Sheet: Detalhes do Usuário -->
+    <!-- 🆕 LIVROS -->
+    <ng-container *ngIf="abaAtiva === 'livros'">
+      <h1>📚 Livros</h1>
+      <div class="filtros-admin">
+        <input type="text" placeholder="🔍 Buscar por título, autor ou usuário..." [(ngModel)]="filtroLivro" class="filtro-input" />
+      </div>
+      <div class="tabela">
+        <div class="linha linha-livros header"><span>Capa</span><span>Título</span><span>Usuário</span><span>Data</span><span>Ações</span></div>
+        <div class="linha linha-livros" *ngFor="let l of livrosFiltrados" (click)="abrirDetalheLivro(l)">
+          <span><img [src]="l.imagem || 'assets/capas/perfilSemFoto.png'" class="thumb-capa" /></span>
+          <span><strong>{{ l.titulo }}</strong><small>{{ l.autor }}</small></span>
+          <span>{{ l.usuario?.nickname || l.usuario?.nome || '—' }}</span>
+          <span>{{ l.dataCriacao | date:'dd/MM/yyyy' }}</span>
+          <span class="acoes" (click)="$event.stopPropagation()">
+            <button class="del" (click)="excluirLivro(l.id, l.titulo)" title="Excluir">🗑️</button>
+          </span>
+        </div>
+        <div class="linha vazia" *ngIf="livrosFiltrados.length === 0"><span style="grid-column:1/-1;text-align:center">Nenhum livro encontrado</span></div>
+      </div>
+      <div class="paginacao" *ngIf="totalPaginasLivros > 1">
+        <button [disabled]="paginaLivros <= 1" (click)="carregarLivros(paginaLivros - 1)">◀</button>
+        <span>{{ paginaLivros }} / {{ totalPaginasLivros }} ({{ totalLivros }})</span>
+        <button [disabled]="paginaLivros >= totalPaginasLivros" (click)="carregarLivros(paginaLivros + 1)">▶</button>
+      </div>
+    </ng-container>
+
+    <!-- Bottom Sheets -->
     <app-bottom-sheet [aberto]="detalheUsuarioAberto" (fechar)="fecharDetalheUsuario()">
       <ng-container *ngIf="usuarioDetalhe">
-        <div class="bottom-sheet-header">
-          <h3>👤 {{ usuarioDetalhe.nome }}</h3>
-          <button class="bottom-sheet-close" (click)="fecharDetalheUsuario()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-            </svg>
-          </button>
-        </div>
+        <div class="bottom-sheet-header"><h3>👤 {{ usuarioDetalhe.nome }}</h3><button class="bottom-sheet-close" (click)="fecharDetalheUsuario()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
         <div class="bs-usuario-detalhe">
           <img [src]="usuarioDetalhe.avatar || 'assets/capas/perfilSemFoto.png'" class="bs-avatar" />
           <div class="bs-dados">
@@ -174,17 +142,9 @@
       </ng-container>
     </app-bottom-sheet>
 
-    <!-- Bottom Sheet: Detalhes do Comentário -->
     <app-bottom-sheet [aberto]="detalheComentarioAberto" (fechar)="fecharDetalheComentario()">
       <ng-container *ngIf="comentarioDetalhe">
-        <div class="bottom-sheet-header">
-          <h3>💬 Comentário</h3>
-          <button class="bottom-sheet-close" (click)="fecharDetalheComentario()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-            </svg>
-          </button>
-        </div>
+        <div class="bottom-sheet-header"><h3>💬 Comentário</h3><button class="bottom-sheet-close" (click)="fecharDetalheComentario()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
         <p class="bs-comentario-texto">{{ comentarioDetalhe.comentario }}</p>
         <div class="bs-dados" style="margin-bottom:16px">
           <div class="bs-linha"><span>Usuário</span><strong>{{ comentarioDetalhe.usuario?.nickname || comentarioDetalhe.idUsuario }}</strong></div>
@@ -194,6 +154,24 @@
         <div class="bs-acoes">
           <button class="bs-btn bs-btn-outline" *ngIf="comentarioDetalhe.flagged" (click)="aprovarComentario(comentarioDetalhe.id); fecharDetalheComentario()">✅ Aprovar</button>
           <button class="bs-btn bs-btn-perigo" (click)="deletarComentario(comentarioDetalhe.id, comentarioDetalhe.comentario); fecharDetalheComentario()">🗑️ Excluir</button>
+        </div>
+      </ng-container>
+    </app-bottom-sheet>
+
+    <!-- 🆕 Bottom Sheet: Detalhes do Livro -->
+    <app-bottom-sheet [aberto]="detalheLivroAberto" (fechar)="fecharDetalheLivro()">
+      <ng-container *ngIf="livroDetalhe">
+        <div class="bottom-sheet-header"><h3>📖 {{ livroDetalhe.titulo }}</h3><button class="bottom-sheet-close" (click)="fecharDetalheLivro()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+        <div style="text-align:center">
+          <img [src]="livroDetalhe.imagem || 'assets/capas/perfilSemFoto.png'" style="max-width:200px;border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,0.3)" />
+        </div>
+        <div class="bs-dados" style="margin-top:16px">
+          <div class="bs-linha"><span>Autor</span><strong>{{ livroDetalhe.autor }}</strong></div>
+          <div class="bs-linha"><span>Usuário</span><strong>{{ livroDetalhe.usuario?.nickname || '—' }}</strong></div>
+          <div class="bs-linha"><span>Cadastro</span><strong>{{ livroDetalhe.dataCriacao | date:'dd/MM/yyyy' }}</strong></div>
+        </div>
+        <div class="bs-acoes" style="margin-top:16px">
+          <button class="bs-btn bs-btn-perigo" (click)="excluirLivro(livroDetalhe.id, livroDetalhe.titulo); fecharDetalheLivro()">🗑️ Excluir livro</button>
         </div>
       </ng-container>
     </app-bottom-sheet>

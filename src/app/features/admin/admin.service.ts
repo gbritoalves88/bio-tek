@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { AdminDashboard, AdminComentario, AdminUsuario, Paginado } from './admin.model';
+import { AdminDashboard, AdminComentario, AdminUsuario, Paginado, AdminLivro } from './admin.model';
 
 @Injectable({ providedIn: 'root' })
 export class AdminService {
@@ -40,5 +40,13 @@ export class AdminService {
 
   exportarDados(): Observable<Blob> {
     return this.http.get(`${this.api}/exportar`, { responseType: 'blob' });
+  }
+
+  getLivros(pagina: number = 1): Observable<Paginado<AdminLivro>> {
+    return this.http.get<Paginado<AdminLivro>>(`${this.api}/livros?pagina=${pagina}&limite=20`);
+  }
+
+  excluirLivro(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.api}/livros/${id}`);
   }
 }

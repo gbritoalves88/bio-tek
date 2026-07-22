@@ -22,6 +22,16 @@ export interface AdminComentario {
   usuario: { id: string; nome: string; nickname: string } | null;
 }
 
+export interface AdminLivro {
+  id: string;
+  titulo: string;
+  autor: string;
+  imagem?: string;
+  status: number;
+  dataCriacao: string;
+  usuario?: { id: string; nome: string; nickname: string };
+}
+
 export interface AdminUsuario {
   id: string;
   nome: string;
