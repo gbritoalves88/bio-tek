@@ -110,7 +110,7 @@
       </div>
       <div class="paginacao" *ngIf="totalPaginasLivros > 1">
         <button [disabled]="paginaLivros <= 1" (click)="carregarLivros(paginaLivros - 1)">◀</button>
-        <span>{{ paginaLivros }} / {{ totalPaginasLivros }} ({{ totalLivros }})</span>
+        <span>{{ paginaLivros }} / {{ totalPaginasLivros }} ({{ totalLivrosCount }})</span>
         <button [disabled]="paginaLivros >= totalPaginasLivros" (click)="carregarLivros(paginaLivros + 1)">▶</button>
       </div>
     </ng-container>
