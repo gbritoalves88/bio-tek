@@ -26,6 +26,7 @@ export class AdminComponent implements OnInit {
   // Usuário
   detalheUsuarioAberto = false;
   usuarioDetalhe: AdminUsuario | null = null;
+  filtroRecentes = false;
 
   // Comentário
   detalheComentarioAberto = false;
@@ -55,11 +56,26 @@ export class AdminComponent implements OnInit {
   }
 
   get usuariosFiltrados(): AdminUsuario[] {
-    return this.usuarios.filter(u => {
-      const matchTexto = !this.filtroUsuario || u.nome.toLowerCase().includes(this.filtroUsuario.toLowerCase()) || (u.nickname || '').toLowerCase().includes(this.filtroUsuario.toLowerCase()) || u.email.toLowerCase().includes(this.filtroUsuario.toLowerCase());
-      const matchStatus = this.filtroStatus === null || u.ativo === this.filtroStatus;
-      return matchTexto && matchStatus;
-    });
+    let lista = [...this.usuarios];
+
+    if (this.filtroUsuario) {
+      lista = lista.filter(u =>
+        u.nome.toLowerCase().includes(this.filtroUsuario.toLowerCase()) ||
+        (u.nickname || '').toLowerCase().includes(this.filtroUsuario.toLowerCase()) ||
+        u.email.toLowerCase().includes(this.filtroUsuario.toLowerCase())
+      );
+    }
+
+    if (this.filtroStatus !== null) {
+      lista = lista.filter(u => u.ativo === this.filtroStatus);
+    }
+
+    // Ordenar: se "Recentes" ativo, ordena por último acesso
+    if (this.filtroRecentes) {
+      lista.sort((a, b) => new Date(b.ultimoAcesso || 0).getTime() - new Date(a.ultimoAcesso || 0).getTime());
+    }
+
+    return lista;
   }
 
   get livrosFiltrados(): AdminLivro[] {
