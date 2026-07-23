@@ -70,6 +70,7 @@
           <button [class.active]="filtroStatus === null" (click)="filtroStatus = null">Todos</button>
           <button [class.active]="filtroStatus === true" (click)="filtroStatus = true">✅ Ativos</button>
           <button [class.active]="filtroStatus === false" (click)="filtroStatus = false">❌ Inativos</button>
+            <button [class.active]="filtroRecentes === true" (click)="filtroRecentes = true; filtroStatus = null">🕐 Recentes</button>
         </div>
       </div>
       <div class="tabela">
