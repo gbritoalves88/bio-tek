@@ -96,15 +96,12 @@
         <input type="text" placeholder="🔍 Buscar por título, autor ou usuário..." [(ngModel)]="filtroLivro" class="filtro-input" />
       </div>
       <div class="tabela">
-        <div class="linha linha-livros header"><span>Capa</span><span>Título</span><span>Usuário</span><span>Data</span><span>Ações</span></div>
+        <div class="linha linha-livros header"><span>Capa</span><span>Título</span><span>Usuário</span><span>Data</span></div>
         <div class="linha linha-livros" *ngFor="let l of livrosFiltrados" (click)="abrirDetalheLivro(l)">
           <span><img [src]="l.imagem || 'assets/capas/perfilSemFoto.png'" class="thumb-capa" /></span>
-          <span><strong>{{ l.titulo }}</strong><small>{{ l.autor }}</small></span>
+          <span><strong>{{ l.titulo.length > 20 ? (l.titulo | slice:0:20) + '...' : l.titulo }}</strong></span>
           <span>{{ l.usuario?.nickname || l.usuario?.nome || '—' }}</span>
           <span>{{ l.dataCriacao | date:'dd/MM/yyyy' }}</span>
-          <span class="acoes" (click)="$event.stopPropagation()">
-            <button class="del" (click)="excluirLivro(l.id, l.titulo)" title="Excluir">🗑️</button>
-          </span>
         </div>
         <div class="linha vazia" *ngIf="livrosFiltrados.length === 0"><span style="grid-column:1/-1;text-align:center">Nenhum livro encontrado</span></div>
       </div>
@@ -161,7 +158,14 @@
     <!-- 🆕 Bottom Sheet: Detalhes do Livro -->
     <app-bottom-sheet [aberto]="detalheLivroAberto" (fechar)="fecharDetalheLivro()">
       <ng-container *ngIf="livroDetalhe">
-        <div class="bottom-sheet-header"><h3>📖 {{ livroDetalhe.titulo }}</h3><button class="bottom-sheet-close" (click)="fecharDetalheLivro()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+        <div class="bottom-sheet-header">
+          <h3>📖 {{ livroDetalhe.titulo.length > 40 ? (livroDetalhe.titulo | slice:0:40) + '...' : livroDetalhe.titulo }}</h3>
+          <button class="bottom-sheet-close" (click)="fecharDetalheLivro()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
         <div style="text-align:center">
           <img [src]="livroDetalhe.imagem || 'assets/capas/perfilSemFoto.png'" style="max-width:200px;border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,0.3)" />
         </div>
