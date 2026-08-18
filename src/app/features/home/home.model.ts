@@ -7,15 +7,17 @@ export interface Livro {
   descricao?: string;
   status: StatusLeitura;
   progresso?: number;
-  paginaAtual?: number;      // 🆕
-  totalPaginas?: number;      // 🆕
-  pausado?: boolean;          // 🆕
-  ultimaLeitura?: string;     // 🆕
+  paginaAtual?: number;
+  totalPaginas?: number;
+  pausado?: boolean;
+  ultimaLeitura?: string;
   dataCriacao?: string;
-  avaliacao?: {
-    nota: number;
-  };
+  tipo?: string;                    // 🆕
+  minutoAtual?: number | null;      // 🆕
+  totalMinutos?: number | null;     // 🆕
+  avaliacao?: { nota: number };
 }
+
 export interface LivroLeitura {
   id: string;
   titulo: string;
@@ -35,7 +37,7 @@ export interface LivroTop {
 }
 
 export interface DashboardData {
-  livroAtual: Livro | null;        // ⬅️ ADICIONAR
+  livroAtual: Livro | null;
   listaLeitura: LivroLeitura[];
   topAvaliados: LivroTop[];
 }

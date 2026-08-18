@@ -54,10 +54,17 @@
                 <div class="bar" [style.width.%]="livroAtual.progresso"></div>
               </div>
             </div>
-            <span class="progress-texto">
+
+            <span class="progress-texto" *ngIf="!livroAtual.tipo || livroAtual.tipo === 'livro'">
               {{ livroAtual.paginaAtual || 0 }}/{{ livroAtual.totalPaginas || '?' }} pág • {{ livroAtual.progresso }}% concluído
               <span *ngIf="livroAtual.progresso === 100">, Parabéns!</span>
             </span>
+
+            <span class="progress-texto" *ngIf="livroAtual.tipo === 'audiobook'">
+              {{ formatarMinutos(livroAtual.minutoAtual) }} / {{ formatarMinutos(livroAtual.totalMinutos) }} • {{ livroAtual.progresso }}% concluído
+              <span *ngIf="livroAtual.progresso === 100">, Parabéns!</span>
+            </span>
+
             <span class="palmas-inline" *ngIf="livroAtual.progresso === 100">👏👏👏</span>
           </ng-container>
 
@@ -69,6 +76,7 @@
         </div>
       </div>
     </div>
+
     <ng-template #semLeitura>
       <div class="reading-now empty-state">
         <h2>📖 Lendo agora</h2>
@@ -77,7 +85,7 @@
       </div>
     </ng-template>
 
-    <!-- Livros recomendados pela comunidade -->
+    <!-- Livros recomendados -->
     <div class="reading-now" *ngIf="topAvaliados.length > 0; else semRecomendados">
       <h2>
         <svg class="section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -91,9 +99,7 @@
             <img [src]="livro.imagem || 'assets/capas/perfilSemFoto.png'" [alt]="livro.titulo" class="livro-capa" />
             <span class="livro-titulo">{{ livro.titulo || 'Sem título' }}</span>
             <span class="livro-autor">{{ livro.autor }}</span>
-            <span class="livro-rating" *ngIf="livro.media > 0">
-              ⭐ {{ livro.media }}
-            </span>
+            <span class="livro-rating" *ngIf="livro.media > 0">⭐ {{ livro.media }}</span>
           </div>
         </div>
       </div>
@@ -137,13 +143,11 @@
 
   <app-add-book-modal *ngIf="modalAberto" (fechar)="modalAberto = false" (livroAdicionado)="onLivroAdicionado($event)"></app-add-book-modal>
 
-  <!-- Bottom Sheet: Recomendados / Próximas leituras -->
+  <!-- Bottom Sheet: Recomendados -->
   <app-bottom-sheet [aberto]="bottomSheetAberto" (fechar)="fecharBottomSheet()">
     <ng-container *ngIf="livroSelecionado">
       <div class="bottom-sheet-header">
-        <h3>
-          {{ ($any(livroSelecionado).media > 0) ? '⭐ Recomendado' : '📖 Próxima leitura' }}
-        </h3>
+        <h3>{{ ($any(livroSelecionado).media > 0) ? '⭐ Recomendado' : '📖 Próxima leitura' }}</h3>
         <button class="bottom-sheet-close" (click)="fecharBottomSheet()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
@@ -159,7 +163,6 @@
         </div>
       </div>
 
-      <!-- Botão só para Recomendados -->
       <div class="bs-acoes" *ngIf="($any(livroSelecionado).media > 0)">
         <button class="bs-btn bs-btn-primary" (click)="adicionarABiblioteca(livroSelecionado)">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -196,7 +199,8 @@
         </div>
       </div>
 
-      <div class="bs-pagina">
+      <!-- LIVRO -->
+      <div class="bs-pagina" *ngIf="!livroAtual.tipo || livroAtual.tipo === 'livro'">
         <label class="bs-label">📄 Página atual</label>
         <div class="bs-pagina-inputs">
           <input type="number" [(ngModel)]="paginaAtual" placeholder="Página" min="0" class="bs-input-pagina" />
@@ -208,7 +212,31 @@
         </button>
       </div>
 
+      <!-- AUDIOBOOK -->
+      <div class="bs-pagina" *ngIf="livroAtual.tipo === 'audiobook'">
+        <label class="bs-label">🎧 Minuto atual</label>
+        <div class="bs-pagina-inputs">
+          <input type="number" [(ngModel)]="minutoAtual" placeholder="Min" min="0" class="bs-input-pagina" />
+          <span class="bs-de">de</span>
+          <input type="number" [(ngModel)]="totalMinutos" placeholder="Total" min="0" class="bs-input-pagina" />
+        </div>
+        <button class="bs-btn bs-btn-sm bs-btn-outline" (click)="atualizarProgresso()" [disabled]="!minutoAtual && !totalMinutos">
+          Atualizar progresso
+        </button>
+      </div>
+
       <div class="bs-acoes">
+         <button class="bs-btn bs-btn-primary" (click)="compartilharLeitura()" [disabled]="compartilhando">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="18" cy="5" r="3"/>
+            <circle cx="6" cy="12" r="3"/>
+            <circle cx="18" cy="19" r="3"/>
+            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+          </svg>
+          {{ compartilhando ? 'Gerando...' : 'Compartilhar leitura' }}
+        </button>
+
         <button class="bs-btn bs-btn-outline" (click)="togglePausar()">
           <ng-container *ngIf="!livroAtual.pausado">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

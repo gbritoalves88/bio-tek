@@ -24,6 +24,8 @@ export class LoginService {
     }).pipe(
       tap(response => {
         localStorage.setItem('token', response.token);
+        localStorage.setItem('refreshToken', response.refreshToken);  // 🆕
+        localStorage.setItem('usuario', JSON.stringify(response.usuario));
         const usuario = {
           id: response.usuario.id,
           nome: response.usuario.nome,
