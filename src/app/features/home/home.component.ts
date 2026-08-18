@@ -6,6 +6,8 @@ import { AddBookModalComponent } from '../../shared/add-book-modal/add-book-moda
 import { AlertService } from '../../shared/services/alert.service';
 import { BottomSheetComponent } from '../../shared/bottom-sheet/bottom-sheet.component';
 import { FormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-home',
@@ -40,7 +42,8 @@ export class HomeComponent implements OnInit {
     private homeService: HomeService,
     @Inject(PLATFORM_ID) private platformId: Object,
     private cdr: ChangeDetectorRef,
-    private alertService: AlertService
+    private alertService: AlertService,
+    private http: HttpClient
   ) {}
 
   ngOnInit(): void {
@@ -262,13 +265,13 @@ export class HomeComponent implements OnInit {
   private gerarImagemCompartilhamento(): Promise<string> {
     return new Promise((resolve, reject) => {
       const canvas = document.createElement('canvas');
-      canvas.width = 1080;
-      canvas.height = 1350;
+      canvas.width = 941;
+      canvas.height = 1672;
       const ctx = canvas.getContext('2d')!;
 
       const fundo = new Image();
       fundo.src = 'assets/compartilhamento-fundo.png';
-      fundo.onload = () => {
+      fundo.onload = async () => {
         // Mantém proporção
         const proporcao = Math.max(canvas.width / fundo.width, canvas.height / fundo.height);
         const fw = fundo.width * proporcao;
@@ -280,13 +283,17 @@ export class HomeComponent implements OnInit {
 
         const capa = new Image();
         capa.crossOrigin = 'anonymous';
-        capa.src = this.livroAtual!.imagem || 'assets/capas/perfilSemFoto.png';
+        const capaBase64 = await this.baixarImagemComoBase64(
+          this.livroAtual!.imagem || 'assets/capas/perfilSemFoto.png'
+          );
+
+        capa.src = capaBase64;
 
         capa.onload = () => {
           const capaW = 380;
           const capaH = 570;
           const capaX = (canvas.width - capaW) / 2;
-          const capaY = 550;
+          const capaY = 750;
 
           ctx.save();
           ctx.shadowColor = 'rgba(0,0,0,0.6)';
@@ -307,5 +314,38 @@ export class HomeComponent implements OnInit {
       };
       fundo.onerror = reject;
     });
+  }
+
+  private async baixarImagemComoBase64(url: string): Promise<string> {
+    try {
+      const blob = await firstValueFrom(this.homeService.baixarImagem(url));
+
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+    } catch (error) {
+      console.error('Erro ao baixar imagem:', error);
+      return 'assets/capas/perfilSemFoto.png';
+    }
+  }
+
+
+  async baixarImagemTeste(): Promise<void> {
+    if (!this.livroAtual) return;
+
+    try {
+      const imagemFinal = await this.gerarImagemCompartilhamento();
+      const a = document.createElement('a');
+      a.href = imagemFinal;
+      a.download = 'bliteca-teste.png';
+      a.click();
+      this.alertService.success('Imagem baixada!');
+    } catch (error) {
+      console.error('Erro:', error);
+      this.alertService.error('Erro ao baixar');
+    }
   }
 }

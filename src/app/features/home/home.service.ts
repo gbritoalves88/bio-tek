@@ -49,4 +49,9 @@ export class HomeService {
   }): Observable<any> {
     return this.http.put(`${this.livroApiUrl}/${id}/progresso`, dados);
   }
+
+  baixarImagem(url: string): Observable<Blob> {
+    const urlProxy = `${this.livroApiUrl}/proxy-imagem?url=${encodeURIComponent(url)}`;
+    return this.http.get(urlProxy, { responseType: 'blob' });
+  }
 }
