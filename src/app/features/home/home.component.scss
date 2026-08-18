@@ -458,6 +458,24 @@
   gap: 10px;
 }
 
+.bs-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding: 16px;
+  background: var(--bg-primary);
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+
+  img {
+    max-width: 250px;
+    border-radius: 10px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+  }
+}
+
 .bs-btn {
   display: flex;
   align-items: center;

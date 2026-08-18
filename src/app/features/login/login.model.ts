@@ -16,4 +16,5 @@ export interface LoginResponse {
   novoUsuario: boolean;
   usuario: UsuarioLogin;
   precisaAceitarTermos?: boolean;
+  refreshToken: string;
 }

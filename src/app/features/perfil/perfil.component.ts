@@ -386,14 +386,21 @@ export class PerfilComponent implements OnInit {
   private enviarEdicaoLivro(): void {
     if (!this.livroEditando) return;
     const dados: any = {
-      titulo: this.livroEditando.titulo, autor: this.livroEditando.autor,
-      descricao: this.livroEditando.descricao, imagem: this.livroEditando.imagem,
-      status: this.livroEditando.status
+      titulo: this.livroEditando.titulo,
+      autor: this.livroEditando.autor,
+      descricao: this.livroEditando.descricao,
+      imagem: this.livroEditando.imagem,
+      status: this.livroEditando.status,
+      tipo: this.livroEditando.tipo || 'livro'
     };
     if (this.livroEditando.status === 3 && this.livroEditando.estrelas) dados.estrelas = this.livroEditando.estrelas;
 
     this.perfilService.atualizarLivro(this.livroEditando.id, dados).subscribe({
-      next: () => { this.fecharEdicaoLivro(); this.alertService.success('Livro atualizado!'); this.carregarPerfil(); },
+      next: () => {
+        this.fecharEdicaoLivro();
+        this.alertService.success('Livro atualizado!');
+        this.carregarPerfil();
+      },
       error: () => this.alertService.error('Erro ao atualizar livro')
     });
   }

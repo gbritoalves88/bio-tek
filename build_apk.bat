@@ -4,7 +4,7 @@ echo  BUILD APK BLITECA
 echo ========================================
 
 echo 1. Atualizando projeto...
-bubblewrap init --manifest https://bliteca-three.vercel.app/manifest.json --directory . --skip-prompts --jdk "C:\Program Files\Eclipse Adoptium\jdk-17.0.19.10-hotspot"
+bubblewrap init --manifest https://www.bliteca.com.br/manifest.json --directory . --skip-prompts --jdk "C:\Program Files\Eclipse Adoptium\jdk-17.0.19.10-hotspot"
 
 echo 2. Copiando splash screen...
 copy /Y "src\assets\splash.png" "app\src\main\res\drawable-hdpi\splash.png"

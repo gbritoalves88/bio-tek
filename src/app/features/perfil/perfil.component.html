@@ -302,6 +302,12 @@
       <input type="file" #fileInputEdicaoLivro hidden (change)="onFileSelectedEdicaoLivro($event)" accept="image/*">
     </div>
     <img *ngIf="edicaoCapaPreview" [src]="edicaoCapaPreview" class="preview-capa" />
+    <label class="input-label">Tipo</label>
+    <select [(ngModel)]="livroEditando.tipo" class="bs-select">
+      <option value="livro">📖 Livro</option>
+      <option value="audiobook">🎧 Audiobook</option>
+    </select>
+
     <label class="input-label">Status</label>
     <select [(ngModel)]="livroEditando.status" class="bs-select">
       <option [ngValue]="1">📕 Quero ler</option>

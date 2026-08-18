@@ -22,15 +22,17 @@ export interface LivroDoUsuario {
   id: string;
   titulo: string;
   autor: string;
-  descricao?: string;           // ⬅️ ADICIONADO
+  descricao?: string;
   imagem?: string;
   status: number;
-  estrelas?: number;            // ⬅️ ADICIONADO (para edição)
+  estrelas?: number;
   dataCriacao: string;
+  tipo?: string;                    // 🆕
+  minutoAtual?: number | null;      // 🆕
+  totalMinutos?: number | null;     // 🆕
   avaliacao?: Avaliacao | null;
   comentarios?: Comentario[];
 }
-
 
 export interface Usuario {
   id: string;

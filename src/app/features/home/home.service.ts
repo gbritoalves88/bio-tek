@@ -44,6 +44,8 @@ export class HomeService {
     totalPaginas?: number;
     progresso?: number;
     pausado?: boolean;
+    minutoAtual?: number;      // 🆕
+    totalMinutos?: number;     // 🆕
   }): Observable<any> {
     return this.http.put(`${this.livroApiUrl}/${id}/progresso`, dados);
   }

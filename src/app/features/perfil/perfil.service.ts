@@ -38,7 +38,12 @@ export class PerfilService {
         dataAceiteTermos: data.dataAceiteTermos,
         dataCriacao: data.dataCriacao,
         dataAtualizacao: data.dataAtualizacao,
-        livros: data.livros || []
+        livros: (data.livros || []).map((l: any) => ({
+          ...l,
+          tipo: l.tipo || 'livro',                    // 🆕
+          minutoAtual: l.minutoAtual || null,          // 🆕
+          totalMinutos: l.totalMinutos || null         // 🆕
+        }))
       }))
     );
   }
@@ -75,7 +80,7 @@ export class PerfilService {
   }
 
   desativarConta(): Observable<any> {
-      return this.http.post(`${this.apiUrl}/desativar`, {});
+    return this.http.post(`${this.apiUrl}/desativar`, {});
   }
 
   deletarComentario(id: string): Observable<any> {
@@ -86,5 +91,3 @@ export class PerfilService {
     return this.http.post(`${environment.apiUrl}/Livro`, livro);
   }
 }
-
-
