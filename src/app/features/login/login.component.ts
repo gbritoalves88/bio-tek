@@ -5,6 +5,7 @@ import { LoginService } from './login.service';
 import { environment } from '../../../environments/environment';
 import { AlertService } from '../../shared/services/alert.service';
 import { NotificationService } from '../../shared/services/notification.service';
+import { AnalyticsService } from '../../core/services/analytics.service';
 
 declare const google: any;
 
@@ -26,6 +27,7 @@ export class LoginComponent {
     private alertService: AlertService,
     private cdr: ChangeDetectorRef,
     private notificationService: NotificationService,
+    private analyticsService: AnalyticsService,
   ) {}
 
   carregando = false;
@@ -101,10 +103,11 @@ export class LoginComponent {
         this.alertService.success(`Bem-vindo, ${response.usuario.nome}!`);
         this.solicitarPermissaoNotificacoes(response.usuario.id);
 
-         if (response.precisaAceitarTermos || response.novoUsuario) {
+        if (response.precisaAceitarTermos || response.novoUsuario) {
           this.router.navigate(['/termo']);
         } else {
           this.router.navigate(['/inicio']);
+          this.analyticsService.logLogin('google');
         }
       },
       error: (err) => {
