@@ -382,10 +382,18 @@ export class PerfilComponent implements OnInit {
     if (imagemUrl && imagemUrl.startsWith('data:')) {
       const comprimida = await this.comprimirImagem(imagemUrl, 800, 0.6);
       this.uploadService.uploadImagem(comprimida).subscribe({
-        next: (url) => { this.livroEditando!.imagem = url; this.enviarEdicaoLivro(); },
-        error: () => this.enviarEdicaoLivro()
+        next: (url) => {
+          this.livroEditando!.imagem = url;
+          this.enviarEdicaoLivro();
+        },
+        error: () => {
+          // ❌ NÃO salvar com Base64
+          this.alertService.error('Erro ao enviar imagem. Tente novamente.');
+        }
       });
-    } else { this.enviarEdicaoLivro(); }
+    } else {
+      this.enviarEdicaoLivro();
+    }
   }
 
   private enviarEdicaoLivro(): void {
