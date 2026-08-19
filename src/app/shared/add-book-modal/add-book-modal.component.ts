@@ -170,8 +170,14 @@ export class AddBookModalComponent {
     if (this.novoLivro.capa?.startsWith('data:')) {
       this.comprimirImagem(this.novoLivro.capa, this.COMPRESSAO_MAX_WIDTH, this.COMPRESSAO_QUALIDADE).then(comprimida => {
         this.uploadService.uploadImagem(comprimida).subscribe({
-          next: (url) => { this.novoLivro.capa = url; this.adicionarLivro(); },
-          error: () => this.adicionarLivro()
+          next: (url) => {
+            this.novoLivro.capa = url;
+            this.adicionarLivro();
+          },
+          error: () => {
+            // ❌ NÃO salvar com Base64
+            this.alertService.error('Erro ao enviar imagem. Tente novamente.');
+          }
         });
       });
     } else {
