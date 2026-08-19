@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { LoginService } from './login.service';
 import { environment } from '../../../environments/environment';
 import { AlertService } from '../../shared/services/alert.service';
+import { NotificationService } from '../../shared/services/notification.service';
 
 declare const google: any;
 
@@ -23,7 +24,8 @@ export class LoginComponent {
     private router: Router,
     private loginService: LoginService,
     private alertService: AlertService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private notificationService: NotificationService,
   ) {}
 
   carregando = false;
@@ -97,6 +99,7 @@ export class LoginComponent {
       next: (response) => {
         this.carregando = false;
         this.alertService.success(`Bem-vindo, ${response.usuario.nome}!`);
+        this.solicitarPermissaoNotificacoes(response.usuario.id);
 
          if (response.precisaAceitarTermos || response.novoUsuario) {
           this.router.navigate(['/termo']);
@@ -130,5 +133,15 @@ export class LoginComponent {
         this.exibirErro(err.error?.mensagem || 'Erro ao entrar como convidado');
       }
     });
+  }
+
+   private solicitarPermissaoNotificacoes(userId: string): void {
+    this.notificationService.requestPermission(userId)
+      .then(() => {
+        this.notificationService.listenForMessages();
+      })
+      .catch((error) => {
+        console.error('Erro ao solicitar permissão:', error);
+      });
   }
 }
