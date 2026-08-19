@@ -49,6 +49,7 @@ export class HomeComponent implements OnInit {
 
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
+      this.homeService.limparCache(); // 🆕 Limpar cache SEMPRE
       this.carregarDashboard();
     }
   }
