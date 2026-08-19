@@ -8,6 +8,7 @@ import { BottomSheetComponent } from '../../shared/bottom-sheet/bottom-sheet.com
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
+import { AnalyticsService } from '../../core/services/analytics.service';
 
 @Component({
   selector: 'app-home',
@@ -44,7 +45,8 @@ export class HomeComponent implements OnInit {
     @Inject(PLATFORM_ID) private platformId: Object,
     private cdr: ChangeDetectorRef,
     private alertService: AlertService,
-    private http: HttpClient
+    private http: HttpClient,
+    private analyticsService: AnalyticsService,
   ) {}
 
   ngOnInit(): void {
@@ -209,6 +211,8 @@ export class HomeComponent implements OnInit {
         this.fecharLendoAgora();
         this.fraseAtividade = ''; // 🆕 Limpar frase
         this.alertService.success('Progresso atualizado!');
+        this.analyticsService.logUpdateProgress(progresso || 0);
+
       },
       error: () => this.alertService.error('Erro ao atualizar progresso')
     });

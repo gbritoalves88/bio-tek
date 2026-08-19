@@ -453,6 +453,15 @@
   }
 }
 
+.aviso-spoiler {
+  margin: -4px 0 16px;
+  font-size: 10px;
+  color: var(--text-secondary);
+  font-style: italic;
+  text-align: center;
+  padding: 0 8px;
+}
+
 .bs-btn-primary {
   background: var(--accent);
   color: white;
