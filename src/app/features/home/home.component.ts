@@ -293,7 +293,7 @@ export class HomeComponent implements OnInit {
           const capaW = 380;
           const capaH = 570;
           const capaX = (canvas.width - capaW) / 2;
-          const capaY = 750;
+          const capaY = 550;
 
           ctx.save();
           ctx.shadowColor = 'rgba(0,0,0,0.6)';

@@ -85,8 +85,9 @@ export class LoginService {
   }
 
   sair(): void {
-    localStorage.removeItem('token');
-    localStorage.removeItem('usuario');
-    this.router.navigate(['/']);
+      localStorage.removeItem('token');
+      localStorage.removeItem('refreshToken'); // ← ADICIONAR (se faltar)
+      localStorage.removeItem('usuario');
+      this.router.navigate(['/']);
   }
 }

@@ -10,9 +10,14 @@ import { TermoComponent } from './features/termos/termos.component';
 import { AuthGuard } from './core/guards/auth.guard';
 import { AdminGuard } from './core/guards/admin.guard';
 import { PerfilCompletoGuard } from './core/guards/perfil-completo.guard';
+import { LoginGuard } from './core/guards/login.guard'; // ← ADICIONAR
 
 export const routes: Routes = [
-  { path: '', component: LoginComponent },
+  {
+    path: '',
+    component: LoginComponent,
+    canActivate: [LoginGuard] // ← ADICIONAR
+  },
   { path: 'termo', component: TermoComponent },
 
   {
