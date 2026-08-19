@@ -2,7 +2,7 @@ import { Component, OnInit, Inject, PLATFORM_ID, ChangeDetectorRef, ViewChild, E
 import { CommonModule, isPlatformBrowser, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
-import { Usuario, LivroDoUsuario } from './perfil.model';
+import { Usuario, LivroDoUsuario, AtividadeLeitura } from './perfil.model';
 import { PerfilService } from './perfil.service';
 import { UploadService } from '../../shared/services/upload.service';
 import { BottomSheetComponent } from '../../shared/bottom-sheet/bottom-sheet.component';
@@ -40,6 +40,10 @@ export class PerfilComponent implements OnInit {
   livroComentarioTitulo = '';
   livroComentarioProntos: any[] | null = null;
   confirmarExclusaoConta = false;
+
+  abaAtiva: 'biblioteca' | 'atividades' = 'biblioteca';
+  atividades: AtividadeLeitura[] = [];
+  carregandoAtividades = false;
 
   private primeiraCarga = true;
 
@@ -176,10 +180,11 @@ export class PerfilComponent implements OnInit {
   }
 
   sair(): void {
-    this.menuConfigAberto = false;
-    localStorage.removeItem('token');
-    localStorage.removeItem('usuario');
-    this.router.navigate(['/']);
+      this.menuConfigAberto = false;
+      localStorage.removeItem('token');
+      localStorage.removeItem('refreshToken'); // ✅ ADICIONAR
+      localStorage.removeItem('usuario');
+      this.router.navigate(['/']);
   }
 
   fecharEdicao(): void {
@@ -585,6 +590,31 @@ export class PerfilComponent implements OnInit {
     this.bottomSheetLivroAberto = false;
     this.livroSelecionado = null;
     this.cdr.markForCheck();
+  }
+
+  carregarAtividades(): void {
+    if (!this.usuario?.id) return;
+
+    this.carregandoAtividades = true;
+    this.perfilService.getAtividades(this.usuario.id).subscribe({
+      next: (data) => {
+        this.atividades = data;
+        this.carregandoAtividades = false;
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        console.error('Erro ao carregar atividades:', err);
+        this.carregandoAtividades = false;
+      }
+    });
+  }
+
+  trocarAba(aba: 'biblioteca' | 'atividades'): void {
+    this.abaAtiva = aba;
+
+    if (aba === 'atividades' && this.atividades.length === 0) {
+      this.carregarAtividades();
+    }
   }
 
 }

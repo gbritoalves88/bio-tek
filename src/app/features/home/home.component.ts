@@ -32,6 +32,7 @@ export class HomeComponent implements OnInit {
   totalMinutos: number | null = null;
   compartilhando = false;
   previewImagem = '';
+  fraseAtividade = '';
 
   citacao = {
     texto: 'Um leitor vive mil vidas antes de morrer. O homem que nunca lê vive apenas uma.',
@@ -121,6 +122,7 @@ export class HomeComponent implements OnInit {
   fecharLendoAgora(): void {
     this.lendoAgoraAberto = false;
     this.previewImagem = '';
+    this.fraseAtividade = '';
     this.cdr.markForCheck();
   }
 
@@ -153,6 +155,7 @@ export class HomeComponent implements OnInit {
   abrirLendoAgora(): void {
     this.lendoAgoraAberto = true;
     this.previewImagem = '';
+    this.fraseAtividade = '';
     const tipo = this.livroAtual?.tipo || 'livro';
 
     if (tipo === 'audiobook') {
@@ -193,11 +196,17 @@ export class HomeComponent implements OnInit {
 
     if (progresso !== undefined) dados.progresso = progresso;
 
+    // 🆕 Se tiver frase, incluir
+    if (this.fraseAtividade && this.fraseAtividade.trim()) {
+      dados.frase = this.fraseAtividade.trim();
+    }
+
     this.homeService.atualizarProgresso(this.livroAtual.id, dados).subscribe({
       next: () => {
         this.homeService.limparCache();
         this.carregarDashboard();
         this.fecharLendoAgora();
+        this.fraseAtividade = ''; // 🆕 Limpar frase
         this.alertService.success('Progresso atualizado!');
       },
       error: () => this.alertService.error('Erro ao atualizar progresso')

@@ -426,6 +426,33 @@
   &:active { transform: scale(0.97); }
 }
 
+.frase-atividade {
+  margin-top: 6px;
+  padding: 8px 10px;
+  background: var(--bg-primary);
+  border-radius: 8px;
+  border-left: 2px solid var(--accent);
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+
+  .aspas {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--accent);
+    line-height: 1;
+  }
+
+  .frase-texto {
+    flex: 1;
+    font-size: 12px;
+    line-height: 1.4;
+    color: var(--text-primary);
+    font-style: italic;
+    word-break: break-word;
+  }
+}
+
 .bs-btn-primary {
   background: var(--accent);
   color: white;

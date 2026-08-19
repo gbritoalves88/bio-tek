@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { Usuario, LivroDoUsuario } from './perfil.model';
+import { Usuario, LivroDoUsuario, AtividadeLeitura } from './perfil.model';
 import { environment } from '../../../environments/environment';
 
 @Injectable({
@@ -89,5 +89,9 @@ export class PerfilService {
 
   adicionarLivro(livro: { titulo: string; autor: string; imagem?: string | null; descricao?: string | null }): Observable<any> {
     return this.http.post(`${environment.apiUrl}/Livro`, livro);
+  }
+
+  getAtividades(usuarioId: string): Observable<AtividadeLeitura[]> {
+    return this.http.get<AtividadeLeitura[]>(`${environment.apiUrl}/Livro/usuario/${usuarioId}/atividades`);
   }
 }
