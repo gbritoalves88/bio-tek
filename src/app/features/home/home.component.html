@@ -207,6 +207,18 @@
           <span class="bs-de">de</span>
           <input type="number" [(ngModel)]="totalPaginas" placeholder="Total" min="0" class="bs-input-pagina" />
         </div>
+
+        <!-- 🆕 CAMPO DE FRASE OPCIONAL -->
+        <label class="bs-label">💬 Compartilhar frase (opcional)</label>
+        <textarea
+          [(ngModel)]="fraseAtividade"
+          placeholder="Ex: Capítulo 5 finalizado! Muito bom até agora..."
+          rows="2"
+          maxlength="200"
+          class="bs-textarea"
+        ></textarea>
+        <span class="bs-contador">{{ fraseAtividade.length }}/200</span>
+
         <button class="bs-btn bs-btn-sm bs-btn-outline" (click)="atualizarProgresso()" [disabled]="!paginaAtual && !totalPaginas">
           Atualizar progresso
         </button>
@@ -220,6 +232,18 @@
           <span class="bs-de">de</span>
           <input type="number" [(ngModel)]="totalMinutos" placeholder="Total" min="0" class="bs-input-pagina" />
         </div>
+
+        <!-- 🆕 CAMPO DE FRASE OPCIONAL -->
+        <label class="bs-label">💬 Compartilhar frase (opcional)</label>
+        <textarea
+          [(ngModel)]="fraseAtividade"
+          placeholder="Ex: Acabei de ouvir o capítulo 3! Incrível..."
+          rows="2"
+          maxlength="200"
+          class="bs-textarea"
+        ></textarea>
+        <span class="bs-contador">{{ fraseAtividade.length }}/200</span>
+
         <button class="bs-btn bs-btn-sm bs-btn-outline" (click)="atualizarProgresso()" [disabled]="!minutoAtual && !totalMinutos">
           Atualizar progresso
         </button>

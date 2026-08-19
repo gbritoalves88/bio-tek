@@ -41,4 +41,5 @@ export interface AtividadeComunidade {
   progresso?: number;        // 🆕
   paginaAtual?: number;      // 🆕
   totalPaginas?: number;     // 🆕
+  frase?: string;
 }

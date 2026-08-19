@@ -78,7 +78,9 @@ export class ShellComponent implements OnInit {
 
   sair() {
     localStorage.removeItem('token');
+    localStorage.removeItem('refreshToken'); // ✅ ADICIONAR
     localStorage.removeItem('usuario');
     this.router.navigate(['/']);
   }
+
 }

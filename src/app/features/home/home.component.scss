@@ -476,6 +476,40 @@
   }
 }
 
+.bs-textarea {
+  width: 100%;
+  max-width: 100%;
+  min-width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 13px;
+  resize: vertical;
+  font-family: inherit;
+  outline: none;
+  box-sizing: border-box;
+  margin-bottom: 4px;
+
+  &:focus {
+    border-color: var(--accent);
+  }
+
+  &::placeholder {
+    color: var(--text-secondary);
+    font-size: 12px;
+  }
+}
+
+.bs-contador {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-bottom: 10px;
+  display: block;
+  text-align: right;
+}
+
 .bs-btn {
   display: flex;
   align-items: center;

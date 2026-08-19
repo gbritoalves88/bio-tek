@@ -176,26 +176,84 @@
         </button>
       </div>
 
-      <div class="filtros">
-        <button class="filtro-btn" [class.active]="filtroStatus === null" (click)="filtroStatus = null">Todos</button>
-        <button class="filtro-btn" [class.active]="filtroStatus === 1" (click)="filtroStatus = 1">📕 {{ modoVisualizacao ? 'Quer ler' : 'Quero ler' }}</button>
-        <button class="filtro-btn" [class.active]="filtroStatus === 2" (click)="filtroStatus = 2">📖 Lendo</button>
-        <button class="filtro-btn" [class.active]="filtroStatus === 3" (click)="filtroStatus = 3">✅ {{ modoVisualizacao ? 'Leu' : 'Lidos' }}</button>
-        <button class="filtro-btn" [class.active]="filtroAvaliado" (click)="filtroAvaliado = !filtroAvaliado">⭐ Avaliados</button>
+      <!-- 🆕 ABAS -->
+      <div class="tabs-perfil">
+        <button
+          class="tab-btn"
+          [class.active]="abaAtiva === 'biblioteca'"
+          (click)="trocarAba('biblioteca')">
+           {{ modoVisualizacao ? 'Biblioteca' : 'Minha Biblioteca' }}
+        </button>
+        <button
+          class="tab-btn"
+          [class.active]="abaAtiva === 'atividades'"
+          (click)="trocarAba('atividades')">
+           Atividades
+        </button>
       </div>
 
-      <div class="book-list">
-        <div class="book-item" *ngFor="let livro of livrosFiltrados" (click)="abrirBottomSheetLivro(livro)">
-          <div class="book-cover-wrapper">
-            <img [src]="livro.imagem || 'assets/capas/perfilSemFoto.png'" [alt]="livro.titulo" class="book-cover" />
+      <!-- ABA: BIBLIOTECA -->
+      <ng-container *ngIf="abaAtiva === 'biblioteca'">
+        <div class="filtros">
+          <button class="filtro-btn" [class.active]="filtroStatus === null" (click)="filtroStatus = null">Todos</button>
+          <button class="filtro-btn" [class.active]="filtroStatus === 1" (click)="filtroStatus = 1">📕 {{ modoVisualizacao ? 'Quer ler' : 'Quero ler' }}</button>
+          <button class="filtro-btn" [class.active]="filtroStatus === 2" (click)="filtroStatus = 2">📖 Lendo</button>
+          <button class="filtro-btn" [class.active]="filtroStatus === 3" (click)="filtroStatus = 3">✅ {{ modoVisualizacao ? 'Leu' : 'Lidos' }}</button>
+          <button class="filtro-btn" [class.active]="filtroAvaliado" (click)="filtroAvaliado = !filtroAvaliado">⭐ Avaliados</button>
+        </div>
+
+        <div class="book-list">
+          <div class="book-item" *ngFor="let livro of livrosFiltrados" (click)="abrirBottomSheetLivro(livro)">
+            <div class="book-cover-wrapper">
+              <img [src]="livro.imagem || 'assets/capas/perfilSemFoto.png'" [alt]="livro.titulo" class="book-cover" />
+            </div>
+            <div class="book-info">
+              <span class="book-title" [title]="livro.titulo">{{ livro.titulo || 'Sem título' }}</span>
+              <span class="book-status" [class]="getStatusClass(livro.status)">{{ getStatusTexto(livro.status) }}</span>
+            </div>
           </div>
-          <div class="book-info">
-            <span class="book-title" [title]="livro.titulo">{{ livro.titulo || 'Sem título' }}</span>
-            <span class="book-status" [class]="getStatusClass(livro.status)">{{ getStatusTexto(livro.status) }}</span>
+          <p class="empty" *ngIf="livros.length === 0">Nenhum livro na biblioteca.</p>
+        </div>
+      </ng-container>
+
+      <!-- ABA: ATIVIDADES -->
+      <ng-container *ngIf="abaAtiva === 'atividades'">
+        <!-- Loading -->
+        <div class="loading-atividades" *ngIf="carregandoAtividades">
+          <div class="spinner"></div>
+        </div>
+
+        <!-- Lista de atividades -->
+        <div class="atividades-lista" *ngIf="!carregandoAtividades">
+          <div class="atividade-item" *ngFor="let atividade of atividades">
+            <img [src]="atividade.livro?.imagem || 'assets/capas/perfilSemFoto.png'"
+                [alt]="atividade.livro?.titulo || 'Livro'"
+                class="atividade-capa" />
+
+            <div class="atividade-info">
+              <strong class="atividade-titulo">{{ atividade.livro?.titulo || 'Livro' }}</strong>
+
+              <div class="atividade-progresso" *ngIf="atividade.progresso">
+                <div class="barra-progresso">
+                  <div class="barra-preenchida" [style.width.%]="atividade.progresso"></div>
+                </div>
+                <span class="progresso-texto">{{ atividade.progresso }}%</span>
+              </div>
+
+              <p class="atividade-frase" *ngIf="atividade.comentario">
+                "{{ atividade.comentario }}"
+              </p>
+
+              <span class="atividade-data">{{ atividade.dataCriacao | date:'dd/MM/yyyy HH:mm' }}</span>
+            </div>
+          </div>
+
+          <div class="empty" *ngIf="atividades.length === 0">
+            <p>Nenhuma atividade ainda.</p>
+            <small>Atualize seu progresso de leitura com uma frase!</small>
           </div>
         </div>
-        <p class="empty" *ngIf="livros.length === 0">Nenhum livro na biblioteca.</p>
-      </div>
+      </ng-container>
     </div>
   </ng-container>
 

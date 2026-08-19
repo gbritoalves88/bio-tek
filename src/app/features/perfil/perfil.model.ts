@@ -54,3 +54,21 @@ export interface Usuario {
   dataAtualizacao?: string;
   livros?: LivroDoUsuario[];
 }
+
+export interface AtividadeLeitura {
+  id: string;
+  comentario: string;
+  dataCriacao: string;
+  progresso?: number;
+  paginaAtual?: number;
+  totalPaginas?: number;
+  minutoAtual?: number;
+  totalMinutos?: number;
+  livro: {
+    id: string;
+    titulo: string;
+    autor: string;
+    imagem?: string;
+    tipo?: string;
+  } | null;
+}
