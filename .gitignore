@@ -64,3 +64,12 @@ store_icon.png
 /gradlew
 /gradlew.bat
 /settings.gradle
+
+
+# Firebase
+firebase-messaging-sw.js
+firebase-service-account.json
+
+# Environments (se contiverem chaves)
+src/environments/environment.ts
+src/environments/environment.prod.ts
