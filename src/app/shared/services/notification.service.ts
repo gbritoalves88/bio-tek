@@ -48,7 +48,7 @@ export class NotificationService {
 
 
   // Solicitar permissão e registrar
-  async requestPermission(userId: string): Promise<void> {
+  async requestPermissionOld(userId: string): Promise<void> {
     try {
       const permission = await Notification.requestPermission();
 
@@ -143,6 +143,46 @@ export class NotificationService {
       }
     } catch (error) {
       console.error('Erro ao cancelar subscription:', error);
+    }
+  }
+
+  async requestPermission(userId: string): Promise<void> {
+    try {
+      const permission = await Notification.requestPermission();
+
+      if (permission === 'granted') {
+        console.log('Permissão concedida');
+        const token = await this.getToken();
+
+        if (token) {
+          await this.saveSubscription(userId, token);
+        }
+
+        // 🆕 Registrar decisão
+        await this.registrarDecisao(userId, true);
+      } else {
+        console.log('Permissão negada');
+
+        // 🆕 Registrar decisão
+        await this.registrarDecisao(userId, false);
+      }
+    } catch (error) {
+      console.error('Erro ao solicitar permissão:', error);
+    }
+  }
+
+  // 🆕 Novo método
+  private async registrarDecisao(userId: string, aceitou: boolean): Promise<void> {
+    try {
+      await firstValueFrom(
+        this.http.post(`${this.apiUrl}/registrar-decisao`, {
+          userId,
+          aceitou
+        })
+      );
+      console.log('Decisão registrada:', aceitou ? 'aceitou' : 'negou');
+    } catch (error) {
+      console.error('Erro ao registrar decisão:', error);
     }
   }
 }
