@@ -9,6 +9,7 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { AnalyticsService } from '../../core/services/analytics.service';
+import { NotificationService } from '../../shared/services/notification.service';
 
 @Component({
   selector: 'app-home',
@@ -47,12 +48,14 @@ export class HomeComponent implements OnInit {
     private alertService: AlertService,
     private http: HttpClient,
     private analyticsService: AnalyticsService,
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
       this.homeService.limparCache(); // 🆕 Limpar cache SEMPRE
       this.carregarDashboard();
+      this.verificarNotificacoes();
     }
   }
 
@@ -362,4 +365,24 @@ export class HomeComponent implements OnInit {
       this.alertService.error('Erro ao baixar');
     }
   }
+
+  private verificarNotificacoes(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+
+    const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+
+    if (!usuario?.id) return;
+
+    // Só solicita se nunca perguntou (default)
+    if (Notification.permission === 'default') {
+      this.notificationService.requestPermission(usuario.id)
+        .then(() => {
+          console.log('Permissão solicitada na Home');
+        })
+        .catch((error) => {
+          console.error('Erro ao solicitar permissão:', error);
+        });
+    }
+  }
+
 }
