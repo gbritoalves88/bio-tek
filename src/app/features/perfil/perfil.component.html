@@ -22,7 +22,8 @@
     <div class="perfil-container" *ngIf="usuario && !editando">
       <div class="perfil-header-row">
         <div class="perfil-avatar">
-          <div class="avatar-pequeno">
+          <!-- 🆕 AVATAR COM ZOOM -->
+          <div class="avatar-pequeno clicavel" (click)="abrirZoomAvatar()">
             <img [src]="usuario.avatar || 'assets/capas/perfilSemFoto.png'" [alt]="usuario.nome" />
           </div>
         </div>
@@ -127,38 +128,43 @@
       </div>
       <div class="perfil-edicao-row">
         <div class="perfil-avatar">
-          <div class="avatar-pequeno editavel" (click)="fileInput.click()">
-            <img [src]="usuarioEdit.avatar || 'assets/capas/perfilSemFoto.png'" [alt]="usuarioEdit.nome" />
-            <div class="avatar-overlay">
-              <span class="avatar-texto">📷</span>
+          <!-- 🆕 AVATAR GRANDE NA EDIÇÃO -->
+          <div class="avatar-edicao-container">
+            <div class="avatar-grande editavel" (click)="fileInput.click()">
+              <img [src]="usuarioEdit.avatar || 'assets/capas/perfilSemFoto.png'" [alt]="usuarioEdit.nome" />
+              <div class="avatar-overlay">
+                <span class="avatar-texto">📷</span>
+                <span class="avatar-dica">Clique para alterar</span>
+              </div>
+              <input type="file" #fileInput hidden (change)="onAvatarSelected($event)" accept="image/*">
             </div>
-            <input type="file" #fileInput hidden (change)="onAvatarSelected($event)" accept="image/*">
-          </div>
-          <p class="upload-erro" *ngIf="uploadErro">{{ uploadErro }}</p>
-        </div>
-
-        <div class="perfil-info-edicao">
-          <div class="form-edicao">
-            <label class="input-label">Nome</label>
-            <input type="text" [(ngModel)]="usuarioEdit.nome">
-
-            <label class="input-label">@ Nickname</label>
-            <div class="nickname-input-wrapper" [class.disabled]="!nicknameEditavel">
-              <span class="nickname-prefix">@</span>
-              <input type="text" [(ngModel)]="usuarioEdit.nickname" placeholder="seunickname (3 a 12 caracteres)" maxlength="12" (input)="limparArroba()" [disabled]="!nicknameEditavel">
-            </div>
-            <p class="nickname-aviso" *ngIf="!nicknameEditavel">⚠️ O nickname não pode ser alterado após o cadastro.</p>
-
-            <label class="input-label">Biografia</label>
-            <textarea [(ngModel)]="usuarioEdit.descricao" placeholder="Conte um pouco sobre você..." rows="3"></textarea>
-
-            <label class="input-label">Tema</label>
-            <select [(ngModel)]="usuarioEdit.tema" class="select-status">
-              <option [ngValue]="2">☀️ Claro</option>
-              <option [ngValue]="1">🌙 Escuro</option>
-            </select>
+            <p class="upload-erro" *ngIf="uploadErro">{{ uploadErro }}</p>
           </div>
         </div>
+
+
+          <div class="perfil-info-edicao">
+            <div class="form-edicao">
+              <label class="input-label">Nome</label>
+              <input type="text" [(ngModel)]="usuarioEdit.nome">
+
+              <label class="input-label">@ Nickname</label>
+              <div class="nickname-input-wrapper" [class.disabled]="!nicknameEditavel">
+                <span class="nickname-prefix">@</span>
+                <input type="text" [(ngModel)]="usuarioEdit.nickname" placeholder="seunickname (3 a 12 caracteres)" maxlength="12" (input)="limparArroba()" [disabled]="!nicknameEditavel">
+              </div>
+              <p class="nickname-aviso" *ngIf="!nicknameEditavel">⚠️ O nickname não pode ser alterado após o cadastro.</p>
+
+              <label class="input-label">Biografia</label>
+              <textarea [(ngModel)]="usuarioEdit.descricao" placeholder="Conte um pouco sobre você..." rows="3"></textarea>
+
+              <label class="input-label">Tema</label>
+              <select [(ngModel)]="usuarioEdit.tema" class="select-status">
+                <option [ngValue]="2">☀️ Claro</option>
+                <option [ngValue]="1">🌙 Escuro</option>
+              </select>
+            </div>
+          </div>
       </div>
 
       <div class="perfil-actions-edicao">
@@ -437,5 +443,17 @@
       <button class="confirm-btn cancel" (click)="fecharConfirmacaoExclusao()">Cancelar</button>
       <button class="confirm-btn delete" (click)="confirmarExcluirLivro()">Remover</button>
     </div>
+  </div>
+</div>
+
+<!-- 🆕 MODAL DE ZOOM DO AVATAR -->
+<div class="avatar-zoom-overlay" *ngIf="zoomAvatarAberto" (click)="fecharZoomAvatar()">
+  <div class="avatar-zoom-modal" (click)="$event.stopPropagation()">
+    <img [src]="usuario?.avatar || 'assets/capas/perfilSemFoto.png'" [alt]="usuario?.nome" />
+    <button class="avatar-zoom-close" (click)="fecharZoomAvatar()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </button>
   </div>
 </div>
