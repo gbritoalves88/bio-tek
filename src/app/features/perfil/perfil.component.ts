@@ -44,6 +44,7 @@ export class PerfilComponent implements OnInit {
   abaAtiva: 'biblioteca' | 'atividades' = 'biblioteca';
   atividades: AtividadeLeitura[] = [];
   carregandoAtividades = false;
+  zoomAvatarAberto = false;
 
   private primeiraCarga = true;
 
@@ -165,6 +166,16 @@ export class PerfilComponent implements OnInit {
     } else {
       this.carregarMeuPerfil();
     }
+  }
+
+  abrirZoomAvatar(): void {
+    this.zoomAvatarAberto = true;
+    this.cdr.markForCheck();
+  }
+
+  fecharZoomAvatar(): void {
+    this.zoomAvatarAberto = false;
+    this.cdr.markForCheck();
   }
 
   abrirEdicao(): void {

@@ -26,7 +26,8 @@
         [class.tipo-novo]="item.tipo === 'livro_novo'"
         [class.tipo-lendo]="item.tipo === 'livro_lendo'"
         [class.tipo-lido]="item.tipo === 'livro_lido'"
-        [class.tipo-avaliado]="item.tipo === 'livro_avaliado'">
+        [class.tipo-avaliado]="item.tipo === 'livro_avaliado'"
+        [class.tipo-progresso]="item.tipo === 'livro_progresso'">
 
       <div class="feed-topo">
         <img [src]="item.usuario?.avatar || 'assets/capas/perfilSemFoto.png'" [alt]="item.usuario?.nome || 'Usuário'" class="avatar" />
@@ -55,7 +56,7 @@
         </div>
 
         <!-- TIPO: ESTÁ LENDO -->
-        <div class="feed-conteudo" *ngSwitchCase="'livro_lendo'">
+        <div class="feed-conteudo" *ngSwitchCase="'livro_progresso'">
           <div class="livro-padrao" *ngIf="item.livro">
             <img [src]="item.livro?.imagem || 'assets/capas/perfilSemFoto.png'"
                 [alt]="item.livro?.titulo || 'Sem título'"
@@ -64,18 +65,13 @@
               <strong class="titulo-padrao">{{ item.livro?.titulo || 'Sem título' }}</strong>
               <span class="autor-padrao">{{ item.livro?.autor || 'Autor desconhecido' }}</span>
 
-              <!-- Progresso -->
               <div class="progresso-mini" *ngIf="item.progresso">
                 <div class="progresso-barra">
                   <div class="progresso-preenchido" [style.width.%]="item.progresso"></div>
                 </div>
                 <span class="progresso-texto">{{ item.progresso }}% concluído</span>
               </div>
-              <span class="progresso-paginas" *ngIf="item.paginaAtual">
-                📄 {{ item.paginaAtual }}/{{ item.totalPaginas || '?' }} pág
-              </span>
 
-              <!-- 🆕 FRASE DA ATIVIDADE -->
               <div class="frase-atividade" *ngIf="item.frase">
                 <span class="aspas">"</span>
                 <span class="frase-texto">{{ item.frase }}</span>

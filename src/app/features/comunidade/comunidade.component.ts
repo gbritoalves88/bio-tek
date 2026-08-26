@@ -203,6 +203,7 @@ enviarComentario(): void {
       case 'livro_lendo': return '📖';
       case 'livro_lido': return '✅';
       case 'livro_avaliado': return '⭐';
+      case 'livro_progresso': return '📊'; // 🆕
       default: return '📚';
     }
   }
@@ -213,6 +214,7 @@ enviarComentario(): void {
       case 'livro_lendo': return 'Está Lendo';
       case 'livro_lido': return 'Terminou de Ler';
       case 'livro_avaliado': return 'Avaliou';
+      case 'livro_progresso': return 'Atualizou o Progresso'; // 🆕
       default: return '';
     }
   }
@@ -231,7 +233,8 @@ enviarComentario(): void {
     } else {
       const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
       this.comunidadeService.curtir(item.id, {
-        tipoAtividade: item.tipo === 'livro_avaliado' ? 'avaliacao' : 'livro',
+         tipoAtividade: item.tipo === 'livro_avaliado' ? 'avaliacao' :
+                   item.tipo === 'livro_progresso' ? 'progresso' : 'livro',
         idUsuarioDono: item.usuario?.id || '',
         nomeCurtidor: usuario?.nickname || usuario?.nome || 'Usuário',
         tituloLivro: item.livro?.titulo || 'Livro'

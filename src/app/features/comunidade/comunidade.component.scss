@@ -523,6 +523,9 @@
   color: var(--text-secondary);
 }
 
+.feed-item.tipo-progresso::before {
+  background: #9b59b6; /* Roxo para progresso */
+}
 
 // ===== BOTTOM SHEET - COMUNIDADE (estilos que estavam faltando) =====
 .comunidade-usuario {

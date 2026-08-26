@@ -12,12 +12,11 @@ export interface Comentario {
     avatar?: string;
   };
 }
-
 export interface AtividadeComunidade {
   curtidas: number;
   curtiu: boolean;
   id: string;
-  tipo: 'livro_novo' | 'livro_lido' | 'livro_lendo' | 'livro_avaliado';
+  tipo: 'livro_novo' | 'livro_lido' | 'livro_lendo' | 'livro_avaliado' | 'livro_progresso';
   usuario: {
     segue: any;
     id: string;
@@ -38,8 +37,10 @@ export interface AtividadeComunidade {
   };
   comentarios?: Comentario[];
   data: string;
-  progresso?: number;        // 🆕
-  paginaAtual?: number;      // 🆕
-  totalPaginas?: number;     // 🆕
+  progresso?: number;
+  paginaAtual?: number;
+  totalPaginas?: number;
+  minutoAtual?: number;
+  totalMinutos?: number;
   frase?: string;
 }

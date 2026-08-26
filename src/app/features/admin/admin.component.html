@@ -67,10 +67,11 @@
       <div class="filtros-admin">
         <input type="text" placeholder="🔍 Buscar por nome, nickname ou email..." [(ngModel)]="filtroUsuario" class="filtro-input" />
         <div class="filtro-botoes">
-          <button [class.active]="filtroStatus === null" (click)="filtroStatus = null">Todos</button>
-          <button [class.active]="filtroStatus === true" (click)="filtroStatus = true">✅ Ativos</button>
-          <button [class.active]="filtroStatus === false" (click)="filtroStatus = false">❌ Inativos</button>
-            <button [class.active]="filtroRecentes === true" (click)="filtroRecentes = true; filtroStatus = null">🕐 Recentes</button>
+          <button [class.active]="!filtroStatus && !filtroRecentes" (click)="aplicarFiltroUsuarios('todos')">Todos</button>
+          <button [class.active]="filtroStatus === 'ativos'" (click)="aplicarFiltroUsuarios('ativos')">✅ Ativos</button>
+          <button [class.active]="filtroStatus === 'desativados'" (click)="aplicarFiltroUsuarios('desativados')">❌ Desativados</button>
+          <button [class.active]="filtroStatus === 'inativos30d'" (click)="aplicarFiltroUsuarios('inativos30d')">💤 Inativos 30d</button>
+          <button [class.active]="filtroRecentes" (click)="aplicarFiltroUsuarios('recentes')">🕐 Recentes</button>
         </div>
       </div>
       <div class="tabela">
@@ -90,7 +91,7 @@
       </div>
     </ng-container>
 
-    <!-- 🆕 LIVROS -->
+    <!-- LIVROS -->
     <ng-container *ngIf="abaAtiva === 'livros'">
       <h1>📚 Livros</h1>
       <div class="filtros-admin">
@@ -131,6 +132,7 @@
             <div class="bs-linha"><span>Acessos (total)</span><strong>{{ usuarioDetalhe.totalAcessos || 0 }}</strong></div>
             <div class="bs-linha"><span>Acessos (30 dias)</span><strong>{{ usuarioDetalhe.acessos30Dias || 0 }}</strong></div>
             <div class="bs-linha"><span>Último acesso</span><strong>{{ usuarioDetalhe.ultimoAcesso ? (usuarioDetalhe.ultimoAcesso | date:'dd/MM/yyyy HH:mm') : 'Nunca' }}</strong></div>
+            <div class="bs-linha"><span>Notificações</span><strong>{{ usuarioDetalhe.notificacoesAtivas ? '✅ Ativas' : '❌ Inativas' }}</strong></div>
           </div>
         </div>
         <div class="bs-acoes">
@@ -156,7 +158,6 @@
       </ng-container>
     </app-bottom-sheet>
 
-    <!-- 🆕 Bottom Sheet: Detalhes do Livro -->
     <app-bottom-sheet [aberto]="detalheLivroAberto" (fechar)="fecharDetalheLivro()">
       <ng-container *ngIf="livroDetalhe">
         <div class="bottom-sheet-header">

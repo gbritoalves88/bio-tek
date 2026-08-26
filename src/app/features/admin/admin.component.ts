@@ -26,6 +26,10 @@ export class AdminComponent implements OnInit {
   // Usuário
   detalheUsuarioAberto = false;
   usuarioDetalhe: AdminUsuario | null = null;
+
+  // 🆕 FILTROS DE USUÁRIOS
+  filtroUsuario = '';
+  filtroStatus: string | null = null; // "ativos" | "desativados" | "inativos30d"
   filtroRecentes = false;
 
   // Comentário
@@ -43,13 +47,15 @@ export class AdminComponent implements OnInit {
 
   // Filtros
   filtroComentario = ''; filtroFlagged: boolean | null = null;
-  filtroUsuario = ''; filtroStatus: boolean | null = null;
   filtroLivro = '';
   dataInicio = ''; dataFim = ''; tooltipCard = '';
 
   get comentariosFiltrados(): AdminComentario[] {
     return this.comentarios.filter(c => {
-      const matchTexto = !this.filtroComentario || c.comentario.toLowerCase().includes(this.filtroComentario.toLowerCase()) || (c.usuario?.nickname || '').toLowerCase().includes(this.filtroComentario.toLowerCase()) || (c.usuario?.nome || '').toLowerCase().includes(this.filtroComentario.toLowerCase());
+      const matchTexto = !this.filtroComentario ||
+        c.comentario.toLowerCase().includes(this.filtroComentario.toLowerCase()) ||
+        (c.usuario?.nickname || '').toLowerCase().includes(this.filtroComentario.toLowerCase()) ||
+        (c.usuario?.nome || '').toLowerCase().includes(this.filtroComentario.toLowerCase());
       const matchFlag = this.filtroFlagged === null || c.flagged === this.filtroFlagged;
       return matchTexto && matchFlag;
     });
@@ -66,21 +72,16 @@ export class AdminComponent implements OnInit {
       );
     }
 
-    if (this.filtroStatus !== null) {
-      lista = lista.filter(u => u.ativo === this.filtroStatus);
-    }
-
-    // Ordenar: se "Recentes" ativo, ordena por último acesso
-    if (this.filtroRecentes) {
-      lista.sort((a, b) => new Date(b.ultimoAcesso || 0).getTime() - new Date(a.ultimoAcesso || 0).getTime());
-    }
-
     return lista;
   }
 
   get livrosFiltrados(): AdminLivro[] {
     return this.livros.filter(l => {
-      const match = !this.filtroLivro || l.titulo.toLowerCase().includes(this.filtroLivro.toLowerCase()) || l.autor.toLowerCase().includes(this.filtroLivro.toLowerCase()) || (l.usuario?.nome || '').toLowerCase().includes(this.filtroLivro.toLowerCase()) || (l.usuario?.nickname || '').toLowerCase().includes(this.filtroLivro.toLowerCase());
+      const match = !this.filtroLivro ||
+        l.titulo.toLowerCase().includes(this.filtroLivro.toLowerCase()) ||
+        l.autor.toLowerCase().includes(this.filtroLivro.toLowerCase()) ||
+        (l.usuario?.nome || '').toLowerCase().includes(this.filtroLivro.toLowerCase()) ||
+        (l.usuario?.nickname || '').toLowerCase().includes(this.filtroLivro.toLowerCase());
       return match;
     });
   }
@@ -127,25 +128,85 @@ export class AdminComponent implements OnInit {
   }
 
   carregarComentarios(pagina: number = 1): void {
-    this.carregando = true; this.paginaComentarios = pagina;
+    this.carregando = true;
+    this.paginaComentarios = pagina;
     this.adminService.getComentarios(pagina).subscribe({
-      next: (res) => { this.comentarios = res.dados; this.totalComentarios = res.total; this.totalPaginasComentarios = res.totalPaginas; this.carregando = false; this.cdr.markForCheck(); },
+      next: (res) => {
+        this.comentarios = res.dados;
+        this.totalComentarios = res.total;
+        this.totalPaginasComentarios = res.totalPaginas;
+        this.carregando = false;
+        this.cdr.markForCheck();
+      },
       error: () => { this.carregando = false; this.cdr.markForCheck(); }
     });
   }
 
+  // 🆕 CARREGAR USUÁRIOS COM FILTROS
   carregarUsuarios(pagina: number = 1): void {
-    this.carregando = true; this.paginaUsuarios = pagina;
-    this.adminService.getUsuarios(pagina).subscribe({
-      next: (res) => { this.usuarios = res.dados; this.totalUsuarios = res.total; this.totalPaginasUsuarios = res.totalPaginas; this.carregando = false; this.cdr.markForCheck(); },
+    this.carregando = true;
+    this.paginaUsuarios = pagina;
+
+    let ordenar: string | undefined;
+    let status: string | undefined;
+
+    if (this.filtroRecentes) {
+      ordenar = 'recentes';
+    }
+
+    if (this.filtroStatus) {
+      status = this.filtroStatus;
+    }
+
+    this.adminService.getUsuarios(pagina, 20, ordenar, status).subscribe({
+      next: (res) => {
+        this.usuarios = res.dados;
+        this.totalUsuarios = res.total;
+        this.totalPaginasUsuarios = res.totalPaginas;
+        this.carregando = false;
+        this.cdr.markForCheck();
+      },
       error: () => { this.carregando = false; this.cdr.markForCheck(); }
     });
+  }
+
+  // 🆕 FILTROS DE USUÁRIOS
+  aplicarFiltroUsuarios(tipo: string): void {
+    this.filtroRecentes = false;
+    this.filtroStatus = null;
+
+    switch (tipo) {
+      case 'todos':
+        // Sem filtro
+        break;
+      case 'ativos':
+        this.filtroStatus = 'ativos';
+        break;
+      case 'desativados':
+        this.filtroStatus = 'desativados';
+        break;
+      case 'inativos30d':
+        this.filtroStatus = 'inativos30d';
+        break;
+      case 'recentes':
+        this.filtroRecentes = true;
+        break;
+    }
+
+    this.carregarUsuarios(1);
   }
 
   carregarLivros(pagina: number = 1): void {
-    this.carregando = true; this.paginaLivros = pagina;
+    this.carregando = true;
+    this.paginaLivros = pagina;
     this.adminService.getLivros(pagina).subscribe({
-      next: (res) => { this.livros = res.dados; this.totalLivrosCount = res.total; this.totalPaginasLivros = res.totalPaginas; this.carregando = false; this.cdr.markForCheck(); },
+      next: (res) => {
+        this.livros = res.dados;
+        this.totalLivrosCount = res.total;
+        this.totalPaginasLivros = res.totalPaginas;
+        this.carregando = false;
+        this.cdr.markForCheck();
+      },
       error: () => { this.carregando = false; this.cdr.markForCheck(); }
     });
   }
@@ -153,7 +214,12 @@ export class AdminComponent implements OnInit {
   deletarComentario(id: string, texto: string): void {
     if (confirm(`Excluir este comentário?\n\n"${texto.substring(0, 100)}"`)) {
       this.adminService.deletarComentario(id).subscribe({
-        next: () => { this.comentarios = this.comentarios.filter(c => c.id !== id); this.totalComentarios--; this.alertService.success('Comentário excluído!'); this.cdr.markForCheck(); },
+        next: () => {
+          this.comentarios = this.comentarios.filter(c => c.id !== id);
+          this.totalComentarios--;
+          this.alertService.success('Comentário excluído!');
+          this.cdr.markForCheck();
+        },
         error: () => { this.alertService.error('Erro ao excluir'); this.cdr.markForCheck(); }
       });
     }
@@ -161,7 +227,12 @@ export class AdminComponent implements OnInit {
 
   aprovarComentario(id: string): void {
     this.adminService.aprovarComentario(id).subscribe({
-      next: () => { const c = this.comentarios.find(x => x.id === id); if (c) { c.flagged = false; c.toxicidadeScore = null; } this.alertService.success('Comentário aprovado!'); this.cdr.markForCheck(); },
+      next: () => {
+        const c = this.comentarios.find(x => x.id === id);
+        if (c) { c.flagged = false; c.toxicidadeScore = null; }
+        this.alertService.success('Comentário aprovado!');
+        this.cdr.markForCheck();
+      },
       error: () => { this.alertService.error('Erro ao aprovar'); this.cdr.markForCheck(); }
     });
   }
@@ -170,7 +241,11 @@ export class AdminComponent implements OnInit {
     const acao = usuario.ativo ? 'desativar' : 'ativar';
     if (confirm(`Tem certeza que deseja ${acao} ${usuario.nome}?`)) {
       this.adminService.toggleAtivo(usuario.id).subscribe({
-        next: () => { usuario.ativo = !usuario.ativo; this.alertService.success(`Usuário ${usuario.ativo ? 'ativado' : 'desativado'}!`); this.cdr.markForCheck(); },
+        next: () => {
+          usuario.ativo = !usuario.ativo;
+          this.alertService.success(`Usuário ${usuario.ativo ? 'ativado' : 'desativado'}!`);
+          this.cdr.markForCheck();
+        },
         error: () => { this.alertService.error('Erro ao alterar status'); this.cdr.markForCheck(); }
       });
     }
@@ -179,7 +254,12 @@ export class AdminComponent implements OnInit {
   excluirConta(usuario: AdminUsuario): void {
     if (confirm(`⚠️ EXCLUIR permanentemente ${usuario.nome} (${usuario.email})?\n\nEsta ação é irreversível!`)) {
       this.adminService.excluirConta(usuario.id).subscribe({
-        next: () => { this.usuarios = this.usuarios.filter(u => u.id !== usuario.id); this.totalUsuarios--; this.alertService.success('Conta excluída!'); this.cdr.markForCheck(); },
+        next: () => {
+          this.usuarios = this.usuarios.filter(u => u.id !== usuario.id);
+          this.totalUsuarios--;
+          this.alertService.success('Conta excluída!');
+          this.cdr.markForCheck();
+        },
         error: () => { this.alertService.error('Erro ao excluir conta'); this.cdr.markForCheck(); }
       });
     }
@@ -188,27 +268,58 @@ export class AdminComponent implements OnInit {
   excluirLivro(id: string, titulo: string): void {
     if (confirm(`Excluir "${titulo}" permanentemente?`)) {
       this.adminService.excluirLivro(id).subscribe({
-        next: () => { this.livros = this.livros.filter(l => l.id !== id); this.totalLivrosCount--; this.alertService.success('Livro excluído!'); this.cdr.markForCheck(); },
+        next: () => {
+          this.livros = this.livros.filter(l => l.id !== id);
+          this.totalLivrosCount--;
+          this.alertService.success('Livro excluído!');
+          this.cdr.markForCheck();
+        },
         error: () => { this.alertService.error('Erro ao excluir'); this.cdr.markForCheck(); }
       });
     }
   }
 
-  abrirDetalheUsuario(usuario: AdminUsuario): void { this.usuarioDetalhe = usuario; this.detalheUsuarioAberto = true; this.cdr.markForCheck(); }
-  fecharDetalheUsuario(): void { this.detalheUsuarioAberto = false; this.usuarioDetalhe = null; this.cdr.markForCheck(); }
+  abrirDetalheUsuario(usuario: AdminUsuario): void {
+    this.usuarioDetalhe = usuario;
+    this.detalheUsuarioAberto = true;
+    this.cdr.markForCheck();
+  }
+  fecharDetalheUsuario(): void {
+    this.detalheUsuarioAberto = false;
+    this.usuarioDetalhe = null;
+    this.cdr.markForCheck();
+  }
 
-  abrirDetalheComentario(comentario: AdminComentario): void { this.comentarioDetalhe = comentario; this.detalheComentarioAberto = true; this.cdr.markForCheck(); }
-  fecharDetalheComentario(): void { this.detalheComentarioAberto = false; this.comentarioDetalhe = null; this.cdr.markForCheck(); }
+  abrirDetalheComentario(comentario: AdminComentario): void {
+    this.comentarioDetalhe = comentario;
+    this.detalheComentarioAberto = true;
+    this.cdr.markForCheck();
+  }
+  fecharDetalheComentario(): void {
+    this.detalheComentarioAberto = false;
+    this.comentarioDetalhe = null;
+    this.cdr.markForCheck();
+  }
 
-  abrirDetalheLivro(livro: AdminLivro): void { this.livroDetalhe = livro; this.detalheLivroAberto = true; this.cdr.markForCheck(); }
-  fecharDetalheLivro(): void { this.detalheLivroAberto = false; this.livroDetalhe = null; this.cdr.markForCheck(); }
+  abrirDetalheLivro(livro: AdminLivro): void {
+    this.livroDetalhe = livro;
+    this.detalheLivroAberto = true;
+    this.cdr.markForCheck();
+  }
+  fecharDetalheLivro(): void {
+    this.detalheLivroAberto = false;
+    this.livroDetalhe = null;
+    this.cdr.markForCheck();
+  }
 
   exportarDados(): void {
     this.adminService.exportarDados().subscribe((blob) => {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
-      a.href = url; a.download = `bliteca-relatorio-${new Date().toISOString().split('T')[0]}.csv`;
-      a.click(); window.URL.revokeObjectURL(url);
+      a.href = url;
+      a.download = `bliteca-relatorio-${new Date().toISOString().split('T')[0]}.csv`;
+      a.click();
+      window.URL.revokeObjectURL(url);
       this.alertService.success('Relatório exportado!');
     });
   }

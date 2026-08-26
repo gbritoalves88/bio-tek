@@ -4,11 +4,11 @@ export interface AdminDashboard {
   totalComentarios: number;
   comentariosFlagged: number;
   totalLivros: number;
-  totalAcessos: number;           // 🆕
-  acessos7Dias: number;           // 🆕
-  acessos30Dias: number;          // 🆕
-  mediaAcessosPorUsuario: number; // 🆕
-  usuariosAtivos30Dias: number;   // 🆕
+  totalAcessos: number;
+  acessos7Dias: number;
+  acessos30Dias: number;
+  mediaAcessosPorUsuario: number;
+  usuariosAtivos30Dias: number;
 }
 
 export interface AdminComentario {
@@ -49,9 +49,10 @@ export interface AdminUsuario {
   dataAceiteTermos?: string;
   descricao?: string;
   mediaAvaliacoes?: number;
-  totalAcessos?: number;      // 🆕
-  ultimoAcesso?: string;       // 🆕
-  acessos30Dias?: number;      // 🆕
+  totalAcessos?: number;
+  ultimoAcesso?: string;
+  acessos30Dias?: number;
+  notificacoesAtivas?: boolean; // 🆕 ADICIONADO
 }
 
 export interface Paginado<T> {
