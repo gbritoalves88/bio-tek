@@ -4,8 +4,10 @@
     <h1>Comunidade</h1>
   </div>
 
-<p class="aviso-geral">💡 Para comentar em um livro, o próprio leitor precisa ter finalizado a leitura e publicado a avaliação.</p>
-<p class="aviso-spoiler">⚠️ O feed pode conter spoilers de livros que você ainda não leu!</p>
+<p class="aviso-geral">💡 Para comentar em um livro, o próprio leitor precisa ter finalizado a leitura e publicado a avaliação.
+                       <br>⚠️ O feed pode conter spoilers de livros que você ainda não leu!
+</p>
+
 <!-- Skeleton Loading -->
   <div class="skeleton-container" *ngIf="carregando">
     <div class="skeleton-item" *ngFor="let i of [1,2,3]">
@@ -56,6 +58,22 @@
         </div>
 
         <!-- TIPO: ESTÁ LENDO -->
+        <div class="feed-conteudo" *ngSwitchCase="'livro_lendo'">
+          <div class="livro-padrao" *ngIf="item.livro">
+            <img [src]="item.livro?.imagem || 'assets/capas/perfilSemFoto.png'"
+                [alt]="item.livro?.titulo || 'Sem título'"
+                class="capa-padrao" />
+            <div class="livro-info-padrao">
+              <strong class="titulo-padrao">{{ item.livro?.titulo || 'Sem título' }}</strong>
+              <span class="autor-padrao">{{ item.livro?.autor || 'Autor desconhecido' }}</span>
+
+              <!-- 🆕 TEXTO DE JORNADA -->
+              <span class="jornada-texto">📖 Iniciou uma nova jornada</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- TIPO: progresso -->
         <div class="feed-conteudo" *ngSwitchCase="'livro_progresso'">
           <div class="livro-padrao" *ngIf="item.livro">
             <img [src]="item.livro?.imagem || 'assets/capas/perfilSemFoto.png'"
