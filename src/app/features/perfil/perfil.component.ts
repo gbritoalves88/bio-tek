@@ -639,12 +639,12 @@ export class PerfilComponent implements OnInit {
 
 
   carregarProgresso(): void {
-    if (!this.usuario?.id) return;
+    const usuarioId = this.modoVisualizacao ? this.usuarioIdVisualizado : this.usuario?.id;
+    if (!usuarioId) return;
 
     this.carregandoProgresso = true;
 
-    // Carregar streak
-    this.streakService.getStreak().subscribe({
+    this.streakService.getStreak(usuarioId).subscribe({
       next: (data) => {
         this.streak = data;
         this.cdr.markForCheck();
@@ -654,8 +654,7 @@ export class PerfilComponent implements OnInit {
       }
     });
 
-    // Carregar histórico
-    this.streakService.getHistorico().subscribe({
+    this.streakService.getHistorico(usuarioId).subscribe({
       next: (data) => {
         this.historico = data.dias;
         this.cdr.markForCheck();
@@ -665,8 +664,7 @@ export class PerfilComponent implements OnInit {
       }
     });
 
-    // 🆕 Carregar métricas do mês
-    this.streakService.getMetricasMes().subscribe({
+    this.streakService.getMetricasMes(usuarioId).subscribe({
       next: (data) => {
         this.metricas = data;
         this.carregandoProgresso = false;
