@@ -72,3 +72,21 @@ export interface AtividadeLeitura {
     tipo?: string;
   } | null;
 }
+
+export interface StreakData {
+  sequenciaAtual: number;
+  maiorSequencia: number;
+  ultimaDataAtividade: string | null;
+  leuHoje: boolean;
+}
+
+export interface StreakHistorico {
+  dias: string[];
+}
+
+export interface MetricasMes {
+  livrosLidos: number;
+  paginasLidas: number;
+  minutosOuvidos: number;
+  diasDeLeitura: number;
+}
