@@ -176,7 +176,7 @@
     <!-- ========== BIBLIOTECA PESSOAL ========== -->
     <div class="biblioteca-pessoal" *ngIf="usuario && !editando">
       <div class="biblioteca-header">
-        <h3>{{ modoVisualizacao ? 'Biblioteca' : 'Minha Biblioteca' }}</h3>
+
         <button class="btn-circle" *ngIf="!modoVisualizacao" title="Adicionar livro" (click)="abrirModalAdicionarLivro()">
           <span class="btn-label">Cadastrar Livro</span>
         </button>
