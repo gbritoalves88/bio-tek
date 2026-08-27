@@ -8,9 +8,22 @@
     </button>
   </div>
 
-  <div class="citacao">
-    <p class="citacao-texto">"{{ citacao.texto }}"</p>
-    <span class="citacao-autor">— {{ citacao.autor }}</span>
+  <!-- 🆕 STREAK (substitui a frase do autor) -->
+  <div class="streak-card" *ngIf="streak && streak.sequenciaAtual > 0">
+    <div class="streak-icon">🔥</div>
+    <div class="streak-info">
+      <strong>{{ streak.sequenciaAtual }} dias de leitura</strong>
+      <span *ngIf="!streak.leuHoje">Continue lendo hoje para manter sua sequência.</span>
+      <span *ngIf="streak.leuHoje">Você já leu hoje! Continue assim!</span>
+    </div>
+  </div>
+
+  <div class="streak-card empty" *ngIf="streak && streak.sequenciaAtual === 0">
+    <div class="streak-icon">📚</div>
+    <div class="streak-info">
+      <strong>Comece sua jornada de leitura!</strong>
+      <span>Atualize seu progresso para iniciar uma sequência.</span>
+    </div>
   </div>
 
   <!-- Skeleton Loading -->

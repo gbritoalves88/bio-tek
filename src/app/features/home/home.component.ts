@@ -1,6 +1,6 @@
 import { Component, OnInit, Inject, PLATFORM_ID, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { Livro, LivroLeitura, LivroTop, DashboardData } from './home.model';
+import { Livro, LivroLeitura, LivroTop, DashboardData, StreakData } from './home.model';
 import { HomeService } from './home.service';
 import { AddBookModalComponent } from '../../shared/add-book-modal/add-book-modal.component';
 import { AlertService } from '../../shared/services/alert.service';
@@ -10,6 +10,7 @@ import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { AnalyticsService } from '../../core/services/analytics.service';
 import { NotificationService } from '../../shared/services/notification.service';
+import { StreakService } from '../../core/services/streak.service';
 
 @Component({
   selector: 'app-home',
@@ -35,6 +36,7 @@ export class HomeComponent implements OnInit {
   compartilhando = false;
   previewImagem = '';
   fraseAtividade = '';
+  streak: StreakData | null = null;
 
   citacao = {
     texto: 'Um leitor vive mil vidas antes de morrer. O homem que nunca lê vive apenas uma.',
@@ -48,13 +50,15 @@ export class HomeComponent implements OnInit {
     private alertService: AlertService,
     private http: HttpClient,
     private analyticsService: AnalyticsService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private streakService: StreakService
   ) {}
 
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
       this.homeService.limparCache(); // 🆕 Limpar cache SEMPRE
       this.carregarDashboard();
+      this.carregarStreak();
       this.verificarNotificacoes();
     }
   }
@@ -383,6 +387,18 @@ export class HomeComponent implements OnInit {
           console.error('Erro ao solicitar permissão:', error);
         });
     }
+  }
+
+  carregarStreak(): void {
+    this.streakService.getStreak().subscribe({
+      next: (data) => {
+        this.streak = data;
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        console.error('Erro ao carregar streak:', err);
+      }
+    });
   }
 
 }

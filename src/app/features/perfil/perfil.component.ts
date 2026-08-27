@@ -2,12 +2,14 @@ import { Component, OnInit, Inject, PLATFORM_ID, ChangeDetectorRef, ViewChild, E
 import { CommonModule, isPlatformBrowser, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
-import { Usuario, LivroDoUsuario, AtividadeLeitura } from './perfil.model';
+import { Usuario, LivroDoUsuario, AtividadeLeitura, MetricasMes, StreakData } from './perfil.model';
 import { PerfilService } from './perfil.service';
 import { UploadService } from '../../shared/services/upload.service';
 import { BottomSheetComponent } from '../../shared/bottom-sheet/bottom-sheet.component';
 import { AlertService } from '../../shared/services/alert.service';
 import { AddBookModalComponent } from '../../shared/add-book-modal/add-book-modal.component';
+import { StreakService } from '../../core/services/streak.service';
+
 
 @Component({
   selector: 'app-perfil',
@@ -23,6 +25,7 @@ export class PerfilComponent implements OnInit {
   usuarioEdit: Partial<Usuario> = {};
   carregando = true;
   uploadErro = '';
+  metricas: MetricasMes | null = null;
 
   livros: LivroDoUsuario[] = [];
   filtroStatus: number | null = null;
@@ -41,10 +44,15 @@ export class PerfilComponent implements OnInit {
   livroComentarioProntos: any[] | null = null;
   confirmarExclusaoConta = false;
 
-  abaAtiva: 'biblioteca' | 'atividades' = 'biblioteca';
+  //abaAtiva: 'biblioteca' | 'atividades' = 'biblioteca';
   atividades: AtividadeLeitura[] = [];
   carregandoAtividades = false;
   zoomAvatarAberto = false;
+
+  abaAtiva: 'biblioteca' | 'atividades' | 'progresso' = 'biblioteca';
+  streak: StreakData | null = null;
+  historico: string[] = [];
+  carregandoProgresso = false;
 
   private primeiraCarga = true;
 
@@ -73,7 +81,8 @@ export class PerfilComponent implements OnInit {
     private route: ActivatedRoute,
     private location: Location,
     @Inject(PLATFORM_ID) private platformId: Object,
-    public cdr: ChangeDetectorRef
+    public cdr: ChangeDetectorRef,
+    private streakService: StreakService
   ) {}
 
   get nicknameEditavel(): boolean {
@@ -628,12 +637,86 @@ export class PerfilComponent implements OnInit {
     });
   }
 
-  trocarAba(aba: 'biblioteca' | 'atividades'): void {
+
+  carregarProgresso(): void {
+    if (!this.usuario?.id) return;
+
+    this.carregandoProgresso = true;
+
+    // Carregar streak
+    this.streakService.getStreak().subscribe({
+      next: (data) => {
+        this.streak = data;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.cdr.markForCheck();
+      }
+    });
+
+    // Carregar histórico
+    this.streakService.getHistorico().subscribe({
+      next: (data) => {
+        this.historico = data.dias;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.cdr.markForCheck();
+      }
+    });
+
+    // 🆕 Carregar métricas do mês
+    this.streakService.getMetricasMes().subscribe({
+      next: (data) => {
+        this.metricas = data;
+        this.carregandoProgresso = false;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.carregandoProgresso = false;
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  trocarAba(aba: 'biblioteca' | 'atividades' | 'progresso'): void {
     this.abaAtiva = aba;
 
     if (aba === 'atividades' && this.atividades.length === 0) {
       this.carregarAtividades();
     }
+
+    if (aba === 'progresso' && !this.streak) {
+      this.carregarProgresso();
+    }
+  }
+
+  // 🆕 PROPIEDADE PARA O CALENDÁRIO
+  get ultimos7Dias(): { dia: string; data: string }[] {
+    const dias = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+    const resultado: { dia: string; data: string }[] = [];
+
+    for (let i = 6; i >= 0; i--) {
+      const data = new Date();
+      data.setDate(data.getDate() - i);
+
+      // 🆕 Formatar no horário LOCAL (não UTC)
+      const ano = data.getFullYear();
+      const mes = String(data.getMonth() + 1).padStart(2, '0');
+      const dia = String(data.getDate()).padStart(2, '0');
+
+      resultado.push({
+        dia: dias[data.getDay()],
+        data: `${ano}-${mes}-${dia}`
+      });
+    }
+
+    return resultado;
+  }
+
+  // 🆕 MÉTODO PARA VERIFICAR SE O DIA FOI ATIVO
+  diaAtivo(dataStr: string): boolean {
+    return this.historico.includes(dataStr);
   }
 
 }

@@ -47,3 +47,10 @@ export enum StatusLeitura {
   Lendo = 2,
   Lido = 3
 }
+
+export interface StreakData {
+  sequenciaAtual: number;
+  maiorSequencia: number;
+  ultimaDataAtividade: string | null;
+  leuHoje: boolean;
+}

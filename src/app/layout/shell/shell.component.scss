@@ -218,7 +218,7 @@ $max-content-width: 900px;
 .content {
   flex: 1;
   padding: 0;
-  padding-bottom: $bottom-nav-height;
+  padding-bottom: 16px;
   background: var(--bg-primary);
   overflow-y: auto;
   width: 100%;
