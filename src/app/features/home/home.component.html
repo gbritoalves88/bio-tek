@@ -108,12 +108,16 @@
       </h2>
       <div class="scroll-horizontal">
         <div class="scroll-track">
-          <div class="livro-card" *ngFor="let livro of topAvaliados" (click)="abrirBottomSheet(livro)">
-            <img [src]="livro.imagem || 'assets/capas/perfilSemFoto.png'" [alt]="livro.titulo" class="livro-capa" />
+
+          <div class="livro-card" *ngFor="let livro of topAvaliados" (click)="abrirDetalhesLivro(livro, false)">
+            <img [src]="livro.imagem || 'assets/capas/perfilSemFoto.png'"
+                [alt]="livro.titulo"
+                class="livro-capa" />
             <span class="livro-titulo">{{ livro.titulo || 'Sem título' }}</span>
             <span class="livro-autor">{{ livro.autor }}</span>
             <span class="livro-rating" *ngIf="livro.media > 0">⭐ {{ livro.media }}</span>
           </div>
+
         </div>
       </div>
     </div>
@@ -136,11 +140,16 @@
       </h2>
       <div class="scroll-horizontal">
         <div class="scroll-track">
-          <div class="livro-card" *ngFor="let livro of listaLeitura" (click)="abrirBottomSheet(livro)">
-            <img [src]="livro.imagem || 'assets/capas/perfilSemFoto.png'" [alt]="livro.titulo" class="livro-capa" />
+
+
+          <div class="livro-card" *ngFor="let livro of listaLeitura" (click)="abrirDetalhesLivro(livro, true)">
+            <img [src]="livro.imagem || 'assets/capas/perfilSemFoto.png'"
+                [alt]="livro.titulo"
+                class="livro-capa" />
             <span class="livro-titulo">{{ livro.titulo || 'Sem título' }}</span>
             <span class="livro-autor">{{ livro.autor }}</span>
           </div>
+
         </div>
       </div>
     </div>

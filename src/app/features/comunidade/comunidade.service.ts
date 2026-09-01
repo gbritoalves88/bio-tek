@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, forkJoin, of } from 'rxjs';
-import { map, switchMap, shareReplay } from 'rxjs/operators';
+import { map, switchMap } from 'rxjs/operators';
 import { AtividadeComunidade, Comentario } from './comunidade.model';
 import { environment } from '../../../environments/environment';
 
@@ -15,20 +15,12 @@ export class ComunidadeService {
   private apiComentario = `${this.api}/ComentarioLivro`;
   private apiSeguidor = `${this.api}/Seguidor`;
 
-  // Cache
-  private feedCache$: Observable<AtividadeComunidade[]> | null = null;
-
   constructor(private http: HttpClient) {}
 
   getFeedComunidade(): Observable<AtividadeComunidade[]> {
-      return this.http.get<AtividadeComunidade[]>(
-        `${this.apiComunidade}/feed?limite=15`
-      );
-  }
-
-  atualizarFeed(): Observable<AtividadeComunidade[]> {
-    this.feedCache$ = null; // Limpa cache
-    return this.getFeedComunidade();
+    return this.http.get<AtividadeComunidade[]>(
+      `${this.apiComunidade}/feed?limite=15`
+    );
   }
 
   getComentariosDoLivro(idLivro: string): Observable<Comentario[]> {
@@ -56,10 +48,13 @@ export class ComunidadeService {
     return this.http.post(this.apiComentario, { idLivro, comentario });
   }
 
-  getSeguindo(): Observable<string[]> {
-    return this.http.get<any[]>(`${this.apiSeguidor}/seguindo`).pipe(
-      map(s => s.map(x => x.idUsuario))
-    );
+  // ============ SOCIAL ============
+  getSeguindo(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiSeguidor}/seguindo-completo`);
+  }
+
+  buscarUsuarios(termo: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUsuario}/buscar?termo=${termo}`);
   }
 
   seguir(idUsuario: string): Observable<any> {
@@ -70,7 +65,7 @@ export class ComunidadeService {
     return this.http.delete(`${this.apiSeguidor}/deixar-de-seguir/${idUsuario}`);
   }
 
-curtir(id: string, dados: {
+  curtir(id: string, dados: {
     tipoAtividade: string;
     idUsuarioDono: string;
     nomeCurtidor: string;

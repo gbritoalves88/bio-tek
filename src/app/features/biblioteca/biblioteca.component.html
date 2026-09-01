@@ -88,8 +88,8 @@
     </div>
 
     <!-- Grid de livros - 3 colunas -->
-   <div class="book-grid" *ngIf="livrosFiltrados.length > 0 && (generoSelecionado || termoBusca)">
-      <div class="book-card" *ngFor="let livro of livrosFiltrados" (click)="abrirBottomSheet(livro)">
+    <div class="book-grid" *ngIf="livrosFiltrados.length > 0 && (generoSelecionado || termoBusca)">
+      <div class="book-card" *ngFor="let livro of livrosFiltrados" (click)="abrirDetalhesLivro(livro)">
         <img [src]="livro.imagem || 'assets/capas/perfilSemFoto.png'" [alt]="livro.titulo" class="book-cover" />
         <div class="book-info">
           <h3 class="book-title">{{ livro.titulo || 'Sem título' }}</h3>
@@ -117,41 +117,3 @@
   (fechar)="modalAberto = false"
   (livroAdicionado)="onLivroAdicionado($event)">
 </app-add-book-modal>
-
-<!-- Bottom Sheet: Detalhes do Livro -->
-<app-bottom-sheet [aberto]="bottomSheetAberto" (fechar)="fecharBottomSheet()">
-  <ng-container *ngIf="livroSelecionado">
-    <div class="bottom-sheet-header">
-      <h3>📖 {{ livroSelecionado.titulo || 'Livro' }}</h3>
-      <button class="bottom-sheet-close" (click)="fecharBottomSheet()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-        </svg>
-      </button>
-    </div>
-
-    <div class="bs-livro-destaque">
-      <img [src]="livroSelecionado.imagem || 'assets/capas/perfilSemFoto.png'"
-           [alt]="livroSelecionado.titulo"
-           class="bs-capa" />
-      <div class="bs-info">
-        <strong class="bs-titulo">{{ livroSelecionado.titulo || 'Sem título' }}</strong>
-        <span class="bs-autor">{{ livroSelecionado.autor || 'Autor desconhecido' }}</span>
-        <span class="bs-rating" *ngIf="livroSelecionado.anoPublicacao">📅 {{ livroSelecionado.anoPublicacao }}</span>
-        <span class="bs-generos" *ngIf="livroSelecionado.generos?.length">
-          {{ livroSelecionado.generos?.join(' • ') }}
-        </span>
-      </div>
-    </div>
-
-    <div class="bs-acoes">
-      <button class="bs-btn bs-btn-primary" (click)="adicionarDoBottomSheet()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <line x1="12" y1="5" x2="12" y2="19"/>
-          <line x1="5" y1="12" x2="19" y2="12"/>
-        </svg>
-        Adicionar à minha biblioteca
-      </button>
-    </div>
-  </ng-container>
-</app-bottom-sheet>

@@ -3,23 +3,25 @@ import { ShellComponent } from './layout/shell/shell.component';
 import { HomeComponent } from './features/home/home.component';
 import { BibliotecaComponent } from './features/biblioteca/biblioteca.component';
 import { ComunidadeComponent } from './features/comunidade/comunidade.component';
-import { SocialComponent } from './features/social/social.component';
 import { PerfilComponent } from './features/perfil/perfil.component';
 import { LoginComponent } from './features/login/login.component';
 import { TermoComponent } from './features/termos/termos.component';
 import { AuthGuard } from './core/guards/auth.guard';
 import { AdminGuard } from './core/guards/admin.guard';
 import { PerfilCompletoGuard } from './core/guards/perfil-completo.guard';
-import { LoginGuard } from './core/guards/login.guard'; // ← ADICIONAR
+import { LoginGuard } from './core/guards/login.guard';
+import { LivroComponent } from './shared/livro/livro.component';
 
 export const routes: Routes = [
+  // ============ ROTAS PÚBLICAS ============
   {
     path: '',
     component: LoginComponent,
-    canActivate: [LoginGuard] // ← ADICIONAR
+    canActivate: [LoginGuard]
   },
   { path: 'termo', component: TermoComponent },
 
+  // ============ APP COM SHELL ============
   {
     path: 'inicio',
     component: ShellComponent,
@@ -41,17 +43,16 @@ export const routes: Routes = [
         canActivate: [PerfilCompletoGuard]
       },
       {
-        path: 'social',
-        component: SocialComponent,
-        canActivate: [PerfilCompletoGuard]
-      },
-      {
         path: 'perfil',
         component: PerfilComponent
       },
       {
         path: 'perfil/:id',
         component: PerfilComponent
+      },
+      {
+        path: 'livro/:id',
+        component: LivroComponent
       },
       {
         path: 'admin',
@@ -61,5 +62,6 @@ export const routes: Routes = [
     ]
   },
 
+  // ============ FALLBACK ============
   { path: '**', redirectTo: '' }
 ];
