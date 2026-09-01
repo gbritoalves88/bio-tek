@@ -59,6 +59,7 @@ export interface AtividadeLeitura {
   id: string;
   comentario: string;
   dataCriacao: string;
+  origem?: string; // "Atividade" | "Pausa" | "Retomada"
   progresso?: number;
   paginaAtual?: number;
   totalPaginas?: number;

@@ -3,7 +3,7 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { SocialService } from './social.service';
 import { UsuarioSocial } from './social.model';
 import { Router } from '@angular/router';
-import { AlertService } from '../../shared/services/alert.service';
+import { AlertService } from '../../../shared/services/alert.service';
 import { FormsModule } from '@angular/forms';
 
 @Component({

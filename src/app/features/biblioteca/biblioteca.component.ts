@@ -1,6 +1,7 @@
 import { Component, OnInit, Inject, PLATFORM_ID, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router'; // 🆕 Importar Router
 import { CatalogoService, CatalogoLivro } from './catalogo.service';
 import { AddBookModalComponent } from '../../shared/add-book-modal/add-book-modal.component';
 import { AlertService } from '../../shared/services/alert.service';
@@ -21,8 +22,6 @@ export class BibliotecaComponent implements OnInit {
   carregando = true;
   modalAberto = false;
   adicionando: { [key: string]: boolean } = {};
-  bottomSheetAberto = false;
-  livroSelecionado: CatalogoLivro | null = null;
   categorias: string[] = [];
   generoSelecionado: string | null = null;
   categoriasPrincipais: string[] = [];
@@ -35,37 +34,37 @@ export class BibliotecaComponent implements OnInit {
   ];
 
   autoresFamosos = [
-  {
-    nome: 'J. K. Rowling',
-    foto: 'https://i.ibb.co/HL9bR6FK/jk.jpg',
-    termo: 'J. K. Rowling'
-  },
-  {
-    nome: 'Stephen King',
-    foto: 'https://i.ibb.co/v6h7nfyj/king.jpg',
-    termo: 'Stephen King'
-  },
-  {
-    nome: 'Machado de Assis',
-    foto: 'https://i.ibb.co/ZzNKcHqM/machado.jpg',
-    termo: 'Machado de Assis'
-  },
-  {
-    nome: 'Agatha Christie',
-    foto: 'https://i.ibb.co/DddHJbR/agatha.jpg',
-    termo: 'Agatha Christie'
-  },
-  {
-    nome: 'Tolkien',
-    foto: 'https://i.ibb.co/5WRhM4Bk/tolkien.webp',
-    termo: 'Tolkien'
-  },
-];
-
+    {
+      nome: 'J. K. Rowling',
+      foto: 'https://i.ibb.co/HL9bR6FK/jk.jpg',
+      termo: 'J. K. Rowling'
+    },
+    {
+      nome: 'Stephen King',
+      foto: 'https://i.ibb.co/v6h7nfyj/king.jpg',
+      termo: 'Stephen King'
+    },
+    {
+      nome: 'Machado de Assis',
+      foto: 'https://i.ibb.co/ZzNKcHqM/machado.jpg',
+      termo: 'Machado de Assis'
+    },
+    {
+      nome: 'Agatha Christie',
+      foto: 'https://i.ibb.co/DddHJbR/agatha.jpg',
+      termo: 'Agatha Christie'
+    },
+    {
+      nome: 'Tolkien',
+      foto: 'https://i.ibb.co/5WRhM4Bk/tolkien.webp',
+      termo: 'Tolkien'
+    },
+  ];
 
   constructor(
     private catalogoService: CatalogoService,
     private alertService: AlertService,
+    private router: Router, // 🆕 Injetar Router
     @Inject(PLATFORM_ID) private platformId: Object,
     private cdr: ChangeDetectorRef
   ) {}
@@ -76,7 +75,6 @@ export class BibliotecaComponent implements OnInit {
       this.carregarCategorias();
     }
   }
-
 
   carregarCatalogo(): void {
     this.carregando = true;
@@ -98,7 +96,6 @@ export class BibliotecaComponent implements OnInit {
   filtrarPorAutor(termo: string): void {
     this.generoSelecionado = null;
 
-    // Extrai só o nome do autor (ex: "J.K. Rowling" de "jk rowling harry potter")
     const nomeAutor = this.autoresFamosos.find(a => a.termo === termo)?.nome || termo;
 
     this.termoBusca = nomeAutor;
@@ -110,7 +107,6 @@ export class BibliotecaComponent implements OnInit {
     this.generoSelecionado = genero;
     this.termoBusca = '';
 
-    // Converte o gênero em português de volta para inglês para buscar
     const generoIngles = this.getGeneroIngles(genero);
 
     this.livros = this.livrosOriginais.filter(l =>
@@ -150,14 +146,12 @@ export class BibliotecaComponent implements OnInit {
     return mapa[generoPt] || generoPt;
   }
 
-
   get todasCategoriasVisiveis(): string[] {
     if (this.mostrarTodasCategorias) {
       return [...this.categoriasPrincipais, ...this.categoriasExtras];
     }
     return this.categoriasPrincipais;
   }
-
 
   limparFiltroGenero(): void {
     this.generoSelecionado = null;
@@ -171,7 +165,6 @@ export class BibliotecaComponent implements OnInit {
         const unicas = [...new Set(traduzidas)].sort();
 
         this.categorias = unicas;
-        // Se não tem 8 categorias reais, completa com as fixas
         this.categoriasPrincipais = this.CATEGORIAS_PRINCIPAIS.filter(c => unicas.includes(c));
         if (this.categoriasPrincipais.length < 8) {
           this.categoriasPrincipais = this.CATEGORIAS_PRINCIPAIS;
@@ -250,7 +243,6 @@ export class BibliotecaComponent implements OnInit {
     return traducoes[genero] || genero;
   }
 
-
   filtrarLocal(): void {
     if (!this.termoBusca.trim()) {
       this.livros = [...this.livrosOriginais];
@@ -279,46 +271,17 @@ export class BibliotecaComponent implements OnInit {
     this.carregarCatalogo();
   }
 
-  adicionarBiblioteca(catalogoId: string): void {
-    this.adicionando[catalogoId] = true;
-
-    this.catalogoService.adicionarBiblioteca(catalogoId).subscribe({
-      next: () => {
-        this.adicionando[catalogoId] = false;
-        this.alertService.success('Livro adicionado à sua biblioteca!');
-        this.cdr.markForCheck();
-      },
-      error: (err) => {
-        this.adicionando[catalogoId] = false;
-        if (err.status === 400 && err.error?.mensagem) {
-          this.alertService.warning(err.error.mensagem);
-        } else {
-          this.alertService.error('Erro ao adicionar livro');
-        }
+  // 🆕 Método atualizado: navega para a página de detalhes
+  abrirDetalhesLivro(livro: CatalogoLivro): void {
+    this.router.navigate(['/inicio/livro', livro.id], {
+      state: {
+        livro: livro,
+        editavel: false // Sempre false para livros do catálogo
       }
     });
   }
 
   get livrosFiltrados(): CatalogoLivro[] {
     return this.livros;
-  }
-
-    // Novos métodos:
-  abrirBottomSheet(livro: CatalogoLivro): void {
-    this.livroSelecionado = livro;
-    this.bottomSheetAberto = true;
-    this.cdr.markForCheck();
-  }
-
-  fecharBottomSheet(): void {
-    this.bottomSheetAberto = false;
-    this.livroSelecionado = null;
-    this.cdr.markForCheck();
-  }
-
-  adicionarDoBottomSheet(): void {
-    if (!this.livroSelecionado) return;
-    this.adicionarBiblioteca(this.livroSelecionado.id);
-    this.fecharBottomSheet();
   }
 }

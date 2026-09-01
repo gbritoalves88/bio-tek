@@ -717,4 +717,25 @@ export class PerfilComponent implements OnInit {
     return this.historico.includes(dataStr);
   }
 
+  // 🆕 Método para navegar para detalhes do livro
+  abrirDetalhesLivro(livro: any, event?: Event): void {
+    if (event) {
+      event.stopPropagation();
+    }
+
+    if (!livro) return;
+
+    // Fecha o bottom sheet antes de navegar
+    this.fecharBottomSheetLivro();
+
+    // Navega para a página de detalhes
+    this.router.navigate(['/inicio/livro', livro.id], {
+      state: {
+        livro: livro,
+        editavel: !this.modoVisualizacao, // Se está vendo o próprio perfil, é editável
+        origem: 'perfil'
+      }
+    });
+  }
+
 }

@@ -11,6 +11,7 @@ import { firstValueFrom } from 'rxjs';
 import { AnalyticsService } from '../../core/services/analytics.service';
 import { NotificationService } from '../../shared/services/notification.service';
 import { StreakService } from '../../core/services/streak.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-home',
@@ -51,7 +52,8 @@ export class HomeComponent implements OnInit {
     private http: HttpClient,
     private analyticsService: AnalyticsService,
     private notificationService: NotificationService,
-    private streakService: StreakService
+    private streakService: StreakService,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -75,6 +77,7 @@ export class HomeComponent implements OnInit {
         this.livroAtual = data.livroAtual || null;
         this.listaLeitura = data.listaLeitura || [];
         this.topAvaliados = data.topAvaliados || [];
+        this.streak = data.streak || null; // 🆕
         this.carregando = false;
         this.cdr.markForCheck();
       },
@@ -99,6 +102,15 @@ export class HomeComponent implements OnInit {
     this.livroSelecionado = livro;
     this.bottomSheetAberto = true;
     this.cdr.markForCheck();
+  }
+
+  abrirDetalhesLivro(livro: any, editavel: boolean = false): void {
+    this.router.navigate(['/inicio/livro', livro.id], {
+      state: {
+        livro: livro,
+        editavel: editavel
+      }
+    });
   }
 
   fecharBottomSheet(): void {

@@ -1,12 +1,6 @@
 <div class="shell">
   <header class="header">
     <div class="header-inner">
-      <button class="hamburger" (click)="toggleMenu()" aria-label="Menu">
-        <span></span>
-        <span></span>
-        <span></span>
-      </button>
-
       <a routerLink="/inicio" class="logo-link" aria-label="Ir para Home">
         <svg class="logo-full" viewBox="0 0 120 30" fill="none">
           <path d="M4 25.5A2.5 2.5 0 0 1 6.5 23H20V2H6.5A2.5 2.5 0 0 0 4 4.5v21z"
@@ -26,26 +20,25 @@
   </header>
 
   <div class="main-layout">
-    <div class="overlay" [class.active]="menuOpen" (click)="closeMenu()"></div>
-
     <div class="layout-container">
-      <aside class="sidebar" [class.open]="menuOpen">
+      <!-- SIDEBAR (apenas desktop) -->
+      <aside class="sidebar">
         <nav>
-          <a routerLink="/inicio" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" class="sidebar-link" (click)="closeMenu()">
+          <a routerLink="/inicio" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" class="sidebar-link">
             <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
               <polyline points="9 22 9 12 15 12 15 22"/>
             </svg>
             Home
           </a>
-          <a routerLink="/inicio/biblioteca" routerLinkActive="active" class="sidebar-link" (click)="closeMenu()">
+          <a routerLink="/inicio/biblioteca" routerLinkActive="active" class="sidebar-link">
             <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
               <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
             </svg>
             Biblioteca
           </a>
-          <a routerLink="/inicio/comunidade" routerLinkActive="active" class="sidebar-link" (click)="closeMenu()">
+          <a routerLink="/inicio/comunidade" routerLinkActive="active" class="sidebar-link">
             <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
               <circle cx="9" cy="7" r="4"/>
@@ -54,13 +47,7 @@
             </svg>
             Comunidade
           </a>
-          <a routerLink="/inicio/social" routerLinkActive="active" class="sidebar-link" (click)="closeMenu()">
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-            </svg>
-            Social
-          </a>
-          <a routerLink="/inicio/perfil" routerLinkActive="active" class="sidebar-link" (click)="closeMenu()">
+          <a routerLink="/inicio/perfil" routerLinkActive="active" class="sidebar-link">
             <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
               <circle cx="12" cy="7" r="4"/>
@@ -97,10 +84,10 @@
             </button>
 
             <div class="admin-subitens" [class.expandido]="adminExpandido">
-              <a routerLink="/inicio/admin" routerLinkActive="active" class="sidebar-link sub-item" [queryParams]="{ aba: 'dashboard' }" (click)="closeMenu()">📊 Dashboard</a>
-              <a routerLink="/inicio/admin" routerLinkActive="active" class="sidebar-link sub-item" [queryParams]="{ aba: 'comentarios' }" (click)="closeMenu()">💬 Comentários</a>
-              <a routerLink="/inicio/admin" routerLinkActive="active" class="sidebar-link sub-item" [queryParams]="{ aba: 'usuarios' }" (click)="closeMenu()">👥 Usuários</a>
-              <a routerLink="/inicio/admin" routerLinkActive="active" class="sidebar-link sub-item" [queryParams]="{ aba: 'livros' }" (click)="closeMenu()">📚 Livros</a>
+              <a routerLink="/inicio/admin" routerLinkActive="active" class="sidebar-link sub-item" [queryParams]="{ aba: 'dashboard' }">📊 Dashboard</a>
+              <a routerLink="/inicio/admin" routerLinkActive="active" class="sidebar-link sub-item" [queryParams]="{ aba: 'comentarios' }">💬 Comentários</a>
+              <a routerLink="/inicio/admin" routerLinkActive="active" class="sidebar-link sub-item" [queryParams]="{ aba: 'usuarios' }">👥 Usuários</a>
+              <a routerLink="/inicio/admin" routerLinkActive="active" class="sidebar-link sub-item" [queryParams]="{ aba: 'livros' }">📚 Livros</a>
             </div>
           </ng-container>
         </nav>
@@ -112,6 +99,7 @@
     </div>
   </div>
 
+  <!-- BOTTOM NAV (apenas mobile) -->
   <nav class="bottom-nav">
     <a routerLink="/inicio" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
       <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -135,12 +123,6 @@
         <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
       </svg>
       <span>Comunidade</span>
-    </a>
-    <a routerLink="/inicio/social" routerLinkActive="active">
-      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-      </svg>
-      <span>Social</span>
     </a>
     <a routerLink="/inicio/perfil" routerLinkActive="active">
       <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

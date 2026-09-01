@@ -1,0 +1,240 @@
+<section class="livro-detalhe">
+  <!-- Header -->
+  <div class="livro-header">
+    <button class="btn-voltar" (click)="voltar()">←</button>
+    <h1>Livro</h1>
+  </div>
+
+  <!-- SKELETON -->
+  <div class="skeleton" *ngIf="livro && carregandoDetalhes">
+    <div class="skeleton-topo">
+      <div class="sk-capa"></div>
+      <div class="sk-info">
+        <div class="sk-linha grande"></div>
+        <div class="sk-linha media"></div>
+        <div class="sk-linha pequena"></div>
+        <div class="sk-botao"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTEÚDO -->
+  <ng-container *ngIf="livro && !carregandoDetalhes">
+    <!-- Capa + Título -->
+    <div class="livro-topo">
+      <img [src]="livro.imagem || 'assets/capas/perfilSemFoto.png'"
+           [alt]="livro.titulo"
+           class="capa" />
+
+      <div class="livro-info">
+        <h2>{{ livro.titulo }}</h2>
+        <span class="autor">{{ livro.autor }}</span>
+
+        <div class="avaliacao" *ngIf="detalhes?.avaliacaoMedia || livro.media">
+          ⭐ {{ detalhes?.avaliacaoMedia || livro.media }}
+          <span *ngIf="detalhes?.totalAvaliacoes">
+            · {{ detalhes?.totalAvaliacoes }} avaliações
+          </span>
+        </div>
+
+        <span class="tipo" *ngIf="livro.tipo">
+          {{ getTipoTexto(livro.tipo) }}
+        </span>
+
+        <button class="btn-adicionar"
+                *ngIf="!editavel"
+                (click)="adicionarABiblioteca()"
+                [disabled]="adicionando">
+          {{ adicionando ? 'Adicionando...' : '+ Adicionar' }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Na Bliteca -->
+    <div class="secao" *ngIf="detalhes">
+      <h3>Na Bliteca</h3>
+      <div class="stats">
+        <div class="stat">
+          <strong>{{ detalhes.totalNaBiblioteca }}</strong>
+          <span>biblioteca</span>
+        </div>
+        <div class="stat">
+          <strong>{{ detalhes.totalLendo }}</strong>
+          <span>lendo</span>
+        </div>
+        <div class="stat">
+          <strong>{{ detalhes.totalLido }}</strong>
+          <span>leram</span>
+        </div>
+        <div class="stat">
+          <strong>{{ detalhes.totalQueroLer }}</strong>
+          <span>querem</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sobre -->
+    <div class="secao" *ngIf="livro.descricao">
+      <h3>Sobre</h3>
+      <p class="texto">{{ livro.descricao }}</p>
+    </div>
+
+    <!-- Informações -->
+    <div class="secao">
+      <h3>Informações</h3>
+      <div class="infos">
+        <div class="info" *ngIf="livro.autor">
+          <span>Autor</span>
+          <strong>{{ livro.autor }}</strong>
+        </div>
+        <div class="info" *ngIf="livro.tipo">
+          <span>Tipo</span>
+          <strong>{{ getTipoTexto(livro.tipo) }}</strong>
+        </div>
+        <div class="info" *ngIf="livro.totalPaginas">
+          <span>Páginas</span>
+          <strong>{{ livro.totalPaginas }}</strong>
+        </div>
+        <div class="info" *ngIf="livro.totalMinutos">
+          <span>Duração</span>
+          <strong>{{ formatarMinutos(livro.totalMinutos) }}</strong>
+        </div>
+        <div class="info" *ngIf="livro.codigoBarras">
+          <span>ISBN</span>
+          <strong>{{ livro.codigoBarras }}</strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- Minha leitura -->
+    <div class="secao" *ngIf="editavel">
+      <h3>Minha leitura</h3>
+      <div class="infos">
+        <div class="info" *ngIf="livro.status">
+          <span>Status</span>
+          <strong>{{ getStatusTexto(livro.status) }}</strong>
+        </div>
+        <div class="info" *ngIf="livro.progresso">
+          <span>Progresso</span>
+          <strong>{{ livro.progresso }}%</strong>
+        </div>
+        <div class="info" *ngIf="livro.paginaAtual">
+          <span>Página</span>
+          <strong>{{ livro.paginaAtual }} / {{ livro.totalPaginas || '?' }}</strong>
+        </div>
+        <div class="info" *ngIf="livro.minutoAtual">
+          <span>Minuto</span>
+          <strong>{{ formatarMinutos(livro.minutoAtual) }} / {{ formatarMinutos(livro.totalMinutos || 0) }}</strong>
+        </div>
+        <div class="info" *ngIf="livro.ultimaLeitura">
+          <span>Última leitura</span>
+          <strong>{{ livro.ultimaLeitura | date:'dd/MM/yyyy HH:mm' }}</strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ações -->
+    <div class="acoes" *ngIf="editavel">
+      <button class="btn-editar" (click)="editarLivro()">Editar</button>
+      <button class="btn-remover" (click)="removerLivro()">Remover</button>
+    </div>
+  </ng-container>
+</section>
+
+<!-- Bottom Sheet: Editar -->
+<app-bottom-sheet [aberto]="modalEdicaoAberto" (fechar)="fecharEdicao()">
+
+    <div class="bottom-sheet-header">
+      <h3>Editar Livro</h3>
+      <button class="bottom-sheet-close" (click)="fecharEdicao()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+  <ng-container *ngIf="livroEditando">
+      <div class="bs-form">
+        <label>Título</label>
+        <input type="text" [(ngModel)]="livroEditando.titulo" class="bs-input">
+
+        <label>Autor</label>
+        <input type="text" [(ngModel)]="livroEditando.autor" class="bs-input">
+
+        <label>Descrição</label>
+        <textarea [(ngModel)]="livroEditando.descricao" rows="3" class="bs-input"></textarea>
+
+        <label>Tipo</label>
+        <select [(ngModel)]="livroEditando.tipo" class="bs-select">
+          <option value="livro">📖 Livro</option>
+          <option value="audiobook">🎧 Audiobook</option>
+        </select>
+
+        <label>Status</label>
+        <select [(ngModel)]="livroEditando.status" class="bs-select">
+          <option [ngValue]="1">📕 Quero ler</option>
+          <option [ngValue]="2">📖 Lendo</option>
+          <option [ngValue]="3">✅ Lido</option>
+        </select>
+      </div>
+
+    <button class="bs-salvar" (click)="salvarEdicao()">Salvar</button>
+  </ng-container>
+</app-bottom-sheet>
+
+<!-- Modal: Remover -->
+<div class="confirm-overlay" *ngIf="modalRemoverAberto" (click)="fecharRemover()">
+  <div class="confirm-modal" (click)="$event.stopPropagation()">
+    <div class="confirm-icon">🗑️</div>
+    <p class="confirm-message">Remover este livro da sua biblioteca?</p>
+    <div class="confirm-actions">
+      <button class="confirm-btn cancel" (click)="fecharRemover()">Cancelar</button>
+      <button class="confirm-btn delete" (click)="confirmarRemover()">Remover</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- Bottom Sheet: Pós-Adicionar -->
+<app-bottom-sheet [aberto]="modalPosAdicionar" (fechar)="fecharModalPosAdicionar()">
+  <ng-container *ngIf="livroAdicionado">
+    <div class="bottom-sheet-header">
+      <h3>🎉 Livro adicionado!</h3>
+      <button class="bottom-sheet-close" (click)="fecharModalPosAdicionar()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="bs-livro-destaque">
+      <img
+        [src]="livroAdicionado.imagem || 'assets/capas/perfilSemFoto.png'"
+        [alt]="livroAdicionado.titulo"
+        class="bs-capa"
+      />
+      <div class="bs-info">
+        <strong class="bs-titulo">📖 "{{ livroAdicionado.titulo }}"</strong>
+        <span class="bs-autor">{{ livroAdicionado.autor }}</span>
+      </div>
+    </div>
+
+    <div class="bs-form">
+      <label class="bs-label">Tipo</label>
+      <select [(ngModel)]="tipoSelecionado" class="bs-select">
+        <option value="livro">📖 Livro</option>
+        <option value="audiobook">🎧 Audiobook</option>
+      </select>
+
+      <label class="bs-label">Status</label>
+      <select [(ngModel)]="statusSelecionado" class="bs-select">
+        <option [ngValue]="1">📕 Quero ler</option>
+        <option [ngValue]="2">📖 Lendo</option>
+        <option [ngValue]="3">✅ Lido</option>
+      </select>
+    </div>
+
+    <button class="bs-salvar" (click)="salvarPosAdicionar()">
+      Salvar
+    </button>
+  </ng-container>
+</app-bottom-sheet>

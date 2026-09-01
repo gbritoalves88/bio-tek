@@ -1,0 +1,635 @@
+// ===== CONTAINER PRINCIPAL =====
+.livro-detalhe {
+  padding: 20px 16px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+// ===== HEADER =====
+.livro-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+
+  h1 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+  }
+}
+
+.btn-voltar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--border-color);
+  background: transparent;
+  cursor: pointer;
+  font-size: 18px;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+
+  &:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(var(--accent-rgb), 0.1);
+  }
+}
+
+// ===== TOPO (CAPA + INFO) =====
+.livro-topo {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.capa {
+  width: 130px;
+  aspect-ratio: 2/3;
+  object-fit: cover;
+  border-radius: 10px;
+  flex-shrink: 0;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.livro-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+
+  h2 {
+    margin: 0;
+    font-size: 18px;
+    line-height: 1.3;
+    font-weight: 600;
+  }
+}
+
+.autor {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.avaliacao {
+  font-size: 14px;
+  margin-top: 2px;
+
+  span {
+    font-size: 11px;
+    color: var(--text-secondary);
+  }
+}
+
+.tipo {
+  font-size: 11px;
+  color: var(--accent);
+  font-weight: 500;
+}
+
+.btn-adicionar {
+  margin-top: auto;
+  padding: 10px 16px;
+  border-radius: 20px;
+  border: none;
+  background: var(--accent);
+  color: white;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  width: fit-content;
+  transition: all 0.2s;
+
+  &:hover:not(:disabled) {
+    opacity: 0.9;
+    transform: translateY(-1px);
+  }
+
+  &:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+// ===== SEÇÕES =====
+.secao {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 14px;
+  transition: all 0.2s;
+
+  h3 {
+    margin: 0 0 10px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+}
+
+.texto {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-primary);
+}
+
+// ===== STATS =====
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 4px;
+  background: var(--bg-primary);
+  border-radius: 8px;
+  transition: all 0.2s;
+
+  &:hover {
+    background: var(--bg-hover, rgba(var(--accent-rgb), 0.05));
+  }
+
+  strong {
+    font-size: 18px;
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  span {
+    font-size: 9px;
+    color: var(--text-secondary);
+    margin-top: 2px;
+  }
+}
+
+// ===== INFORMAÇÕES =====
+.infos {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 0;
+
+  span {
+    font-size: 12px;
+    color: var(--text-secondary);
+    flex-shrink: 0;
+  }
+
+  strong {
+    font-size: 13px;
+    text-align: right;
+    font-weight: 600;
+  }
+}
+
+// ===== AÇÕES =====
+.acoes {
+  display: flex;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.btn-editar,
+.btn-remover {
+  flex: 1;
+  padding: 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.2s;
+}
+
+.btn-editar {
+  border: 1px solid var(--accent);
+  background: transparent;
+  color: var(--accent);
+
+  &:hover {
+    background: var(--accent);
+    color: white;
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+.btn-remover {
+  border: 1px solid #e74c3c;
+  background: transparent;
+  color: #e74c3c;
+
+  &:hover {
+    background: #e74c3c;
+    color: white;
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+// ===== SKELETON LOADING =====
+.skeleton {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.skeleton-topo {
+  display: flex;
+  gap: 16px;
+}
+
+.sk-capa {
+  width: 130px;
+  aspect-ratio: 2/3;
+  background: var(--border-color);
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+.sk-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sk-linha {
+  height: 14px;
+  background: var(--border-color);
+  border-radius: 4px;
+  width: 70%;
+
+  &.grande {
+    height: 20px;
+    width: 90%;
+  }
+
+  &.media {
+    height: 14px;
+    width: 50%;
+  }
+
+  &.pequena {
+    height: 12px;
+    width: 30%;
+  }
+}
+
+.sk-botao {
+  height: 36px;
+  width: 100px;
+  background: var(--border-color);
+  border-radius: 20px;
+  margin-top: auto;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+// ===== MODAL DE CONFIRMAÇÃO (REMOVER) =====
+.confirm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.confirm-modal {
+  background: var(--bg-card);
+  border-radius: 16px;
+  padding: 24px 20px;
+  max-width: 300px;
+  width: 90%;
+  text-align: center;
+  animation: scaleIn 0.3s ease-out;
+}
+
+.confirm-icon {
+  font-size: 40px;
+  margin-bottom: 12px;
+}
+
+.confirm-message {
+  font-size: 14px;
+  line-height: 1.5;
+  margin-bottom: 20px;
+  color: var(--text-primary);
+}
+
+.confirm-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.confirm-btn {
+  flex: 1;
+  padding: 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &.cancel {
+    border: 1px solid var(--border-color);
+    background: transparent;
+    color: var(--text-secondary);
+
+    &:hover {
+      background: var(--bg-hover, rgba(0, 0, 0, 0.05));
+    }
+  }
+
+  &.delete {
+    border: none;
+    background: #e74c3c;
+    color: white;
+
+    &:hover {
+      background: #c0392b;
+      transform: translateY(-1px);
+    }
+
+    &:active {
+      transform: scale(0.98);
+    }
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+// ===== BOTTOM SHEET (Estilos globais para conteúdo projetado) =====
+:host ::ng-deep {
+  // Header do Bottom Sheet
+  .bottom-sheet-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+
+    h3 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+  }
+
+  .bottom-sheet-close {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    transition: all 0.2s;
+
+    svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    &:hover {
+      color: var(--accent);
+      background: rgba(var(--accent-rgb), 0.1);
+    }
+  }
+
+  // Formulário
+  .bs-form {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 4px;
+      margin-top: 8px;
+    }
+  }
+
+  .bs-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+    margin-top: 12px;
+  }
+
+  // Inputs e Selects
+  .bs-input,
+  .bs-select {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-size: 14px;
+    box-sizing: border-box;
+    transition: all 0.2s;
+
+    &:focus {
+      border-color: var(--accent);
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(var(--accent-rgb), 0.1);
+    }
+
+    &::placeholder {
+      color: var(--text-secondary);
+      opacity: 0.6;
+    }
+
+    &:hover {
+      border-color: var(--accent);
+    }
+  }
+
+  textarea.bs-input {
+    resize: vertical;
+    min-height: 80px;
+  }
+
+  .bs-select {
+    appearance: none;
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 32px;
+  }
+
+  // Destaque do Livro no Bottom Sheet
+  .bs-livro-destaque {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 24px;
+    padding: 16px;
+    background: var(--bg-primary);
+    border-radius: 12px;
+    align-items: center;
+  }
+
+  .bs-capa {
+    width: 80px;
+    aspect-ratio: 2/3;
+    object-fit: cover;
+    border-radius: 8px;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  }
+
+  .bs-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .bs-titulo {
+    display: block;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+    line-height: 1.3;
+  }
+
+  .bs-autor {
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+
+  // Botão Salvar
+  .bs-salvar {
+    width: 100%;
+    padding: 14px;
+    margin-top: 24px;
+    border-radius: 25px;
+    border: none;
+    background: var(--accent);
+    color: white;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(var(--accent-rgb), 0.3);
+    }
+
+    &:active {
+      transform: scale(0.98);
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  }
+}
+
+// ===== RESPONSIVIDADE =====
+@media (max-width: 360px) {
+  .livro-detalhe {
+    padding: 16px 12px;
+  }
+
+  .livro-topo {
+    gap: 12px;
+  }
+
+  .capa {
+    width: 100px;
+  }
+
+  .stats {
+    gap: 6px;
+  }
+
+  .stat {
+    padding: 10px 2px;
+
+    strong {
+      font-size: 16px;
+    }
+
+    span {
+      font-size: 8px;
+    }
+  }
+
+  :host ::ng-deep {
+    .bs-livro-destaque {
+      padding: 12px;
+      gap: 12px;
+    }
+
+    .bs-capa {
+      width: 60px;
+    }
+  }
+}

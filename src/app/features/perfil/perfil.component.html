@@ -245,11 +245,19 @@
             <div class="atividade-info">
               <strong class="atividade-titulo">{{ atividade.livro?.titulo || 'Livro' }}</strong>
 
-              <div class="atividade-progresso" *ngIf="atividade.progresso">
-                <div class="barra-progresso">
+              <!-- PAUSA/RETOMADA -->
+              <div class="atividade-progresso" *ngIf="atividade.origem === 'Pausa' || atividade.origem === 'Retomada'">
+                <span class="progresso-texto">
+                  {{ atividade.origem === 'Pausa' ? '⏸️ ' : '▶️ ' }}{{ atividade.comentario }}
+                </span>
+              </div>
+
+              <!-- ATIVIDADE NORMAL (frase ou marco) -->
+              <div class="atividade-progresso" *ngIf="atividade.origem === 'Atividade'">
+                <div class="barra-progresso" *ngIf="atividade.progresso">
                   <div class="barra-preenchida" [style.width.%]="atividade.progresso"></div>
                 </div>
-                <span class="progresso-texto">{{ atividade.progresso }}%</span>
+                <span class="progresso-texto" *ngIf="atividade.progresso">{{ atividade.progresso }}%</span>
               </div>
 
               <p class="atividade-frase" *ngIf="atividade.comentario">
@@ -367,14 +375,19 @@
       </button>
     </div>
 
-    <div class="bs-livro-destaque">
-      <img [src]="livroSelecionado.imagem || 'assets/capas/perfilSemFoto.png'" [alt]="livroSelecionado.titulo" class="bs-capa" />
-      <div class="bs-info">
-        <strong class="bs-titulo">{{ livroSelecionado.titulo || 'Sem título' }}</strong>
-        <span class="bs-autor">{{ livroSelecionado.autor || 'Autor desconhecido' }}</span>
-        <span class="bs-status" [class]="getStatusClass(livroSelecionado.status)">{{ getStatusTexto(livroSelecionado.status) }}</span>
+      <div class="bs-livro-destaque">
+        <!-- 🆕 Capa clicável com cursor pointer -->
+        <img [src]="livroSelecionado.imagem || 'assets/capas/perfilSemFoto.png'"
+            [alt]="livroSelecionado.titulo"
+            class="bs-capa"
+            (click)="abrirDetalhesLivro(livroSelecionado, $event)"
+            title="Ver detalhes do livro" />
+        <div class="bs-info">
+          <strong class="bs-titulo">{{ livroSelecionado.titulo || 'Sem título' }}</strong>
+          <span class="bs-autor">{{ livroSelecionado.autor || 'Autor desconhecido' }}</span>
+          <span class="bs-status" [class]="getStatusClass(livroSelecionado.status)">{{ getStatusTexto(livroSelecionado.status) }}</span>
+        </div>
       </div>
-    </div>
 
     <div class="bs-acoes">
       <button class="bs-btn bs-btn-outline" *ngIf="livroSelecionado.avaliacao" (click)="abrirComentarios(livroSelecionado); fecharBottomSheetLivro()">
