@@ -1,7 +1,8 @@
 import { Component, OnInit, Inject, PLATFORM_ID, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router'; // 🆕 Importar Router
+import { Router } from '@angular/router';
+import { forkJoin } from 'rxjs';
 import { CatalogoService, CatalogoLivro } from './catalogo.service';
 import { AddBookModalComponent } from '../../shared/add-book-modal/add-book-modal.component';
 import { AlertService } from '../../shared/services/alert.service';
@@ -64,30 +65,67 @@ export class BibliotecaComponent implements OnInit {
   constructor(
     private catalogoService: CatalogoService,
     private alertService: AlertService,
-    private router: Router, // 🆕 Injetar Router
+    private router: Router,
     @Inject(PLATFORM_ID) private platformId: Object,
     private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
-      this.carregarCatalogo();
-      this.carregarCategorias();
+      this.carregarTudo(); // 🆕 Carrega tudo em paralelo
     }
   }
 
-  carregarCatalogo(): void {
+  // 🆕 Método principal: carrega catálogo + categorias juntos
+  carregarTudo(): void {
     this.carregando = true;
-    this.catalogoService.getAll().subscribe({
-      next: (livros) => {
-        this.livrosOriginais = livros;
-        this.livros = [...livros];
+
+    forkJoin({
+      livros: this.catalogoService.getAll(),
+      categorias: this.catalogoService.getCategorias()
+    }).subscribe({
+      next: (result) => {
+        // Processa livros
+        this.livrosOriginais = result.livros;
+        this.livros = [...result.livros];
+
+        // Processa categorias
+        this.processarCategorias(result.categorias);
+
         this.carregando = false;
         this.cdr.markForCheck();
       },
       error: (err) => {
-        console.error('Erro ao carregar catálogo:', err);
+        console.error('Erro ao carregar biblioteca:', err);
         this.carregando = false;
+        this.alertService.error('Erro ao carregar biblioteca');
+      }
+    });
+  }
+
+  // 🆕 Processar categorias (extraído do carregarCategorias antigo)
+  private processarCategorias(cats: string[]): void {
+    const traduzidas = cats.map(c => this.traduzirCategoria(c));
+    const unicas = [...new Set(traduzidas)].sort();
+
+    this.categorias = unicas;
+    this.categoriasPrincipais = this.CATEGORIAS_PRINCIPAIS.filter(c => unicas.includes(c));
+    if (this.categoriasPrincipais.length < 8) {
+      this.categoriasPrincipais = this.CATEGORIAS_PRINCIPAIS;
+    }
+    this.categoriasExtras = unicas.filter(c => !this.CATEGORIAS_PRINCIPAIS.includes(c));
+  }
+
+  // 🆕 Manter para recarregar após adicionar livro
+  carregarCatalogo(): void {
+    this.catalogoService.getAll().subscribe({
+      next: (livros) => {
+        this.livrosOriginais = livros;
+        this.livros = [...livros];
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        console.error('Erro ao carregar catálogo:', err);
         this.alertService.error('Erro ao carregar catálogo');
       }
     });
@@ -156,26 +194,6 @@ export class BibliotecaComponent implements OnInit {
   limparFiltroGenero(): void {
     this.generoSelecionado = null;
     this.livros = [...this.livrosOriginais];
-  }
-
-  carregarCategorias(): void {
-    this.catalogoService.getCategorias().subscribe({
-      next: (cats) => {
-        const traduzidas = cats.map(c => this.traduzirCategoria(c));
-        const unicas = [...new Set(traduzidas)].sort();
-
-        this.categorias = unicas;
-        this.categoriasPrincipais = this.CATEGORIAS_PRINCIPAIS.filter(c => unicas.includes(c));
-        if (this.categoriasPrincipais.length < 8) {
-          this.categoriasPrincipais = this.CATEGORIAS_PRINCIPAIS;
-        }
-        this.categoriasExtras = unicas.filter(c => !this.CATEGORIAS_PRINCIPAIS.includes(c));
-        this.cdr.markForCheck();
-      },
-      error: () => {
-        this.categorias = [];
-      }
-    });
   }
 
   toggleTodasCategorias(): void {
@@ -271,12 +289,12 @@ export class BibliotecaComponent implements OnInit {
     this.carregarCatalogo();
   }
 
-  // 🆕 Método atualizado: navega para a página de detalhes
   abrirDetalhesLivro(livro: CatalogoLivro): void {
     this.router.navigate(['/inicio/livro', livro.id], {
       state: {
         livro: livro,
-        editavel: false // Sempre false para livros do catálogo
+        editavel: false,
+        origem: 'biblioteca'
       }
     });
   }
