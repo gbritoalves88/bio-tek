@@ -1,8 +1,11 @@
 .comunidade {
-  padding: 20px 16px;
+  padding: 16px;
   background: var(--bg-primary);
   color: var(--text-primary);
   min-height: 100%;
+  width: 100%;
+  overflow-x: hidden; // 🆕 Previne scroll horizontal
+  box-sizing: border-box; // 🆕 Inclui padding
 }
 
 .header-section {
@@ -10,7 +13,7 @@
 
   h1 {
     margin: 0;
-    font-size: 26px;
+    font-size: 24px;
     font-weight: 700;
   }
 }
@@ -20,6 +23,7 @@
   gap: 8px;
   margin-bottom: 16px;
   border-bottom: 1px solid var(--border-color);
+  width: 100%;
 }
 
 .tab-btn {

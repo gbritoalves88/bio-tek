@@ -53,6 +53,16 @@ export class PerfilComponent implements OnInit {
   streak: StreakData | null = null;
   historico: string[] = [];
   carregandoProgresso = false;
+  passoOnboarding = 0; // 0 = avatar, 1 = nome, 2 = nickname, 3 = biografia, 4 = tema, 5 = salvar
+  onboardingAtivo = false;
+  posicaoHighlight = { top: 0, left: 0, width: 0, height: 0 };
+
+
+  tooltipTop = 0;
+  tooltipLeft = 0;
+
+  windowHeight = 0;
+  windowWidth = 0;
 
   private primeiraCarga = true;
 
@@ -72,6 +82,12 @@ export class PerfilComponent implements OnInit {
 
   @ViewChild('fileInputLivro') fileInputLivro!: ElementRef;
   @ViewChild('fileInputEdicaoLivro') fileInputEdicaoLivro!: ElementRef;
+  @ViewChild('inputNome') inputNome!: ElementRef;
+  @ViewChild('inputNickname') inputNickname!: ElementRef;
+  @ViewChild('inputBiografia') inputBiografia!: ElementRef;
+  @ViewChild('selectTema') selectTema!: ElementRef;
+  @ViewChild('btnSalvar') btnSalvar!: ElementRef;
+  @ViewChild('avatarEdicao') avatarEdicao!: ElementRef;
 
   constructor(
     private perfilService: PerfilService,
@@ -197,6 +213,13 @@ export class PerfilComponent implements OnInit {
     };
     this.uploadErro = '';
     this.editando = true;
+
+    // 🆕 Iniciar onboarding se for primeiro acesso
+    if (this.nicknameEditavel && !this.modoVisualizacao) {
+      setTimeout(() => {
+        this.iniciarOnboarding();
+      }, 300);
+    }
   }
 
   sair(): void {
@@ -208,6 +231,12 @@ export class PerfilComponent implements OnInit {
   }
 
   fecharEdicao(): void {
+    // 🆕 Se onboarding ativo, não permite fechar
+    if (this.onboardingAtivo && this.nicknameEditavel) {
+      this.alertService.warning('Complete seu cadastro para continuar');
+      return;
+    }
+
     this.editando = false;
     this.uploadErro = '';
   }
@@ -268,9 +297,10 @@ export class PerfilComponent implements OnInit {
       this.salvarDadosPerfil();
     }
   }
-
   private salvarDadosPerfil(): void {
     if (!this.usuarioEdit || !this.usuario) return;
+
+    const eraPrimeiroAcesso = this.nicknameEditavel;
 
     const dados: Partial<Usuario> = {
       nome: this.usuarioEdit.nome,
@@ -283,9 +313,37 @@ export class PerfilComponent implements OnInit {
     this.perfilService.atualizarPerfil(this.usuario.id, dados).subscribe({
       next: () => {
         this.perfilService.limparCache();
-        this.carregarPerfil();
+
+        // 🆕 ATUALIZA O LOCALSTORAGE ANTES DE QUALQUER COISA
+        const usuarioStorage = JSON.parse(localStorage.getItem('usuario') || '{}');
+        usuarioStorage.nome = dados.nome || usuarioStorage.nome;
+        usuarioStorage.nickname = dados.nickname || usuarioStorage.nickname;
+        usuarioStorage.avatar = dados.avatar || usuarioStorage.avatar;
+        usuarioStorage.tema = dados.tema || usuarioStorage.tema;
+        localStorage.setItem('usuario', JSON.stringify(usuarioStorage));
+
+        // 🆕 ATUALIZA O OBJETO this.usuario
+        this.usuario = {
+          ...this.usuario!,
+          nome: dados.nome || this.usuario!.nome,
+          nickname: dados.nickname || this.usuario!.nickname,
+          descricao: dados.descricao || this.usuario!.descricao,
+          avatar: dados.avatar || this.usuario!.avatar,
+          tema: dados.tema || this.usuario!.tema
+        };
+
         this.editando = false;
+        this.onboardingAtivo = false;
+        this.cdr.markForCheck();
+
         this.alertService.success('Perfil atualizado!');
+
+        if (eraPrimeiroAcesso) {
+          // 🆕 Navega com replace para limpar histórico
+          this.router.navigate(['/inicio'], { replaceUrl: true });
+        } else {
+          this.carregarPerfil();
+        }
       },
       error: () => this.alertService.error('Erro ao salvar')
     });
@@ -736,6 +794,176 @@ export class PerfilComponent implements OnInit {
         origem: 'perfil'
       }
     });
+  }
+
+  // ============ ONBOARDING ============
+
+  // Iniciar onboarding
+  iniciarOnboarding(): void {
+    if (!this.nicknameEditavel || !this.editando || this.modoVisualizacao) {
+      return;
+    }
+
+    this.passoOnboarding = 0;
+    this.onboardingAtivo = true;
+
+    // Pequeno delay para o DOM renderizar
+    setTimeout(() => {
+      this.atualizarHighlightComScroll();
+    }, 500);
+  }
+
+  // Atualizar posição do highlight
+  atualizarHighlight(): void {
+    const elemento = this.getElementoPassoAtual();
+
+    if (!elemento) {
+      this.proximoPassoOnboarding();
+      return;
+    }
+
+    const rect = elemento.getBoundingClientRect();
+    this.windowHeight = window.innerHeight;
+    this.windowWidth = window.innerWidth;
+
+    // Adiciona padding ao highlight
+    const padding = 8;
+    this.posicaoHighlight = {
+      top: rect.top - padding,
+      left: rect.left - padding,
+      width: rect.width + (padding * 2),
+      height: rect.height + (padding * 2)
+    };
+
+    // Posiciona tooltip de forma inteligente
+    const tooltipWidth = Math.min(280, this.windowWidth - 32);
+    const tooltipHeight = 180;
+
+    // Posição horizontal: centralizado com o campo
+    let tooltipLeft = rect.left + (rect.width / 2) - (tooltipWidth / 2);
+
+    // Ajusta se sair da tela
+    tooltipLeft = Math.max(16, Math.min(tooltipLeft, this.windowWidth - tooltipWidth - 16));
+
+    // Posição vertical: abaixo ou acima do campo
+    let tooltipTop = rect.bottom + 16;
+
+    // Se não couber abaixo, coloca acima
+    if (tooltipTop + tooltipHeight > this.windowHeight - 16) {
+      tooltipTop = rect.top - tooltipHeight - 16;
+    }
+
+    this.tooltipTop = tooltipTop;
+    this.tooltipLeft = tooltipLeft;
+
+    // Foca no campo (se for input/select/textarea)
+    if (elemento instanceof HTMLInputElement ||
+        elemento instanceof HTMLTextAreaElement ||
+        elemento instanceof HTMLSelectElement) {
+      elemento.focus();
+    }
+
+    this.cdr.markForCheck(); // 🆕 Força atualização visual
+  }
+
+  // Obter elemento do passo atual
+  getElementoPassoAtual(): HTMLElement | null {
+    switch (this.passoOnboarding) {
+      case 0: return this.avatarEdicao?.nativeElement;
+      case 1: return this.inputNome?.nativeElement;
+      case 2: return this.inputNickname?.nativeElement;
+      case 3: return this.inputBiografia?.nativeElement;
+      case 4: return this.selectTema?.nativeElement;
+      case 5: return this.btnSalvar?.nativeElement;
+      default: return null;
+    }
+  }
+
+  // Títulos dos passos
+  getTituloPasso(): string {
+    switch (this.passoOnboarding) {
+      case 0: return '📷 Foto de perfil';
+      case 1: return '👤 Seu nome';
+      case 2: return '✏️ Escolha seu @nickname';
+      case 3: return '📝 Biografia';
+      case 4: return '🎨 Tema';
+      case 5: return '✅ Finalizar';
+      default: return '';
+    }
+  }
+
+  // Descrições dos passos
+  getDescricaoPasso(): string {
+    switch (this.passoOnboarding) {
+      case 0: return 'Toque para adicionar uma foto (opcional)';
+      case 1: return 'Digite seu nome completo';
+      case 2: return 'Seu @nickname é único e não pode ser alterado depois';
+      case 3: return 'Conte um pouco sobre você (opcional)';
+      case 4: return 'Escolha entre tema claro ou escuro';
+      case 5: return 'Clique em Salvar para completar seu cadastro';
+      default: return '';
+    }
+  }
+
+  // Avançar para próximo passo
+  proximoPassoOnboarding(): void {
+    // Passo 0 (avatar) é opcional - permite pular
+    if (this.passoOnboarding === 0) {
+      this.passoOnboarding = 1;
+      this.atualizarHighlightComScroll();
+      return;
+    }
+
+    // Validação dos campos obrigatórios
+    if (this.passoOnboarding === 1 && !this.usuarioEdit.nome?.trim()) {
+      this.alertService.warning('Digite seu nome para continuar');
+      return;
+    }
+
+    if (this.passoOnboarding === 2) {
+      const nick = (this.usuarioEdit.nickname || '').trim();
+      if (!nick || nick.length < 3) {
+        this.alertService.warning('Digite um nickname com pelo menos 3 caracteres');
+        return;
+      }
+    }
+
+    // Avança para próximo passo
+    if (this.passoOnboarding < 5) {
+      this.passoOnboarding++;
+      this.atualizarHighlightComScroll();
+    } else {
+      this.finalizarOnboarding();
+    }
+  }
+
+  // 🆕 Novo método: atualiza com scroll e recalcula
+  atualizarHighlightComScroll(): void {
+    const elemento = this.getElementoPassoAtual();
+
+    if (!elemento) {
+      this.proximoPassoOnboarding();
+      return;
+    }
+
+    // Primeiro, scroll até o elemento
+    elemento.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+    // Depois do scroll, recalcula a posição
+    setTimeout(() => {
+      this.atualizarHighlight();
+    }, 400); // Aguarda o scroll terminar
+  }
+
+  // Finalizar onboarding
+  finalizarOnboarding(): void {
+    this.onboardingAtivo = false;
+    this.passoOnboarding = 0;
+
+    // Chama o salvar automaticamente
+    if (this.usuarioEdit.nome?.trim() && this.usuarioEdit.nickname?.trim()) {
+      this.salvarPerfil();
+    }
   }
 
 }
