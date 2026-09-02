@@ -45,7 +45,10 @@
 
       <div class="autores-scroll">
         <div class="autor-item" *ngFor="let autor of autoresFamosos" (click)="filtrarPorAutor(autor.termo)">
-          <img [src]="autor.foto" [alt]="autor.nome" class="autor-foto" />
+          <img [src]="autor.foto" [alt]="autor.nome"
+            class="autor-foto"
+            loading="lazy"
+            decoding="async" />
           <span class="autor-nome">{{ autor.nome }}</span>
         </div>
       </div>
@@ -90,7 +93,10 @@
     <!-- Grid de livros - 3 colunas -->
     <div class="book-grid" *ngIf="livrosFiltrados.length > 0 && (generoSelecionado || termoBusca)">
       <div class="book-card" *ngFor="let livro of livrosFiltrados" (click)="abrirDetalhesLivro(livro)">
-        <img [src]="livro.imagem || 'assets/capas/perfilSemFoto.png'" [alt]="livro.titulo" class="book-cover" />
+        <img [src]="livro.imagem || 'assets/capas/perfilSemFoto.png'" [alt]="livro.titulo"
+          class="book-cover"
+          loading="lazy"
+          decoding="async" />
         <div class="book-info">
           <h3 class="book-title">{{ livro.titulo || 'Sem título' }}</h3>
           <p class="book-author">{{ livro.autor || 'Autor desconhecido' }}</p>

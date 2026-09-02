@@ -41,12 +41,39 @@
           {{ getTipoTexto(livro.tipo) }}
         </span>
 
-        <button class="btn-adicionar"
-                *ngIf="!editavel"
-                (click)="adicionarABiblioteca()"
-                [disabled]="adicionando">
-          {{ adicionando ? 'Adicionando...' : '+ Adicionar' }}
-        </button>
+        <!-- 🆕 AÇÕES LADO A LADO -->
+        <div class="livro-acoes" *ngIf="!editavel">
+          <button class="btn-adicionar"
+                  (click)="adicionarABiblioteca()"
+                  [disabled]="adicionando">
+            {{ adicionando ? 'Adicionando...' : '+ Adicionar' }}
+          </button>
+
+          <a [href]="linkAmazon"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="btn-amazon"
+            *ngIf="linkAmazon"
+            (click)="registrarCliqueAmazon()">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/>
+            </svg>
+            <span>Adquirir</span>
+          </a>
+        </div>
+
+        <!-- 🆕 Botão Amazon quando editável -->
+        <a [href]="linkAmazon"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="btn-amazon btn-amazon-full"
+          *ngIf="editavel && linkAmazon"
+          (click)="registrarCliqueAmazon()">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/>
+          </svg>
+          <span>Adquirir</span>
+        </a>
       </div>
     </div>
 
@@ -192,7 +219,6 @@
     </div>
   </div>
 </div>
-
 
 <!-- Bottom Sheet: Pós-Adicionar -->
 <app-bottom-sheet [aberto]="modalPosAdicionar" (fechar)="fecharModalPosAdicionar()">

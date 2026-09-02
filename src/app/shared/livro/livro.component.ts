@@ -6,6 +6,7 @@ import { LivroService } from './livro.service';
 import { AlertService } from '../services/alert.service';
 import { BottomSheetComponent } from '../bottom-sheet/bottom-sheet.component';
 import { LivroDetalhesInterno } from './livro.model';
+import { AmazonService } from '../services/amazon.service';
 
 @Component({
   selector: 'app-livro',
@@ -21,6 +22,7 @@ export class LivroComponent implements OnInit {
   editavel = false;
   carregandoDetalhes = true;
   adicionando = false;
+  linkAmazon: string | null = null;
 
   // Bottom Sheet pós-adicionar
   modalPosAdicionar = false;
@@ -40,20 +42,39 @@ export class LivroComponent implements OnInit {
     private location: Location,
     private livroService: LivroService,
     private alertService: AlertService,
+    private amazonService: AmazonService,
     private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
-    const state = history.state as any;
+      const state = history.state as any;
 
-    if (state?.livro) {
-      this.livro = state.livro;
-      this.editavel = state.editavel || false;
-      this.carregarDetalhes(state.livro.id);
-    } else {
-      this.voltar();
-    }
+      if (state?.livro) {
+        this.livro = state.livro;
+        this.editavel = state.editavel || false;
+        this.gerarLinkAmazon(); // 🆕
+        this.carregarDetalhes(state.livro.id);
+      } else {
+        this.voltar();
+      }
   }
+
+
+  gerarLinkAmazon(): void {
+    this.linkAmazon = this.amazonService.gerarLinkCompleto(this.livro);
+  }
+
+  // 🆕 Registrar clique no link Amazon
+  registrarCliqueAmazon(): void {
+    console.log('Clique Amazon:', {
+      livroId: this.livro?.id,
+      titulo: this.livro?.titulo,
+      codigoBarras: this.livro?.codigoBarras || null
+    });
+    // Futuro: integrar com analytics
+    // this.analyticsService.logEvent('amazon_click', { ... });
+  }
+
 
   carregarDetalhes(id: string): void {
     this.carregandoDetalhes = true;

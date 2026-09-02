@@ -27,7 +27,9 @@
         [class.tipo-progresso]="item.tipo === 'livro_progresso'">
 
       <div class="feed-topo">
-        <img [src]="item.usuario?.avatar || 'assets/capas/perfilSemFoto.png'" [alt]="item.usuario?.nome || 'Usuário'" class="avatar" />
+        <img [src]="item.usuario?.avatar || 'assets/capas/perfilSemFoto.png'" [alt]="item.usuario?.nome || 'Usuário'" class="avatar"
+          loading="lazy"
+          decoding="async" />
         <div class="feed-header">
           <div class="usuario-info">
             <span class="usuario-nome">{{ item.usuario?.nome || 'Usuário' }}</span>
@@ -44,7 +46,8 @@
           <div class="livro-destaque" *ngIf="item.livro">
             <img [src]="item.livro?.imagem || 'assets/capas/perfilSemFoto.png'"
                 [alt]="item.livro?.titulo || 'Sem título'"
-                class="capa-destaque" />
+                class="capa-destaque"  loading="lazy"
+                decoding="async" />
             <div class="livro-info-destaque">
               <strong class="titulo-destaque">{{ item.livro?.titulo || 'Sem título' }}</strong>
               <span class="autor-destaque">{{ item.livro?.autor || 'Autor desconhecido' }}</span>
@@ -57,7 +60,9 @@
           <div class="livro-padrao" *ngIf="item.livro">
             <img [src]="item.livro?.imagem || 'assets/capas/perfilSemFoto.png'"
                 [alt]="item.livro?.titulo || 'Sem título'"
-                class="capa-padrao" />
+                class="capa-padrao"
+                loading="lazy"
+                decoding="async" />
             <div class="livro-info-padrao">
               <strong class="titulo-padrao">{{ item.livro?.titulo || 'Sem título' }}</strong>
               <span class="autor-padrao">{{ item.livro?.autor || 'Autor desconhecido' }}</span>
@@ -71,7 +76,9 @@
           <div class="livro-padrao" *ngIf="item.livro">
             <img [src]="item.livro?.imagem || 'assets/capas/perfilSemFoto.png'"
                 [alt]="item.livro?.titulo || 'Sem título'"
-                class="capa-padrao" />
+                class="capa-padrao"
+                loading="lazy"
+                decoding="async" />
             <div class="livro-info-padrao">
               <strong class="titulo-padrao">{{ item.livro?.titulo || 'Sem título' }}</strong>
               <span class="autor-padrao">{{ item.livro?.autor || 'Autor desconhecido' }}</span>
@@ -97,7 +104,9 @@
           <div class="livro-concluido" *ngIf="item.livro">
             <img [src]="item.livro?.imagem || 'assets/capas/perfilSemFoto.png'"
                 [alt]="item.livro?.titulo || 'Sem título'"
-                class="capa-concluido" />
+                class="capa-concluido"
+                loading="lazy"
+                decoding="async" />
             <div class="livro-info-concluido">
               <strong class="titulo-concluido">{{ item.livro?.titulo || 'Sem título' }}</strong>
               <span class="autor-concluido">{{ item.livro?.autor || 'Autor desconhecido' }}</span>
@@ -115,7 +124,9 @@
           <div class="livro-avaliado" *ngIf="item.livro">
             <img [src]="item.livro?.imagem || 'assets/capas/perfilSemFoto.png'"
                 [alt]="item.livro?.titulo || 'Sem título'"
-                class="capa-avaliado" />
+                class="capa-avaliado"
+                loading="lazy"
+                decoding="async" />
             <div class="livro-info-avaliado">
               <strong class="titulo-avaliado">{{ item.livro?.titulo || 'Sem título' }}</strong>
               <span class="autor-avaliado">{{ item.livro?.autor || 'Autor desconhecido' }}</span>
@@ -173,7 +184,8 @@
     <div class="comunidade-usuario">
       <img [src]="itemSelecionado.usuario?.avatar || 'assets/capas/perfilSemFoto.png'"
            [alt]="itemSelecionado.usuario?.nome || 'Usuário'"
-           class="avatar" />
+           class="avatar" loading="lazy"
+           decoding="async" />
       <div>
         <span class="nome">{{ itemSelecionado.usuario?.nome || 'Usuário' }}</span>
         <span class="nickname">{{ itemSelecionado.usuario?.nickname || '@user' }}</span>

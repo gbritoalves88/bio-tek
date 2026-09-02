@@ -24,7 +24,9 @@
         <div class="perfil-avatar">
           <!-- 🆕 AVATAR COM ZOOM -->
           <div class="avatar-pequeno clicavel" (click)="abrirZoomAvatar()">
-            <img [src]="usuario.avatar || 'assets/capas/perfilSemFoto.png'" [alt]="usuario.nome" />
+            <img [src]="usuario.avatar || 'assets/capas/perfilSemFoto.png'" [alt]="usuario.nome"
+            loading="lazy"
+            decoding="async" />
           </div>
         </div>
 
@@ -132,7 +134,9 @@
         <div class="avatar-edicao-container">
           <!-- 🆕 Adicionar referência -->
           <div class="avatar-grande editavel" #avatarEdicao (click)="fileInput.click()">
-            <img [src]="usuarioEdit.avatar || 'assets/capas/perfilSemFoto.png'" [alt]="usuarioEdit.nome" />
+            <img [src]="usuarioEdit.avatar || 'assets/capas/perfilSemFoto.png'" [alt]="usuarioEdit.nome"
+              loading="lazy"
+              decoding="async" />
             <div class="avatar-overlay">
               <span class="avatar-texto">📷</span>
               <span class="avatar-dica">Clique para alterar</span>
@@ -217,7 +221,9 @@
         <div class="book-list">
           <div class="book-item" *ngFor="let livro of livrosFiltrados" (click)="abrirBottomSheetLivro(livro)">
             <div class="book-cover-wrapper">
-              <img [src]="livro.imagem || 'assets/capas/perfilSemFoto.png'" [alt]="livro.titulo" class="book-cover" />
+              <img [src]="livro.imagem || 'assets/capas/perfilSemFoto.png'" [alt]="livro.titulo" class="book-cover"
+              loading="lazy"
+              decoding="async" />
             </div>
             <div class="book-info">
               <span class="book-title" [title]="livro.titulo">{{ livro.titulo || 'Sem título' }}</span>
@@ -240,7 +246,9 @@
           <div class="atividade-item" *ngFor="let atividade of atividades">
             <img [src]="atividade.livro?.imagem || 'assets/capas/perfilSemFoto.png'"
                 [alt]="atividade.livro?.titulo || 'Livro'"
-                class="atividade-capa" />
+                class="atividade-capa"
+                loading="lazy"
+                decoding="async" />
 
             <div class="atividade-info">
               <strong class="atividade-titulo">{{ atividade.livro?.titulo || 'Livro' }}</strong>
@@ -428,7 +436,8 @@
             [alt]="livroSelecionado.titulo"
             class="bs-capa"
             (click)="abrirDetalhesLivro(livroSelecionado, $event)"
-            title="Ver detalhes do livro" />
+            title="Ver detalhes do livro"  loading="lazy"
+            decoding="async" />/>
         <div class="bs-info">
           <strong class="bs-titulo">{{ livroSelecionado.titulo || 'Sem título' }}</strong>
           <span class="bs-autor">{{ livroSelecionado.autor || 'Autor desconhecido' }}</span>
@@ -478,7 +487,7 @@
     <label class="input-label">Autor</label>
     <input type="text" [(ngModel)]="livroEditando.autor" class="bs-input">
     <label class="input-label">Descrição</label>
-    <input type="text" [(ngModel)]="livroEditando.descricao" class="bs-input">
+    <textarea [(ngModel)]="livroEditando.descricao" rows="3" class="bs-input"></textarea>
     <label class="input-label">Capa do Livro</label>
     <div class="upload-capa-simples">
       <button type="button" class="btn-upload-small" (click)="tirarFotoEdicaoLivro()" title="Tirar foto">
@@ -493,7 +502,8 @@
       </button>
       <input type="file" #fileInputEdicaoLivro hidden (change)="onFileSelectedEdicaoLivro($event)" accept="image/*">
     </div>
-    <img *ngIf="edicaoCapaPreview" [src]="edicaoCapaPreview" class="preview-capa" />
+    <img *ngIf="edicaoCapaPreview" [src]="edicaoCapaPreview" class="preview-capa" loading="lazy"
+     decoding="async" />
     <label class="input-label">Tipo</label>
     <select [(ngModel)]="livroEditando.tipo" class="bs-select">
       <option value="livro">📖 Livro</option>
@@ -577,7 +587,8 @@
 <!-- 🆕 MODAL DE ZOOM DO AVATAR -->
 <div class="avatar-zoom-overlay" *ngIf="zoomAvatarAberto" (click)="fecharZoomAvatar()">
   <div class="avatar-zoom-modal" (click)="$event.stopPropagation()">
-    <img [src]="usuario?.avatar || 'assets/capas/perfilSemFoto.png'" [alt]="usuario?.nome" />
+    <img [src]="usuario?.avatar || 'assets/capas/perfilSemFoto.png'" [alt]="usuario?.nome" loading="lazy"
+     decoding="async" />
     <button class="avatar-zoom-close" (click)="fecharZoomAvatar()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>

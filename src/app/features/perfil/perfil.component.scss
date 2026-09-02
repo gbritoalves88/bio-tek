@@ -1407,19 +1407,26 @@
 }
 
 .bs-input {
-  width: 100%;
-  padding: 10px 14px;
-  border-radius: 8px;
-  border: 1px solid var(--border-color);
-  background: var(--bg-primary);
-  color: var(--text-primary);
-  font-size: 14px;
-  outline: none;
-  box-sizing: border-box;
-  margin-bottom: 12px;
+width: 100%;
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-card);
+    color: var(--text-primary);
+    font-size: 14px;
+    outline: none;
+    font-family: inherit;
+    box-sizing: border-box;
+    margin-bottom: 12px;
+    transition: all 0.2s;
 
-  &:focus { border-color: var(--accent); }
-  &::placeholder { color: var(--text-secondary); }
+    &:focus {
+      border-color: var(--accent);
+    }
+
+    &::placeholder {
+      color: var(--text-secondary);
+    }
 }
 
 .bs-select {
@@ -1648,8 +1655,7 @@
   gap: 14px;
   align-items: flex-start;
   margin-bottom: 16px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid var(--border-color);
+
    .bs-capa {
     cursor: pointer;
     transition: all 0.2s ease;

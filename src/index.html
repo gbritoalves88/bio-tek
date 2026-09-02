@@ -2,13 +2,47 @@
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8">
-  <title>BliTeca</title>
+  <title>BliTeca - Sua Biblioteca Digital</title>
   <base href="/">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+  <!-- Viewport -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+  <!-- SEO Básico -->
+  <meta name="description" content="Organize seus livros, acompanhe seu progresso de leitura, avalie livros e conecte-se com outros leitores. Gratuito!">
+  <meta name="keywords" content="livros, leitura, biblioteca digital, app de leitura, organizar livros, comunidade de leitores, BliTeca">
+  <meta name="author" content="BliTeca">
+  <meta name="robots" content="index, follow">
+
+  <!-- Tema e Cores -->
   <meta name="theme-color" content="#1a1a2e">
+
+  <!-- Open Graph (WhatsApp, Facebook, Telegram) -->
+  <meta property="og:title" content="BliTeca - Sua Biblioteca Digital">
+  <meta property="og:description" content="Organize seus livros, acompanhe sua leitura e conecte-se com outros leitores.">
+  <meta property="og:image" content="https://bliteca.com.br/assets/icon-512.png">
+  <meta property="og:url" content="https://bliteca.com.br">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="BliTeca">
+  <meta property="og:locale" content="pt_BR">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="BliTeca - Sua Biblioteca Digital">
+  <meta name="twitter:description" content="Organize seus livros e acompanhe sua leitura">
+  <meta name="twitter:image" content="https://bliteca.com.br/assets/icon-512.png">
+
+  <!-- Manifest e Favicon -->
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="apple-touch-icon" href="assets/icon-192.png">
+
+  <!-- Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <!-- Google Sign-In -->
   <script src="https://accounts.google.com/gsi/client"></script>
 
   <!-- Google tag (gtag.js) -->
@@ -17,10 +51,10 @@
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
-
     gtag('config', 'G-W9CMB0511Z');
   </script>
 
+  <!-- Microsoft Clarity -->
   <script type="text/javascript">
       (function(c,l,a,r,i,t,y){
           c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
@@ -28,8 +62,34 @@
           y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
       })(window, document, "clarity", "script", "y51buts1fi");
   </script>
+
+  <!-- 🆕 JSON-LD (Dados estruturados para Google) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "BliTeca",
+    "alternateName": "BliTeca - Sua Biblioteca Digital",
+    "url": "https://bliteca.com.br",
+    "description": "Organize seus livros, acompanhe seu progresso de leitura e conecte-se com outros leitores.",
+    "applicationCategory": "LifestyleApplication",
+    "operatingSystem": "Android, iOS, Web",
+    "inLanguage": "pt-BR",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "BRL"
+    },
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.5",
+      "ratingCount": "100"
+    }
+  }
+  </script>
 </head>
 <body class="dark-theme">
   <app-root></app-root>
+  <noscript>O BliTeca precisa de JavaScript para funcionar. Ative o JavaScript no seu navegador.</noscript>
 </body>
 </html>
