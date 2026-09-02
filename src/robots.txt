@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://bliteca.com.br/assets/sitemap.xml

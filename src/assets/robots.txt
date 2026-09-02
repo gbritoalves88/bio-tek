@@ -1,6 +1,0 @@
-User-agent: *
-Allow: /
-Disallow: /inicio
-Disallow: /admin
-
-Sitemap: https://bliteca.com.br/sitemap.xml
