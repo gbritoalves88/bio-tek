@@ -77,7 +77,20 @@ export class HomeComponent implements OnInit {
         this.livroAtual = data.livroAtual || null;
         this.listaLeitura = data.listaLeitura || [];
         this.topAvaliados = data.topAvaliados || [];
-        this.streak = data.streak || null; // 🆕
+        this.streak = data.streak || null;
+
+        // 🆕 Pré-carregar capa do livro atual (mais importante)
+        if (this.livroAtual?.imagem) {
+          this.preloadImagem(this.livroAtual.imagem);
+        }
+
+        // 🆕 Pré-carregar primeiras 3 capas de recomendados
+        this.topAvaliados.slice(0, 3).forEach(livro => {
+          if (livro.imagem) {
+            this.preloadImagem(livro.imagem);
+          }
+        });
+
         this.carregando = false;
         this.cdr.markForCheck();
       },
@@ -87,6 +100,12 @@ export class HomeComponent implements OnInit {
         this.alertService.error('Erro ao carregar dados da home');
       }
     });
+  }
+
+  // 🆕 Método de preload
+  private preloadImagem(url: string): void {
+    const img = new Image();
+    img.src = url;
   }
 
   abrirModal(): void { this.modalAberto = true; }

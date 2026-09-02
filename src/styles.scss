@@ -35,6 +35,23 @@ body {
   transition: background 0.3s, color 0.3s;
 }
 
+img {
+  background-color: var(--border-color, #e0e0e0);
+  transition: background-color 0.3s;
+
+  &[src] {
+    background-color: transparent;
+  }
+}
+
+.book-cover,
+.capa,
+.livro-capa,
+.book-cover-wrapper img {
+  content-visibility: auto;
+  contain-intrinsic-size: 130px 195px; // Tamanho aproximado
+}
+
 @media (max-width: 768px) {
   button, a {
     min-height: 44px;

@@ -56,7 +56,7 @@
         Lendo agora
       </h2>
       <div class="book-info">
-        <img [src]="livroAtual.imagem || 'assets/capas/perfilSemFoto.png'" [alt]="livroAtual.titulo" class="book-cover" />
+        <img [src]="livroAtual.imagem || 'assets/capas/perfilSemFoto.png'" [alt]="livroAtual.titulo" class="book-cover"  loading="lazy" decoding="async" />
         <div class="book-details">
           <h3>{{ livroAtual.titulo }}</h3>
           <p>{{ livroAtual.autor }}</p>
@@ -112,7 +112,10 @@
           <div class="livro-card" *ngFor="let livro of topAvaliados" (click)="abrirDetalhesLivro(livro, false)">
             <img [src]="livro.imagem || 'assets/capas/perfilSemFoto.png'"
                 [alt]="livro.titulo"
-                class="livro-capa" />
+                class="livro-capa"
+                fetchpriority="low"
+                loading="lazy"
+                decoding="async" />
             <span class="livro-titulo">{{ livro.titulo || 'Sem título' }}</span>
             <span class="livro-autor">{{ livro.autor }}</span>
             <span class="livro-rating" *ngIf="livro.media > 0">⭐ {{ livro.media }}</span>
@@ -145,7 +148,9 @@
           <div class="livro-card" *ngFor="let livro of listaLeitura" (click)="abrirDetalhesLivro(livro, true)">
             <img [src]="livro.imagem || 'assets/capas/perfilSemFoto.png'"
                 [alt]="livro.titulo"
-                class="livro-capa" />
+                class="livro-capa"
+                 loading="lazy"
+                 decoding="async" />
             <span class="livro-titulo">{{ livro.titulo || 'Sem título' }}</span>
             <span class="livro-autor">{{ livro.autor }}</span>
           </div>
@@ -178,7 +183,10 @@
       </div>
 
       <div class="bs-livro-destaque">
-        <img [src]="livroSelecionado.imagem || 'assets/capas/perfilSemFoto.png'" [alt]="livroSelecionado.titulo" class="bs-capa" />
+        <img [src]="livroSelecionado.imagem || 'assets/capas/perfilSemFoto.png'"
+          [alt]="livroSelecionado.titulo" class="bs-capa"
+           loading="lazy"
+            decoding="async" />
         <div class="bs-info">
           <strong class="bs-titulo">{{ livroSelecionado.titulo || 'Sem título' }}</strong>
           <span class="bs-autor">{{ livroSelecionado.autor || 'Autor desconhecido' }}</span>
@@ -210,7 +218,12 @@
       </div>
 
       <div class="bs-livro-destaque">
-        <img [src]="livroAtual.imagem || 'assets/capas/perfilSemFoto.png'" [alt]="livroAtual.titulo" class="bs-capa" />
+        <img [src]="livroAtual.imagem || 'assets/capas/perfilSemFoto.png'"
+          [alt]="livroAtual.titulo"
+          class="bs-capa"
+          fetchpriority="high"
+          loading="lazy"
+          decoding="async" />
         <div class="bs-info">
           <strong class="bs-titulo">{{ livroAtual.titulo }}</strong>
           <span class="bs-autor">{{ livroAtual.autor }}</span>

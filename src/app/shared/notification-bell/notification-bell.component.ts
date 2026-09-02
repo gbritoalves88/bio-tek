@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { forkJoin } from 'rxjs';
 import { NotificationService, Notificacao } from '../services/notification.service';
 
 @Component({
@@ -25,7 +26,7 @@ import { NotificationService, Notificacao } from '../services/notification.servi
         </div>
         <div class="panel-body">
           <div class="notificacao-item" *ngFor="let n of notificacoes" [class.nao-lida]="!n.lida">
-            <span class="icone">{{ n.tipo === 'seguidor' ? '👤' : n.tipo === 'curtida_livro' || n.tipo === 'curtida_avaliacao' ? '❤️' : '💬' }}</span>
+            <span class="icone">{{ getIconeNotificacao(n.tipo) }}</span>
             <div class="mensagem">
               <span class="texto">{{ n.mensagem }}</span>
               <span class="data">{{ formatarData(n.dataCriacao) }}</span>
@@ -132,6 +133,12 @@ import { NotificationService, Notificacao } from '../services/notification.servi
       gap: 12px;
       padding: 12px 16px;
       border-bottom: 1px solid var(--border-color);
+      cursor: pointer;
+      transition: background 0.2s;
+
+      &:hover {
+        background: rgba(0, 0, 0, 0.02);
+      }
 
       &.nao-lida {
         background: rgba(237, 158, 55, 0.08);
@@ -185,26 +192,36 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
   notificacoes: Notificacao[] = [];
   private intervalId: any;
   private ultimaAtividade = Date.now();
+  private ultimaVerificacao = Date.now();
 
   @HostListener('document:mousemove')
   @HostListener('document:click')
   @HostListener('document:keydown')
   @HostListener('document:scroll')
-  onUserActivity() {
+  onUserActivity(): void {
     this.ultimaAtividade = Date.now();
+
+    // 🆕 Fecha o painel se clicou fora (unificado)
+    if (this.panelAberto) {
+      this.panelAberto = false;
+    }
   }
 
   constructor(private notificationService: NotificationService) {}
 
   ngOnInit(): void {
-    this.carregarNotificacoes();
+    // 🆕 Carrega apenas o contador inicial
+    this.carregarContador();
 
+    // 🆕 Verifica a cada 5 minutos (300000 ms)
     this.intervalId = setInterval(() => {
       const segundosInativo = (Date.now() - this.ultimaAtividade) / 1000;
-      if (segundosInativo < 60) {
-        this.carregarNotificacoes();
+
+      // Só verifica se usuário esteve ativo nos últimos 2 minutos
+      if (segundosInativo < 120) {
+        this.carregarContador();
       }
-    }, 30000);
+    }, 300000); // 5 minutos
   }
 
   ngOnDestroy(): void {
@@ -213,18 +230,46 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
     }
   }
 
-  carregarNotificacoes(): void {
+  // 🆕 Carrega apenas o contador de não lidas (mais leve)
+  carregarContador(): void {
     this.notificationService.getNaoLidas().subscribe({
-      next: (data: Notificacao[]) => this.naoLidas = data.length
-    });
-
-    this.notificationService.getAll().subscribe({
-      next: (data: Notificacao[]) => this.notificacoes = data
+      next: (data: Notificacao[]) => {
+        this.naoLidas = data.length;
+      },
+      error: (err) => {
+        console.error('Erro ao carregar contador de notificações:', err);
+      }
     });
   }
 
-  // ⬅️ MÉTODO PARA FORMATAR DATA COM HORA
+  // 🆕 Carrega todas as notificações (quando painel abre)
+  carregarNotificacoes(): void {
+    this.notificationService.getAll().subscribe({
+      next: (data: Notificacao[]) => {
+        this.notificacoes = data;
+      },
+      error: (err) => {
+        console.error('Erro ao carregar notificações:', err);
+      }
+    });
+  }
+
+  // 🆕 Ícone baseado no tipo de notificação
+  getIconeNotificacao(tipo: string): string {
+    switch (tipo) {
+      case 'seguidor': return '👤';
+      case 'curtida_livro': return '📚';
+      case 'curtida_avaliacao': return '⭐';
+      case 'comentario': return '💬';
+      case 'comentario_avaliacao': return '💬';
+      default: return '🔔';
+    }
+  }
+
+  // Formata data com hora
   formatarData(dataISO: string): string {
+    if (!dataISO) return '';
+
     const data = new Date(dataISO);
     const hoje = new Date();
     const ontem = new Date(hoje);
@@ -253,23 +298,30 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
     event.stopPropagation();
     this.panelAberto = !this.panelAberto;
 
-    if (this.panelAberto && this.naoLidas > 0) {
-      this.notificationService.marcarLidas().subscribe(() => {
-        this.carregarNotificacoes();
-      });
+    // 🆕 Quando abre o painel, carrega notificações completas
+    if (this.panelAberto) {
+      this.carregarNotificacoes();
+
+      // Se tem não lidas, marca como lidas após carregar
+      if (this.naoLidas > 0) {
+        this.notificationService.marcarLidas().subscribe({
+          next: () => {
+            this.carregarContador();
+          }
+        });
+      }
     }
   }
 
   marcarTodasLidas(): void {
-    this.notificationService.marcarLidas().subscribe(() => {
-      this.carregarNotificacoes();
+    this.notificationService.marcarLidas().subscribe({
+      next: () => {
+        this.carregarNotificacoes();
+        this.carregarContador();
+      },
+      error: (err) => {
+        console.error('Erro ao marcar todas como lidas:', err);
+      }
     });
-  }
-
-  @HostListener('document:click')
-  fecharPanel(): void {
-    if (this.panelAberto) {
-      this.panelAberto = false;
-    }
   }
 }

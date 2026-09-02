@@ -39,7 +39,9 @@
   <div *ngIf="!carregando">
     <div class="seguindo-list" *ngIf="usuariosFiltrados.length > 0">
       <div class="seguidor-card" *ngFor="let usuario of usuariosFiltrados">
-        <img [src]="usuario.avatar || 'assets/capas/perfilSemFoto.png'" [alt]="usuario.nome" class="avatar" />
+        <img [src]="usuario.avatar || 'assets/capas/perfilSemFoto.png'" [alt]="usuario.nome" class="avatar"
+         loading="lazy"
+         decoding="async" />
         <div class="info" (click)="irParaPerfil(usuario.id)">
           <span class="nome">{{ usuario.nome }}</span>
           <span class="nickname">{{ usuario.nickname || '@sem-nickname' }}</span>
@@ -58,7 +60,9 @@
     <div class="seguindo-list" *ngIf="buscarUsuariosExternos.length > 0">
       <p class="section-label">🔍 Resultados da busca</p>
       <div class="seguidor-card" *ngFor="let usuario of buscarUsuariosExternos">
-        <img [src]="usuario.avatar || 'assets/capas/perfilSemFoto.png'" [alt]="usuario.nome" class="avatar" />
+        <img [src]="usuario.avatar || 'assets/capas/perfilSemFoto.png'" [alt]="usuario.nome" class="avatar"
+        loading="lazy"
+        decoding="async" />
         <div class="info" (click)="irParaPerfil(usuario.id)">
           <span class="nome">{{ usuario.nome }}</span>
           <span class="nickname">{{ usuario.nickname || '@sem-nickname' }}</span>
