@@ -1,58 +1,54 @@
 import { Routes } from '@angular/router';
 import { ShellComponent } from './layout/shell/shell.component';
-import { HomeComponent } from './features/home/home.component';
-import { BibliotecaComponent } from './features/biblioteca/biblioteca.component';
-import { ComunidadeComponent } from './features/comunidade/comunidade.component';
-import { PerfilComponent } from './features/perfil/perfil.component';
-import { LoginComponent } from './features/login/login.component';
-import { TermoComponent } from './features/termos/termos.component';
 import { AuthGuard } from './core/guards/auth.guard';
 import { AdminGuard } from './core/guards/admin.guard';
 import { PerfilCompletoGuard } from './core/guards/perfil-completo.guard';
 import { LoginGuard } from './core/guards/login.guard';
-import { LivroComponent } from './shared/livro/livro.component';
 
 export const routes: Routes = [
   // ============ ROTAS PÚBLICAS ============
   {
     path: '',
-    component: LoginComponent,
+    loadComponent: () => import('./features/login/login.component').then(m => m.LoginComponent),
     canActivate: [LoginGuard]
   },
-  { path: 'termo', component: TermoComponent },
+  {
+    path: 'termo',
+    loadComponent: () => import('./features/termos/termos.component').then(m => m.TermoComponent)
+  },
 
   // ============ APP COM SHELL ============
   {
     path: 'inicio',
-    component: ShellComponent,
+    loadComponent: () => import('./layout/shell/shell.component').then(m => m.ShellComponent),
     canActivate: [AuthGuard],
     children: [
       {
         path: '',
-        component: HomeComponent,
+        loadComponent: () => import('./features/home/home.component').then(m => m.HomeComponent),
         canActivate: [PerfilCompletoGuard]
       },
       {
         path: 'biblioteca',
-        component: BibliotecaComponent,
+        loadComponent: () => import('./features/biblioteca/biblioteca.component').then(m => m.BibliotecaComponent),
         canActivate: [PerfilCompletoGuard]
       },
       {
         path: 'comunidade',
-        component: ComunidadeComponent,
+        loadComponent: () => import('./features/comunidade/comunidade.component').then(m => m.ComunidadeComponent),
         canActivate: [PerfilCompletoGuard]
       },
       {
         path: 'perfil',
-        component: PerfilComponent
+        loadComponent: () => import('./features/perfil/perfil.component').then(m => m.PerfilComponent)
       },
       {
         path: 'perfil/:id',
-        component: PerfilComponent
+        loadComponent: () => import('./features/perfil/perfil.component').then(m => m.PerfilComponent)
       },
       {
         path: 'livro/:id',
-        component: LivroComponent
+        loadComponent: () => import('./shared/livro/livro.component').then(m => m.LivroComponent)
       },
       {
         path: 'admin',
