@@ -123,64 +123,64 @@
 
     <!-- Edição do perfil -->
     <div class="perfil-container" *ngIf="editando && usuarioEdit">
-      <div class="alerta-cadastro" *ngIf="nicknameEditavel">
-        ⚠️ Finalize o cadastro para continuar usando o app.
-      </div>
-      <div class="perfil-edicao-row">
-        <div class="perfil-avatar">
-          <!-- 🆕 AVATAR GRANDE NA EDIÇÃO -->
-          <div class="avatar-edicao-container">
-            <div class="avatar-grande editavel" (click)="fileInput.click()">
-              <img [src]="usuarioEdit.avatar || 'assets/capas/perfilSemFoto.png'" [alt]="usuarioEdit.nome" />
-              <div class="avatar-overlay">
-                <span class="avatar-texto">📷</span>
-                <span class="avatar-dica">Clique para alterar</span>
-              </div>
-              <input type="file" #fileInput hidden (change)="onAvatarSelected($event)" accept="image/*">
+    <div class="alerta-cadastro" *ngIf="nicknameEditavel">
+      ⚠️ Finalize o cadastro para continuar usando o app.
+    </div>
+
+    <div class="perfil-edicao-row">
+      <div class="perfil-avatar">
+        <div class="avatar-edicao-container">
+          <!-- 🆕 Adicionar referência -->
+          <div class="avatar-grande editavel" #avatarEdicao (click)="fileInput.click()">
+            <img [src]="usuarioEdit.avatar || 'assets/capas/perfilSemFoto.png'" [alt]="usuarioEdit.nome" />
+            <div class="avatar-overlay">
+              <span class="avatar-texto">📷</span>
+              <span class="avatar-dica">Clique para alterar</span>
             </div>
-            <p class="upload-erro" *ngIf="uploadErro">{{ uploadErro }}</p>
+            <input type="file" #fileInput hidden (change)="onAvatarSelected($event)" accept="image/*">
           </div>
+          <p class="upload-erro" *ngIf="uploadErro">{{ uploadErro }}</p>
         </div>
-
-
-          <div class="perfil-info-edicao">
-            <div class="form-edicao">
-              <label class="input-label">Nome</label>
-              <input type="text" [(ngModel)]="usuarioEdit.nome">
-
-              <label class="input-label">@ Nickname</label>
-              <div class="nickname-input-wrapper" [class.disabled]="!nicknameEditavel">
-                <span class="nickname-prefix">@</span>
-                <input type="text" [(ngModel)]="usuarioEdit.nickname" placeholder="seunickname (3 a 12 caracteres)" maxlength="12" (input)="limparArroba()" [disabled]="!nicknameEditavel">
-              </div>
-              <p class="nickname-aviso" *ngIf="!nicknameEditavel">⚠️ O nickname não pode ser alterado após o cadastro.</p>
-
-              <label class="input-label">Biografia</label>
-              <textarea [(ngModel)]="usuarioEdit.descricao" placeholder="Conte um pouco sobre você..." rows="3"></textarea>
-
-              <label class="input-label">Tema</label>
-              <select [(ngModel)]="usuarioEdit.tema" class="select-status">
-                <option [ngValue]="2">☀️ Claro</option>
-                <option [ngValue]="1">🌙 Escuro</option>
-              </select>
-            </div>
-          </div>
       </div>
 
-      <div class="perfil-actions-edicao">
-        <button class="btn-cancelar" *ngIf="!nicknameEditavel" (click)="fecharEdicao()">Cancelar</button>
-        <button class="btn-salvar" (click)="salvarPerfil()">Salvar</button>
+      <div class="perfil-info-edicao">
+        <div class="form-edicao">
+          <label class="input-label">Nome</label>
+          <!-- 🆕 Adicionar referência -->
+          <input type="text" #inputNome [(ngModel)]="usuarioEdit.nome">
+
+          <label class="input-label">@ Nickname</label>
+          <div class="nickname-input-wrapper" [class.disabled]="!nicknameEditavel">
+            <span class="nickname-prefix">@</span>
+            <!-- 🆕 Adicionar referência -->
+            <input type="text" #inputNickname [(ngModel)]="usuarioEdit.nickname" placeholder="seunickname (3 a 12 caracteres)" maxlength="12" (input)="limparArroba()" [disabled]="!nicknameEditavel">
+          </div>
+          <p class="nickname-aviso" *ngIf="!nicknameEditavel">⚠️ O nickname não pode ser alterado após o cadastro.</p>
+
+          <label class="input-label">Biografia</label>
+          <!-- 🆕 Adicionar referência -->
+          <textarea #inputBiografia [(ngModel)]="usuarioEdit.descricao" placeholder="Conte um pouco sobre você..." rows="3"></textarea>
+
+          <label class="input-label">Tema</label>
+          <!-- 🆕 Adicionar referência -->
+          <select #selectTema [(ngModel)]="usuarioEdit.tema" class="select-status">
+            <option [ngValue]="2">☀️ Claro</option>
+            <option [ngValue]="1">🌙 Escuro</option>
+          </select>
+        </div>
       </div>
     </div>
 
+    <div class="perfil-actions-edicao">
+      <button class="btn-cancelar" *ngIf="!nicknameEditavel" (click)="fecharEdicao()">Cancelar</button>
+      <!-- 🆕 Adicionar referência -->
+      <button class="btn-salvar" #btnSalvar (click)="salvarPerfil()">Salvar</button>
+    </div>
+  </div>
+
     <!-- ========== BIBLIOTECA PESSOAL ========== -->
     <div class="biblioteca-pessoal" *ngIf="usuario && !editando">
-      <div class="biblioteca-header">
 
-        <button class="btn-circle" *ngIf="!modoVisualizacao" title="Adicionar livro" (click)="abrirModalAdicionarLivro()">
-          <span class="btn-label">Cadastrar Livro</span>
-        </button>
-      </div>
 
       <!-- 🆕 ABAS -->
       <div class="tabs-perfil">
@@ -361,6 +361,53 @@
       </div>
     </div>
   </div>
+
+
+  <!-- 🆕 OVERLAY DE ONBOARDING -->
+<div class="onboarding-mask" *ngIf="onboardingAtivo">
+  <!-- 4 divs que escurecem as áreas ao redor -->
+  <div class="mask-top" [style.height.px]="posicaoHighlight.top"></div>
+  <div class="mask-bottom"
+       [style.top.px]="posicaoHighlight.top + posicaoHighlight.height"
+       [style.height.px]="windowHeight - posicaoHighlight.top - posicaoHighlight.height"></div>
+  <div class="mask-left"
+       [style.top.px]="posicaoHighlight.top"
+       [style.height.px]="posicaoHighlight.height"
+       [style.width.px]="posicaoHighlight.left"></div>
+  <div class="mask-right"
+       [style.top.px]="posicaoHighlight.top"
+       [style.left.px]="posicaoHighlight.left + posicaoHighlight.width"
+       [style.height.px]="posicaoHighlight.height"
+       [style.width.px]="windowWidth - posicaoHighlight.left - posicaoHighlight.width"></div>
+
+  <!-- Highlight do campo (borda) -->
+  <div
+    class="onboarding-highlight"
+    [style.top.px]="posicaoHighlight.top"
+    [style.left.px]="posicaoHighlight.left"
+    [style.width.px]="posicaoHighlight.width"
+    [style.height.px]="posicaoHighlight.height">
+  </div>
+
+  <!-- Tooltip -->
+  <div
+    class="onboarding-tooltip"
+    [style.top.px]="tooltipTop"
+    [style.left.px]="tooltipLeft">
+    <div class="onboarding-passos">
+      Passo {{ passoOnboarding + 1 }} de 6
+    </div>
+    <div class="onboarding-titulo">
+      {{ getTituloPasso() }}
+    </div>
+    <div class="onboarding-descricao">
+      {{ getDescricaoPasso() }}
+    </div>
+    <button class="onboarding-btn" (click)="proximoPassoOnboarding()">
+      {{ passoOnboarding === 5 ? 'Finalizar' : 'Próximo' }}
+    </button>
+  </div>
+</div>
 </section>
 
 <!-- ========== BOTTOM SHEET: LIVRO (UNIFICADO) ========== -->
@@ -395,13 +442,6 @@
           <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
         </svg>
         Comentários
-      </button>
-      <button class="bs-btn bs-btn-primary" *ngIf="modoVisualizacao" (click)="adicionarLivroDoPerfil(livroSelecionado); fecharBottomSheetLivro()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <line x1="12" y1="5" x2="12" y2="19"/>
-          <line x1="5" y1="12" x2="19" y2="12"/>
-        </svg>
-        Adicionar à minha biblioteca
       </button>
       <button class="bs-btn bs-btn-outline" *ngIf="!modoVisualizacao" (click)="abrirEdicaoLivro(livroSelecionado); fecharBottomSheetLivro()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
