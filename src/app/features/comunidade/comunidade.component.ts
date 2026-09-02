@@ -1,5 +1,5 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, Inject, PLATFORM_ID, ChangeDetectorRef, ViewChild } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FeedComponent } from './feed/feed.component';
 import { SocialComponent } from './social/social.component';
 
@@ -14,7 +14,20 @@ import { SocialComponent } from './social/social.component';
 export class ComunidadeComponent {
   abaAtiva: 'feed' | 'social' = 'feed';
 
+  @ViewChild(SocialComponent) socialComponent?: SocialComponent;
+
+  constructor(private cdr: ChangeDetectorRef) {}
+
   trocarAba(aba: 'feed' | 'social'): void {
     this.abaAtiva = aba;
+
+    // 🆕 Se for social, recarrega após renderizar
+    if (aba === 'social') {
+      setTimeout(() => {
+        if (this.socialComponent) {
+          this.socialComponent.carregarUsuarios();
+        }
+      }, 100);
+    }
   }
 }
