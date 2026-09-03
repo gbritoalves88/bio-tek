@@ -51,8 +51,7 @@ export interface AdminUsuario {
   mediaAvaliacoes?: number;
   totalAcessos?: number;
   ultimoAcesso?: string;
-  acessos30Dias?: number;
-  notificacoesAtivas?: boolean; // 🆕 ADICIONADO
+  acessos30Dias?: number
 }
 
 export interface Paginado<T> {
