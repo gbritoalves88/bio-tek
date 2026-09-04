@@ -9,7 +9,7 @@
   </div>
 
   <!-- 🆕 STREAK (substitui a frase do autor) -->
-  <div class="streak-card" *ngIf="streak && streak.sequenciaAtual > 0">
+  <div class="streak-card ativo" *ngIf="streak && streak.sequenciaAtual > 0">
     <div class="streak-icon">🔥</div>
     <div class="streak-info">
       <strong>{{ streak.sequenciaAtual }} dias de leitura</strong>
@@ -18,11 +18,18 @@
     </div>
   </div>
 
-  <div class="streak-card empty" *ngIf="streak && streak.sequenciaAtual === 0">
+  <div class="streak-card empty clicavel"
+      *ngIf="streak && streak.sequenciaAtual === 0"
+      (click)="comecarJornada()">
     <div class="streak-icon">📚</div>
     <div class="streak-info">
       <strong>Comece sua jornada de leitura!</strong>
-      <span>Atualize seu progresso para iniciar uma sequência.</span>
+      <span *ngIf="listaLeitura.length > 0 || livroAtual">
+        Toque aqui para escolher um livro da sua estante!
+      </span>
+      <span *ngIf="listaLeitura.length === 0 && !livroAtual">
+        Toque aqui para explorar o catálogo de livros!
+      </span>
     </div>
   </div>
 
@@ -91,11 +98,16 @@
     </div>
 
     <ng-template #semLeitura>
-      <div class="reading-now empty-state">
-        <h2>📖 Lendo agora</h2>
-        <p>Nenhum livro em leitura.</p>
-        <small>Adicione um livro e comece a ler!</small>
-      </div>
+        <div class="reading-now empty-state">
+          <h2>📖 Lendo agora</h2>
+          <p>Nenhum livro em leitura.</p>
+          <small *ngIf="listaLeitura.length > 0">
+            Você tem {{ listaLeitura.length }} livro(s) esperando na fila!
+          </small>
+          <small *ngIf="listaLeitura.length === 0">
+            Que tal explorar a Biblioteca e começar sua primeira leitura?
+          </small>
+        </div>
     </ng-template>
 
     <!-- Livros recomendados -->

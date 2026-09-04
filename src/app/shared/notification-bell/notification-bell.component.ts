@@ -1,6 +1,5 @@
 import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { forkJoin } from 'rxjs';
 import { NotificationService, Notificacao } from '../services/notification.service';
 
 @Component({
@@ -9,12 +8,18 @@ import { NotificationService, Notificacao } from '../services/notification.servi
   imports: [CommonModule],
   template: `
     <div class="notification-wrapper">
-      <div class="notification-bell" (click)="togglePanel($event)">
+      <div class="notification-bell"
+           [class.tem-notificacoes]="naoLidas > 0"
+           (click)="togglePanel($event)">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
           <path d="M13.73 21a2 2 0 0 1-3.46 0" />
         </svg>
-        <span class="badge" *ngIf="naoLidas > 0">{{ naoLidas > 9 ? '9+' : naoLidas }}</span>
+        <span class="badge"
+              *ngIf="naoLidas > 0"
+              [class.pulsante]="naoLidas > 0">
+          {{ naoLidas > 9 ? '9+' : naoLidas }}
+        </span>
       </div>
 
       <div class="notification-panel" *ngIf="panelAberto" (click)="$event.stopPropagation()">
@@ -58,6 +63,7 @@ import { NotificationService, Notificacao } from '../services/notification.servi
         width: 20px;
         height: 20px;
         stroke: var(--text-secondary);
+        transition: transform 0.3s ease;
       }
 
       &:hover {
@@ -65,6 +71,33 @@ import { NotificationService, Notificacao } from '../services/notification.servi
         svg {
           stroke: var(--accent);
         }
+      }
+
+      &.tem-notificacoes {
+        svg {
+          animation: bellRing 1s ease-in-out;
+        }
+      }
+    }
+
+    @keyframes bellRing {
+      0%, 100% {
+        transform: rotate(0deg);
+      }
+      10%, 30% {
+        transform: rotate(10deg);
+      }
+      20%, 40% {
+        transform: rotate(-10deg);
+      }
+      50% {
+        transform: rotate(5deg);
+      }
+      60% {
+        transform: rotate(-5deg);
+      }
+      70% {
+        transform: rotate(0deg);
       }
     }
 
@@ -83,6 +116,19 @@ import { NotificationService, Notificacao } from '../services/notification.servi
       align-items: center;
       justify-content: center;
       padding: 0 4px;
+
+      &.pulsante {
+        animation: badgePulse 1s ease-in-out infinite;
+      }
+    }
+
+    @keyframes badgePulse {
+      0%, 100% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.2);
+      }
     }
 
     .notification-panel {
@@ -97,6 +143,38 @@ import { NotificationService, Notificacao } from '../services/notification.servi
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
       z-index: 1000;
       overflow: hidden;
+    }
+
+    .notification-toast {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-100px);
+      background: var(--bg-card);
+      border: 1px solid var(--accent);
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      z-index: 9999;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      transition: transform 0.3s ease;
+      max-width: 90%;
+
+      .toast-icone {
+        font-size: 24px;
+      }
+
+      .toast-mensagem {
+        font-size: 14px;
+        color: var(--text-primary);
+        line-height: 1.4;
+      }
+
+      &.visivel {
+        transform: translateX(-50%) translateY(0);
+      }
     }
 
     .panel-header {
@@ -192,7 +270,6 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
   notificacoes: Notificacao[] = [];
   private intervalId: any;
   private ultimaAtividade = Date.now();
-  private ultimaVerificacao = Date.now();
 
   @HostListener('document:mousemove')
   @HostListener('document:click')
@@ -201,7 +278,6 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
   onUserActivity(): void {
     this.ultimaAtividade = Date.now();
 
-    // 🆕 Fecha o painel se clicou fora (unificado)
     if (this.panelAberto) {
       this.panelAberto = false;
     }
@@ -210,18 +286,18 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
   constructor(private notificationService: NotificationService) {}
 
   ngOnInit(): void {
-    // 🆕 Carrega apenas o contador inicial
-    this.carregarContador();
+    // Carrega imediatamente
+    this.carregarNotificacoes();
 
-    // 🆕 Verifica a cada 5 minutos (300000 ms)
+    // Verifica a cada 1 minuto
     this.intervalId = setInterval(() => {
       const segundosInativo = (Date.now() - this.ultimaAtividade) / 1000;
 
-      // Só verifica se usuário esteve ativo nos últimos 2 minutos
-      if (segundosInativo < 120) {
-        this.carregarContador();
+      // Só verifica se usuário esteve ativo no último minuto
+      if (segundosInativo < 30) {
+        this.carregarNotificacoes();
       }
-    }, 300000); // 5 minutos
+    }, 30000); // 30 segundos
   }
 
   ngOnDestroy(): void {
@@ -230,23 +306,20 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
     }
   }
 
-  // 🆕 Carrega apenas o contador de não lidas (mais leve)
-  carregarContador(): void {
-    this.notificationService.getNaoLidas().subscribe({
-      next: (data: Notificacao[]) => {
-        this.naoLidas = data.length;
-      },
-      error: (err) => {
-        console.error('Erro ao carregar contador de notificações:', err);
-      }
-    });
-  }
-
-  // 🆕 Carrega todas as notificações (quando painel abre)
+  // 🆕 Método único: carrega todas e calcula contador
   carregarNotificacoes(): void {
     this.notificationService.getAll().subscribe({
       next: (data: Notificacao[]) => {
+        const contadorAntigo = this.naoLidas;
+
         this.notificacoes = data;
+        this.naoLidas = data.filter(n => !n.lida).length;
+
+        // 🆕 Se aumentou, anima o sino E mostra toast
+        if (this.naoLidas > contadorAntigo) {
+          this.animarSino();
+          this.mostrarToast(data[0]); // 🆕 Mostra a notificação mais recente
+        }
       },
       error: (err) => {
         console.error('Erro ao carregar notificações:', err);
@@ -254,7 +327,46 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
     });
   }
 
-  // 🆕 Ícone baseado no tipo de notificação
+  private mostrarToast(notificacao: Notificacao): void {
+    const icone = this.getIconeNotificacao(notificacao.tipo);
+    const mensagem = notificacao.mensagem;
+
+    // Criar elemento toast
+    const toast = document.createElement('div');
+    toast.className = 'notification-toast';
+    toast.innerHTML = `
+      <span class="toast-icone">${icone}</span>
+      <span class="toast-mensagem">${mensagem}</span>
+    `;
+
+    document.body.appendChild(toast);
+
+    // Animar entrada
+    setTimeout(() => {
+      toast.classList.add('visivel');
+    }, 100);
+
+    // Remover após 5 segundos
+    setTimeout(() => {
+      toast.classList.remove('visivel');
+      setTimeout(() => {
+        toast.remove();
+      }, 300);
+    }, 5000);
+  }
+
+
+  // 🆕 Método para animar o sino
+  private animarSino(): void {
+    const bell = document.querySelector('.notification-bell');
+    if (bell) {
+      bell.classList.remove('tem-notificacoes');
+      // Força reflow para reiniciar animação
+      void (bell as HTMLElement).offsetWidth;
+      bell.classList.add('tem-notificacoes');
+    }
+  }
+
   getIconeNotificacao(tipo: string): string {
     switch (tipo) {
       case 'seguidor': return '👤';
@@ -262,11 +374,13 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
       case 'curtida_avaliacao': return '⭐';
       case 'comentario': return '💬';
       case 'comentario_avaliacao': return '💬';
+      case 'streak': return '🔥';
+      case 'leitura': return '📖';
+      case 'incentivo': return '📕';
       default: return '🔔';
     }
   }
 
-  // Formata data com hora
   formatarData(dataISO: string): string {
     if (!dataISO) return '';
 
@@ -280,17 +394,14 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
     const horas = data.getHours().toString().padStart(2, '0');
     const minutos = data.getMinutes().toString().padStart(2, '0');
 
-    // Se for hoje, mostra só a hora
     if (data.toDateString() === hoje.toDateString()) {
       return `Hoje às ${horas}:${minutos}`;
     }
 
-    // Se for ontem, mostra "Ontem"
     if (data.toDateString() === ontem.toDateString()) {
       return `Ontem às ${horas}:${minutos}`;
     }
 
-    // Caso contrário, mostra data completa
     return `${dia}/${mes} às ${horas}:${minutos}`;
   }
 
@@ -298,15 +409,15 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
     event.stopPropagation();
     this.panelAberto = !this.panelAberto;
 
-    // 🆕 Quando abre o painel, carrega notificações completas
     if (this.panelAberto) {
+      // Recarrega ao abrir
       this.carregarNotificacoes();
 
-      // Se tem não lidas, marca como lidas após carregar
+      // Marca como lidas
       if (this.naoLidas > 0) {
         this.notificationService.marcarLidas().subscribe({
           next: () => {
-            this.carregarContador();
+            this.carregarNotificacoes();
           }
         });
       }
@@ -317,7 +428,6 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
     this.notificationService.marcarLidas().subscribe({
       next: () => {
         this.carregarNotificacoes();
-        this.carregarContador();
       },
       error: (err) => {
         console.error('Erro ao marcar todas como lidas:', err);

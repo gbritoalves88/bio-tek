@@ -432,4 +432,17 @@ export class HomeComponent implements OnInit {
     });
   }
 
+  comecarJornada(): void {
+    // Verifica se tem livros cadastrados
+    const temLivros = this.listaLeitura.length > 0 || this.livroAtual != null;
+
+    if (temLivros) {
+      // Vai para o perfil (Minha Biblioteca)
+      this.router.navigate(['/inicio/perfil']);
+    } else {
+      // Vai para a biblioteca (Catálogo)
+      this.router.navigate(['/inicio/biblioteca']);
+    }
+  }
+
 }

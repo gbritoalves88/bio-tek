@@ -123,10 +123,36 @@
     }
   }
 
+  // 🆕 Quando streak está ativo (chama animada)
+  &.ativo {
+    .streak-icon {
+      animation: chamaPulse 1.5s ease-in-out infinite;
+    }
+  }
+
+  // 🆕 Quando não tem streak (clicável para começar)
   &.empty {
-    .streak-icon { font-size: 28px; }
+    .streak-icon {
+      font-size: 28px;
+    }
+
+    &.clicavel {
+      cursor: pointer;
+      transition: all 0.2s;
+
+      &:hover {
+        border-color: var(--accent);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(var(--accent-rgb), 0.2);
+      }
+
+      &:active {
+        transform: scale(0.98);
+      }
+    }
   }
 }
+
 
 // ===== SEÇÃO COMUM =====
 .reading-now {
@@ -683,6 +709,17 @@
   margin-bottom: 0;
 }
 
+@keyframes chamaPulse {
+  0%, 100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 0 rgba(255, 100, 0, 0));
+  }
+  50% {
+    transform: scale(1.2);
+    filter: drop-shadow(0 0 15px rgba(255, 100, 0, 0.6));
+  }
+}
+
 // ===== RESPONSIVO =====
 @media (max-width: 600px) {
   .book-info {
@@ -699,23 +736,74 @@
 }
 
 @media (max-width: 480px) {
-  .hero { gap: 8px; }
-  .hero h1 { font-size: 24px; }
-  .saudacao-sub { font-size: 14px; }
-  .btn-circle { padding: 8px 12px; .btn-label { font-size: 12px; } }
+  .home {
+    padding-bottom: 0px; // 🆕 Reduz espaço final
+  }
+
+  .hero {
+    gap: 8px;
+  }
+
+  .hero h1 {
+    font-size: 24px;
+  }
+
+  .saudacao-sub {
+    font-size: 14px;
+  }
+
+  .btn-circle {
+    padding: 8px 12px;
+
+    .btn-label {
+      font-size: 12px;
+    }
+  }
+
+  .reading-now {
+    margin-bottom: 16px; // 🆕 Reduz espaço entre seções
+
+    &:last-child {
+      margin-bottom: 0; // 🆕 Última seção sem margem
+    }
+  }
+
   .book-info {
     gap: 10px;
-    .book-cover { width: 140px; }
-    .book-details h3 { font-size: 15px; }
-    .book-details p { font-size: 11px; }
-  }
-  .scroll-track { gap: 10px; }
-  .livro-card { width: 95px; }
-  .livro-capa { width: 95px; }
-  .skeleton-card { width: 95px; }
-  .skeleton-reading { height: 150px; }
-}
 
+    .book-cover {
+      width: 140px;
+    }
+
+    .book-details h3 {
+      font-size: 15px;
+    }
+
+    .book-details p {
+      font-size: 11px;
+    }
+  }
+
+  .scroll-track {
+    gap: 10px;
+  }
+
+  .livro-card {
+    width: 95px;
+  }
+
+  .livro-capa {
+    width: 95px;
+  }
+
+  .skeleton-card {
+    width: 95px;
+  }
+
+  .skeleton-reading {
+    height: 150px;
+  }
+}
 // ===== KEYFRAMES =====
 @keyframes fadeInUp {
   from { opacity: 0; transform: translateY(12px); }
