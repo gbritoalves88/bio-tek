@@ -1,12 +1,19 @@
 @echo off
 echo ========================================
-echo  ASSINANDO APK BLITECA
+echo  ASSINANDO AAB BLITECA
 echo ========================================
 
-"C:\Program Files\Eclipse Adoptium\jdk-17.0.19.10-hotspot\bin\java.exe" -Xmx1024M -Xss1m -jar "C:\Users\biel_\.bubblewrap\android_sdk\build-tools\34.0.0\lib\apksigner.jar" sign --ks "C:\repositorio\bio-tek\bio-tek\android.keystore" --ks-key-alias bliteca --out app-release-signed.apk app-release-unsigned-aligned.apk
+set JARSIGNER="C:\Program Files\Eclipse Adoptium\jdk-17.0.19.10-hotspot\bin\jarsigner.exe"
+set KEYSTORE="C:\repositorio\bio-tek\bio-tek\android.keystore"
+set AAB_IN="C:\repositorio\bio-tek\bio-tek\app\build\outputs\bundle\release\app-release.aab"
+set AAB_OUT="C:\repositorio\bio-tek\bio-tek\app-release-signed.aab"
+
+echo Assinando AAB com jarsigner...
+
+%JARSIGNER% -keystore %KEYSTORE% -storepass "27184546Biel$$$" -keypass "27184546Biel$$$" -signedjar %AAB_OUT% %AAB_IN% bliteca
 
 echo ========================================
-echo  APK ASSINADO COM SUCESSO!
-echo  Arquivo: app-release-signed.apk
+echo  AAB ASSINADO COM SUCESSO!
+echo  Arquivo: app-release-signed.aab
 echo ========================================
 pause
