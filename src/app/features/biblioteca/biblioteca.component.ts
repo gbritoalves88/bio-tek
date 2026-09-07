@@ -29,6 +29,15 @@ export class BibliotecaComponent implements OnInit {
   categoriasExtras: string[] = [];
   mostrarTodasCategorias = false;
 
+  maisAdicionados: any[] = [];
+  generosPreferidos: string[] = [];
+  primeiroAcesso = false;
+  mostrarModalPreferencias = false;
+  generosDisponiveis: string[] = [];
+  generosSelecionados: string[] = [];
+  salvandoPreferencias = false;
+  recomendados: any[] = [];
+
   private readonly CATEGORIAS_PRINCIPAIS = [
     'Fantasia', 'Ficção', 'Romance', 'Terror',
     'Suspense', 'Biografia', 'História', 'Infantil'
@@ -72,25 +81,30 @@ export class BibliotecaComponent implements OnInit {
 
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
-      this.carregarTudo(); // 🆕 Carrega tudo em paralelo
+      this.carregarTudo();
     }
   }
 
-  // 🆕 Método principal: carrega catálogo + categorias juntos
   carregarTudo(): void {
     this.carregando = true;
 
-    forkJoin({
-      livros: this.catalogoService.getAll(),
-      categorias: this.catalogoService.getCategorias()
-    }).subscribe({
+    this.catalogoService.getBibliotecaInicial().subscribe({
       next: (result) => {
-        // Processa livros
-        this.livrosOriginais = result.livros;
-        this.livros = [...result.livros];
+        this.livrosOriginais = result.catalogo || [];
+        this.livros = [...this.livrosOriginais];
+        this.maisAdicionados = result.maisAdicionados || [];
+        this.generosPreferidos = result.generosPreferidos || [];
+        this.primeiroAcesso = result.primeiroAcesso || false;
+        this.recomendados = result.recomendados || [];
+        this.processarCategorias(result.categorias || []);
+        this.generosDisponiveis = this.CATEGORIAS_PRINCIPAIS;
 
-        // Processa categorias
-        this.processarCategorias(result.categorias);
+        if (this.primeiroAcesso) {
+          setTimeout(() => {
+            this.mostrarModalPreferencias = true;
+            this.cdr.markForCheck();
+          }, 500);
+        }
 
         this.carregando = false;
         this.cdr.markForCheck();
@@ -103,7 +117,6 @@ export class BibliotecaComponent implements OnInit {
     });
   }
 
-  // 🆕 Processar categorias (extraído do carregarCategorias antigo)
   private processarCategorias(cats: string[]): void {
     const traduzidas = cats.map(c => this.traduzirCategoria(c));
     const unicas = [...new Set(traduzidas)].sort();
@@ -116,7 +129,6 @@ export class BibliotecaComponent implements OnInit {
     this.categoriasExtras = unicas.filter(c => !this.CATEGORIAS_PRINCIPAIS.includes(c));
   }
 
-  // 🆕 Manter para recarregar após adicionar livro
   carregarCatalogo(): void {
     this.catalogoService.getAll().subscribe({
       next: (livros) => {
@@ -141,16 +153,58 @@ export class BibliotecaComponent implements OnInit {
     this.cdr.markForCheck();
   }
 
+  // 🆕 Filtro melhorado com normalização
   filtrarPorGenero(genero: string): void {
     this.generoSelecionado = genero;
     this.termoBusca = '';
 
-    const generoIngles = this.getGeneroIngles(genero);
+    const generoNormalizado = this.normalizarGenero(genero.toLowerCase());
 
-    this.livros = this.livrosOriginais.filter(l =>
-      l.generos?.some(g => g.toLowerCase() === generoIngles.toLowerCase())
-    );
+    this.livros = this.livrosOriginais.filter(l => {
+      if (!l.generos || l.generos.length === 0) return false;
+
+      return l.generos.some(g => {
+        const genNormalizado = this.normalizarGenero(g.toLowerCase().trim());
+        return genNormalizado === generoNormalizado;
+      });
+    });
+
     this.cdr.markForCheck();
+  }
+
+  // 🆕 Normaliza gêneros para categorias limpas
+  private normalizarGenero(genero: string): string {
+    const g = genero.toLowerCase();
+
+    if (g.includes('fantas')) return 'fantasia';
+    if (g.includes('ficcao') || g.includes('ficção') || g.includes('fiction')) return 'ficção';
+    if (g.includes('scien') || g.includes('ciência') || g.includes('ciencia')) return 'ficção científica';
+    if (g.includes('romance')) return 'romance';
+    if (g.includes('thriller') || g.includes('suspense')) return 'suspense';
+    if (g.includes('myster') || g.includes('mistério') || g.includes('misterio') || g.includes('detective')) return 'mistério';
+    if (g.includes('horror') || g.includes('terror')) return 'terror';
+    if (g.includes('biography') || g.includes('biografia') || g.includes('authors') || g.includes('autobiography')) return 'biografia';
+    if (g.includes('history') || g.includes('história') || g.includes('historia')) return 'história';
+    if (g.includes('poetry') || g.includes('poesia')) return 'poesia';
+    if (g.includes('philosophy') || g.includes('filosofia')) return 'filosofia';
+    if (g.includes('psychology') || g.includes('psicologia')) return 'psicologia';
+    if (g.includes('business') || g.includes('economics') || g.includes('negócios') || g.includes('negocios')) return 'negócios';
+    if (g.includes('cooking') || g.includes('culinária') || g.includes('culinaria')) return 'culinária';
+    if (g.includes('art') || g.includes('arte')) return 'arte';
+    if (g.includes('travel') || g.includes('viagem')) return 'viagem';
+    if (g.includes('comics') || g.includes('graphic') || g.includes('quadrinhos')) return 'quadrinhos';
+    if (g.includes('manga') || g.includes('mangá')) return 'mangá';
+    if (g.includes('children') || g.includes('infantil') || g.includes('juvenile')) return 'infantil';
+    if (g.includes('young adult') || g.includes('jovem')) return 'jovem';
+    if (g.includes('self')) return 'autoajuda';
+    if (g.includes('religion') || g.includes('religião') || g.includes('religiao') || g.includes('bible')) return 'religião';
+    if (g.includes('sports') || g.includes('esportes')) return 'esportes';
+    if (g.includes('music') || g.includes('música') || g.includes('musica')) return 'música';
+    if (g.includes('drama')) return 'drama';
+    if (g.includes('adventure')) return 'aventura';
+    if (g.includes('dystop')) return 'distopia';
+
+    return g;
   }
 
   private getGeneroIngles(generoPt: string): string {
@@ -301,5 +355,46 @@ export class BibliotecaComponent implements OnInit {
 
   get livrosFiltrados(): CatalogoLivro[] {
     return this.livros;
+  }
+
+  toggleGenero(genero: string): void {
+    const index = this.generosSelecionados.indexOf(genero);
+
+    if (index > -1) {
+      this.generosSelecionados.splice(index, 1);
+    } else {
+      if (this.generosSelecionados.length < 3) {
+        this.generosSelecionados.push(genero);
+      } else {
+        this.alertService.warning('Você pode escolher até 3 gêneros');
+      }
+    }
+  }
+
+  salvarPreferencias(): void {
+    if (this.generosSelecionados.length === 0) return;
+
+    this.salvandoPreferencias = true;
+
+    this.catalogoService.salvarPreferencias(this.generosSelecionados).subscribe({
+      next: () => {
+        this.salvandoPreferencias = false;
+        this.mostrarModalPreferencias = false;
+        this.generosPreferidos = [...this.generosSelecionados];
+        this.primeiroAcesso = false;
+        this.alertService.success('Preferências salvas!');
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        console.error('Erro ao salvar preferências:', err);
+        this.salvandoPreferencias = false;
+        this.alertService.error('Erro ao salvar preferências');
+      }
+    });
+  }
+
+  pularPreferencias(): void {
+    this.mostrarModalPreferencias = false;
+    this.cdr.markForCheck();
   }
 }

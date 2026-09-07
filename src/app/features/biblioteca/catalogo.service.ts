@@ -59,4 +59,12 @@ export class CatalogoService {
   buscarExterno(termo: string, limite: number = 30): Observable<any> {
     return this.http.post(`${this.apiUrl}/importar/termo/${termo}?limite=${limite}`, {});
   }
+
+  getBibliotecaInicial(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/biblioteca-inicial`);
+  }
+
+  salvarPreferencias(generos: string[]): Observable<any> {
+    return this.http.post(`${this.apiUrl}/preferencias`, { generos });
+  }
 }
