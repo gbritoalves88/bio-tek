@@ -2,7 +2,6 @@ import { Component, OnInit, Inject, PLATFORM_ID, ChangeDetectorRef } from '@angu
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { forkJoin } from 'rxjs';
 import { CatalogoService, CatalogoLivro } from './catalogo.service';
 import { AddBookModalComponent } from '../../shared/add-book-modal/add-book-modal.component';
 import { AlertService } from '../../shared/services/alert.service';
@@ -153,7 +152,6 @@ export class BibliotecaComponent implements OnInit {
     this.cdr.markForCheck();
   }
 
-  // 🆕 Filtro melhorado com normalização
   filtrarPorGenero(genero: string): void {
     this.generoSelecionado = genero;
     this.termoBusca = '';
@@ -165,44 +163,129 @@ export class BibliotecaComponent implements OnInit {
 
       return l.generos.some(g => {
         const genNormalizado = this.normalizarGenero(g.toLowerCase().trim());
-        return genNormalizado === generoNormalizado;
+
+        return genNormalizado === generoNormalizado ||
+               genNormalizado.includes(generoNormalizado) ||
+               generoNormalizado.includes(genNormalizado);
       });
     });
+
+    // Se não achou nada, mostra todos
+    if (this.livros.length === 0) {
+      this.livros = [...this.livrosOriginais];
+    }
 
     this.cdr.markForCheck();
   }
 
-  // 🆕 Normaliza gêneros para categorias limpas
   private normalizarGenero(genero: string): string {
-    const g = genero.toLowerCase();
+    const g = genero.toLowerCase().trim();
 
-    if (g.includes('fantas')) return 'fantasia';
-    if (g.includes('ficcao') || g.includes('ficção') || g.includes('fiction')) return 'ficção';
-    if (g.includes('scien') || g.includes('ciência') || g.includes('ciencia')) return 'ficção científica';
-    if (g.includes('romance')) return 'romance';
-    if (g.includes('thriller') || g.includes('suspense')) return 'suspense';
-    if (g.includes('myster') || g.includes('mistério') || g.includes('misterio') || g.includes('detective')) return 'mistério';
-    if (g.includes('horror') || g.includes('terror')) return 'terror';
-    if (g.includes('biography') || g.includes('biografia') || g.includes('authors') || g.includes('autobiography')) return 'biografia';
-    if (g.includes('history') || g.includes('história') || g.includes('historia')) return 'história';
-    if (g.includes('poetry') || g.includes('poesia')) return 'poesia';
-    if (g.includes('philosophy') || g.includes('filosofia')) return 'filosofia';
-    if (g.includes('psychology') || g.includes('psicologia')) return 'psicologia';
-    if (g.includes('business') || g.includes('economics') || g.includes('negócios') || g.includes('negocios')) return 'negócios';
-    if (g.includes('cooking') || g.includes('culinária') || g.includes('culinaria')) return 'culinária';
-    if (g.includes('art') || g.includes('arte')) return 'arte';
-    if (g.includes('travel') || g.includes('viagem')) return 'viagem';
-    if (g.includes('comics') || g.includes('graphic') || g.includes('quadrinhos')) return 'quadrinhos';
-    if (g.includes('manga') || g.includes('mangá')) return 'mangá';
-    if (g.includes('children') || g.includes('infantil') || g.includes('juvenile')) return 'infantil';
+    if (!g) return '';
+
+    // Fantasia
+    if (g.includes('fantas') || g.includes('fairy') || g.includes('elves') ||
+        g.includes('magic') || g.includes('sword') || g.includes('dragon')) return 'fantasia';
+
+    // Ficção Científica
+    if (g.includes('scien') || g.includes('ciência') || g.includes('ciencia') ||
+        g.includes('dune') || g.includes('space') || g.includes('alien') ||
+        g.includes('planet') || g.includes('robot') || g.includes('dystop')) return 'ficção científica';
+
+    // Ficção
+    if (g.includes('ficcao') || g.includes('ficção') || g.includes('fiction') ||
+        g.includes('novel') || g.includes('literary') || g.includes('literature')) return 'ficção';
+
+    // Romance
+    if (g.includes('romance') || g.includes('love') || g.includes('courtship')) return 'romance';
+
+    // Suspense/Thriller
+    if (g.includes('thriller') || g.includes('suspense') || g.includes('murder') ||
+        g.includes('crime')) return 'suspense';
+
+    // Mistério
+    if (g.includes('myster') || g.includes('mistério') || g.includes('misterio') ||
+        g.includes('detective')) return 'mistério';
+
+    // Terror
+    if (g.includes('horror') || g.includes('terror') || g.includes('occult') ||
+        g.includes('supernatural') || g.includes('ghost')) return 'terror';
+
+    // Biografia
+    if (g.includes('biography') || g.includes('biografia') || g.includes('authors') ||
+        g.includes('autobiography') || g.includes('memoir') || g.includes('writer')) return 'biografia';
+
+    // História
+    if (g.includes('history') || g.includes('história') || g.includes('historia') ||
+        g.includes('war') || g.includes('military')) return 'história';
+
+    // Infantil
+    if (g.includes('children') || g.includes('infantil') || g.includes('juvenile') ||
+        g.includes('fairy tales') || g.includes('coloring')) return 'infantil';
+
+    // Jovem
     if (g.includes('young adult') || g.includes('jovem')) return 'jovem';
-    if (g.includes('self')) return 'autoajuda';
-    if (g.includes('religion') || g.includes('religião') || g.includes('religiao') || g.includes('bible')) return 'religião';
-    if (g.includes('sports') || g.includes('esportes')) return 'esportes';
-    if (g.includes('music') || g.includes('música') || g.includes('musica')) return 'música';
-    if (g.includes('drama')) return 'drama';
-    if (g.includes('adventure')) return 'aventura';
-    if (g.includes('dystop')) return 'distopia';
+
+    // Educação
+    if (g.includes('education') || g.includes('study') || g.includes('language') ||
+        g.includes('reference') || g.includes('exam')) return 'educação';
+
+    // Poesia
+    if (g.includes('poetry') || g.includes('poesia')) return 'poesia';
+
+    // Filosofia
+    if (g.includes('philosophy') || g.includes('filosofia')) return 'filosofia';
+
+    // Psicologia
+    if (g.includes('psychology') || g.includes('psicologia') ||
+        g.includes('mental') || g.includes('depression')) return 'psicologia';
+
+    // Negócios
+    if (g.includes('business') || g.includes('economics') || g.includes('negócios') ||
+        g.includes('negocios') || g.includes('management')) return 'negócios';
+
+    // Culinária
+    if (g.includes('cooking') || g.includes('culinária') || g.includes('culinaria') ||
+        g.includes('food') || g.includes('candy')) return 'culinária';
+
+    // Arte
+    if (g.includes('art') || g.includes('arte') || g.includes('design') ||
+        g.includes('photography') || g.includes('architecture')) return 'arte';
+
+    // Viagem
+    if (g.includes('travel') || g.includes('viagem') || g.includes('tourism')) return 'viagem';
+
+    // Quadrinhos
+    if (g.includes('comics') || g.includes('graphic') || g.includes('quadrinhos') ||
+        g.includes('cartoon')) return 'quadrinhos';
+
+    // Mangá
+    if (g.includes('manga') || g.includes('mangá') || g.includes('anime')) return 'mangá';
+
+    // Autoajuda
+    if (g.includes('self') || g.includes('motivation') || g.includes('inspiration') ||
+        g.includes('personal development')) return 'autoajuda';
+
+    // Religião
+    if (g.includes('religion') || g.includes('religião') || g.includes('religiao') ||
+        g.includes('bible') || g.includes('spiritual')) return 'religião';
+
+    // Esportes
+    if (g.includes('sports') || g.includes('esportes') || g.includes('fitness')) return 'esportes';
+
+    // Música
+    if (g.includes('music') || g.includes('música') || g.includes('musica') ||
+        g.includes('song')) return 'música';
+
+    // Drama
+    if (g.includes('drama') || g.includes('theater') || g.includes('play')) return 'drama';
+
+    // Aventura
+    if (g.includes('adventure') || g.includes('aventura')) return 'aventura';
+
+    // Tecnologia
+    if (g.includes('computer') || g.includes('technology') || g.includes('programming') ||
+        g.includes('software')) return 'tecnologia';
 
     return g;
   }
