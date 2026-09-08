@@ -237,8 +237,9 @@ export class HomeComponent implements OnInit {
 
     if (progresso !== undefined) dados.progresso = progresso;
 
-    // 🆕 Se tiver frase, incluir
-    if (this.fraseAtividade && this.fraseAtividade.trim()) {
+    // Se tiver frase, incluir
+    const temComentario = this.fraseAtividade && this.fraseAtividade.trim();
+    if (temComentario) {
       dados.frase = this.fraseAtividade.trim();
     }
 
@@ -246,11 +247,19 @@ export class HomeComponent implements OnInit {
       next: () => {
         this.homeService.limparCache();
         this.carregarDashboard();
-        this.fecharLendoAgora();
-        this.fraseAtividade = ''; // 🆕 Limpar frase
+        this.fraseAtividade = '';
         this.alertService.success('Progresso atualizado!');
         this.analyticsService.logUpdateProgress(progresso || 0);
 
+        // 🆕 Se tem comentário, vai para atividades
+        if (temComentario) {
+          this.fecharLendoAgora();
+          this.router.navigate(['/inicio/perfil'], {
+            queryParams: { aba: 'atividades' }
+          });
+        } else {
+          this.fecharLendoAgora();
+        }
       },
       error: () => this.alertService.error('Erro ao atualizar progresso')
     });
@@ -443,6 +452,12 @@ export class HomeComponent implements OnInit {
       // Vai para a biblioteca (Catálogo)
       this.router.navigate(['/inicio/biblioteca']);
     }
+  }
+
+  abrirStreak(): void {
+    this.router.navigate(['/inicio/perfil'], {
+      queryParams: { aba: 'progresso' }
+    });
   }
 
 }

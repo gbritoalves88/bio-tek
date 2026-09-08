@@ -1,4 +1,10 @@
 /* ===== VARIÁVEIS GLOBAIS ===== */
+
+html, body {
+  touch-action: manipulation;
+}
+
+
 :root {
   --bg-primary: #111111;
   --bg-card: #1e1e1e;

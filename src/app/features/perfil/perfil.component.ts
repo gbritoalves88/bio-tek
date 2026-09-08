@@ -110,8 +110,12 @@ export class PerfilComponent implements OnInit {
     if (isPlatformBrowser(this.platformId)) {
       const usuarioLogado = JSON.parse(localStorage.getItem('usuario') || '{}');
       this.meuId = usuarioLogado.id || '';
+
       this.route.queryParams.subscribe(queryParams => {
         const forcarEdicao = queryParams['editar'] === 'true';
+
+        // 🆕 Verifica parâmetros de aba (processa UMA vez)
+        const aba = queryParams['aba'];
 
         this.route.params.subscribe(routeParams => {
           const idVisualizado = routeParams['id'];
@@ -124,6 +128,23 @@ export class PerfilComponent implements OnInit {
             this.modoVisualizacao = false;
             this.usuarioIdVisualizado = null;
             this.carregarMeuPerfil(forcarEdicao);
+
+            // 🆕 Só troca de aba se for o próprio perfil (não visualização)
+            if (aba === 'progresso') {
+              setTimeout(() => {
+                this.trocarAba('progresso');
+              }, 300);
+            }
+            if (aba === 'atividades') {
+              setTimeout(() => {
+                this.trocarAba('atividades');
+              }, 300);
+            }
+            if (aba === 'biblioteca') {
+              setTimeout(() => {
+                this.trocarAba('biblioteca');
+              }, 300);
+            }
           }
         });
       });

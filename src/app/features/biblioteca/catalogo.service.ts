@@ -4,22 +4,8 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, shareReplay, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { CatalogoLivro } from './biblioteca.model';
 
-export interface CatalogoLivro {
-  id: string;
-  titulo: string;
-  autor: string;
-  descricao?: string;
-  imagem?: string;
-  codigoBarras?: string;
-  fonte?: string;
-  fonteId?: string;
-  generos?: string[];
-  anoPublicacao?: number;
-  editora?: string;
-  numeroPaginas?: number;
-  avaliacaoMedia?: number;
-}
 
 @Injectable({
   providedIn: 'root'
@@ -27,8 +13,13 @@ export interface CatalogoLivro {
 export class CatalogoService {
   private apiUrl = `${environment.apiUrl}/Catalogo`;
 
-  // 🆕 Cache do catálogo
+  // Cache do catálogo
   private catalogoCache$: Observable<CatalogoLivro[]> | null = null;
+
+  // 🆕 Cache da biblioteca inicial
+  private bibliotecaCache$: Observable<any> | null = null;
+  private bibliotecaCacheTimestamp: number = 0;
+  private readonly CACHE_DURATION = 5 * 60 * 1000; // 5 minutos
 
   constructor(private http: HttpClient) {}
 
@@ -42,7 +33,6 @@ export class CatalogoService {
   }
 
   adicionarBiblioteca(catalogoId: string): Observable<any> {
-    // 🆕 Invalida cache ao adicionar livro (pode atualizar dados do catálogo)
     return this.http.post(`${this.apiUrl}/${catalogoId}/adicionar-biblioteca`, {}).pipe(
       tap(() => this.limparCache())
     );
@@ -50,6 +40,7 @@ export class CatalogoService {
 
   limparCache(): void {
     this.catalogoCache$ = null;
+    this.limparCacheBiblioteca(); // 🆕 Limpa também o cache da biblioteca
   }
 
   getCategorias(): Observable<string[]> {
@@ -60,11 +51,35 @@ export class CatalogoService {
     return this.http.post(`${this.apiUrl}/importar/termo/${termo}?limite=${limite}`, {});
   }
 
+  // 🆕 Método com cache
   getBibliotecaInicial(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/biblioteca-inicial`);
+    const agora = Date.now();
+
+    // Se cache válido, retorna ele
+    if (this.bibliotecaCache$ && (agora - this.bibliotecaCacheTimestamp) < this.CACHE_DURATION) {
+      return this.bibliotecaCache$;
+    }
+
+    // Cria novo cache
+    this.bibliotecaCache$ = this.http.get(`${this.apiUrl}/biblioteca-inicial`).pipe(
+      shareReplay(1),
+      tap(() => {
+        this.bibliotecaCacheTimestamp = Date.now();
+      })
+    );
+
+    return this.bibliotecaCache$;
+  }
+
+  // 🆕 Limpar cache da biblioteca
+  limparCacheBiblioteca(): void {
+    this.bibliotecaCache$ = null;
+    this.bibliotecaCacheTimestamp = 0;
   }
 
   salvarPreferencias(generos: string[]): Observable<any> {
-    return this.http.post(`${this.apiUrl}/preferencias`, { generos });
+    return this.http.post(`${this.apiUrl}/preferencias`, { generos }).pipe(
+      tap(() => this.limparCacheBiblioteca()) // 🆕 Limpa cache ao salvar preferências
+    );
   }
 }
