@@ -9,7 +9,8 @@
   </div>
 
   <!-- 🆕 STREAK (substitui a frase do autor) -->
-  <div class="streak-card ativo" *ngIf="streak && streak.sequenciaAtual > 0">
+  <div class="streak-card ativo" *ngIf="streak && streak.sequenciaAtual > 0"
+    (click)="abrirStreak()">
     <div class="streak-icon">🔥</div>
     <div class="streak-info">
       <strong>{{ streak.sequenciaAtual }} dias de leitura</strong>
@@ -151,7 +152,7 @@
           <circle cx="12" cy="12" r="10"/>
           <polyline points="12 6 12 12 16 14"/>
         </svg>
-        Próximas leituras
+        Suas próximas leituras
       </h2>
       <div class="scroll-horizontal">
         <div class="scroll-track">

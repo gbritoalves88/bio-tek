@@ -2,10 +2,11 @@ import { Component, OnInit, Inject, PLATFORM_ID, ChangeDetectorRef } from '@angu
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { CatalogoService, CatalogoLivro } from './catalogo.service';
+import { CatalogoService } from './catalogo.service';
 import { AddBookModalComponent } from '../../shared/add-book-modal/add-book-modal.component';
 import { AlertService } from '../../shared/services/alert.service';
 import { BottomSheetComponent } from '../../shared/bottom-sheet/bottom-sheet.component';
+import { CatalogoLivro } from './biblioteca.model';
 
 @Component({
   selector: 'app-biblioteca',

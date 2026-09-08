@@ -45,3 +45,19 @@ export enum Nota {
   Bom = 4,
   Excelente = 5
 }
+
+export interface CatalogoLivro {
+  id: string;
+  titulo: string;
+  autor: string;
+  descricao?: string;
+  imagem?: string;
+  codigoBarras?: string;
+  fonte?: string;
+  fonteId?: string;
+  generos?: string[];
+  anoPublicacao?: number;
+  editora?: string;
+  numeroPaginas?: number;
+  avaliacaoMedia?: number;
+}
