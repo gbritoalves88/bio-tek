@@ -60,7 +60,11 @@ export class PerfilService {
           ...l,
           tipo: l.tipo || 'livro',
           minutoAtual: l.minutoAtual || null,
-          totalMinutos: l.totalMinutos || null
+          totalMinutos: l.totalMinutos || null,
+          generos: l.generos || [],
+          anoPublicacao: l.anoPublicacao || null,
+          editora: l.editora || null,
+          idioma: l.idioma || null
         }))
       })),
       shareReplay(1),

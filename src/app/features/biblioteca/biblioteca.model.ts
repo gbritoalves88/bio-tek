@@ -60,4 +60,6 @@ export interface CatalogoLivro {
   editora?: string;
   numeroPaginas?: number;
   avaliacaoMedia?: number;
+  idioma?: string;
+  tipo?: string;
 }

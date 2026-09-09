@@ -20,6 +20,13 @@ export class AddBookModalService {
     descricao?: string;
     imagem?: string | null;
     codigoBarras?: string | null;
+    generos?: string[];
+    anoPublicacao?: number | null;
+    editora?: string | null;
+    idioma?: string | null;
+    // 🆕
+    tipo?: string;
+    status?: number;
   }): Observable<any> {
     return this.http.post(this.apiUrl, livro);
   }

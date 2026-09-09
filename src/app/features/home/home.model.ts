@@ -2,48 +2,61 @@ export interface Livro {
   id: string;
   titulo: string;
   autor: string;
+  descricao?: string;
   imagem?: string;
   codigoBarras?: string;
-  descricao?: string;      // 🆕
-  status: StatusLeitura;
+  status?: number;
   progresso?: number;
+  tipo?: string;
+  totalPaginas?: number;
+  totalMinutos?: number;
   paginaAtual?: number;
-  totalPaginas?: number;   // 🆕
+  minutoAtual?: number;
   pausado?: boolean;
   ultimaLeitura?: string;
-  dataCriacao?: string;
-  tipo?: string;           // 🆕
-  minutoAtual?: number | null;
-  totalMinutos?: number | null; // 🆕
-  avaliacao?: { nota: number };
+  // 🆕 Novos campos
+  generos?: string[];
+  anoPublicacao?: number;
+  editora?: string;
+  idioma?: string;
 }
 
 export interface LivroLeitura {
   id: string;
   titulo: string;
   autor: string;
+  descricao?: string;
   imagem?: string;
   codigoBarras?: string;
-  descricao?: string;      // 🆕
-  tipo?: string;           // 🆕
-  totalPaginas?: number;   // 🆕
-  totalMinutos?: number;   // 🆕
-  status: number;
+  status?: number;
+  tipo?: string;
+  totalPaginas?: number;
+  totalMinutos?: number;
   dataCriacao?: string;
+  // 🆕 Novos campos
+  generos?: string[];
+  anoPublicacao?: number;
+  editora?: string;
+  idioma?: string;
 }
 
 export interface LivroTop {
   id: string;
   titulo: string;
   autor: string;
+  descricao?: string;
   imagem?: string;
   codigoBarras?: string;
-  descricao?: string;      // 🆕
-  tipo?: string;           // 🆕
-  totalPaginas?: number;   // 🆕
-  totalMinutos?: number;   // 🆕
-  media: number;
-  totalAvaliacoes: number;
+  tipo?: string;
+  totalPaginas?: number;
+  totalMinutos?: number;
+  media?: number;
+  totalAvaliacoes?: number;
+  // 🆕 Novos campos
+  generos?: string[];
+  anoPublicacao?: number;
+  editora?: string;
+  idioma?: string;
 }
 
 export interface DashboardData {

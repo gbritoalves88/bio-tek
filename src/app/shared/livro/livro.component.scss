@@ -165,6 +165,36 @@
   }
 }
 
+.btn-alterar-status {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+  box-sizing: border-box;
+  border: 1px solid var(--accent);
+  background: transparent;
+  color: var(--accent);
+  min-height: 42px;
+
+  &:hover {
+    background: var(--accent);
+    color: white;
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
 // Botão Amazon largura total (quando editável)
 .btn-amazon-full {
   width: min-content; // 🆕 Ajusta à largura do conteúdo

@@ -64,6 +64,12 @@ export class PerfilComponent implements OnInit {
   windowHeight = 0;
   windowWidth = 0;
 
+  generosDisponiveis = [
+    'Fantasia', 'Ficção', 'Romance', 'Terror',
+    'Suspense', 'Biografia', 'História', 'Infantil',
+    'Aventura', 'Drama', 'Poesia', 'Ficção Científica'
+  ];
+
   private primeiraCarga = true;
 
   private readonly TAMANHO_MAXIMO = 10 * 1024 * 1024;
@@ -113,8 +119,6 @@ export class PerfilComponent implements OnInit {
 
       this.route.queryParams.subscribe(queryParams => {
         const forcarEdicao = queryParams['editar'] === 'true';
-
-        // 🆕 Verifica parâmetros de aba (processa UMA vez)
         const aba = queryParams['aba'];
 
         this.route.params.subscribe(routeParams => {
@@ -129,21 +133,23 @@ export class PerfilComponent implements OnInit {
             this.usuarioIdVisualizado = null;
             this.carregarMeuPerfil(forcarEdicao);
 
-            // 🆕 Só troca de aba se for o próprio perfil (não visualização)
+            // 🆕 Aumenta o delay e força o carregamento dos dados
             if (aba === 'progresso') {
               setTimeout(() => {
-                this.trocarAba('progresso');
-              }, 300);
+                this.abaAtiva = 'progresso';  // Define direto
+                this.carregarProgresso();      // Força o carregamento
+              }, 800);  // Aumenta para 800ms
             }
             if (aba === 'atividades') {
               setTimeout(() => {
-                this.trocarAba('atividades');
-              }, 300);
+                this.abaAtiva = 'atividades';
+                this.carregarAtividades();      // Força o carregamento
+              }, 800);
             }
             if (aba === 'biblioteca') {
               setTimeout(() => {
-                this.trocarAba('biblioteca');
-              }, 300);
+                this.abaAtiva = 'biblioteca';
+              }, 800);
             }
           }
         });
@@ -211,6 +217,26 @@ export class PerfilComponent implements OnInit {
       this.carregarPerfilVisualizacao(this.usuarioIdVisualizado);
     } else {
       this.carregarMeuPerfil();
+    }
+  }
+
+  // 🆕 Toggle gênero na edição
+  toggleGeneroEdicao(genero: string): void {
+    if (!this.livroEditando) return;
+
+    if (!this.livroEditando.generos) {
+      this.livroEditando.generos = [];
+    }
+
+    const index = this.livroEditando.generos.indexOf(genero);
+    if (index > -1) {
+      this.livroEditando.generos.splice(index, 1);
+    } else {
+      if (this.livroEditando.generos.length < 3) {
+        this.livroEditando.generos.push(genero);
+      } else {
+        this.alertService.warning('Máximo 3 gêneros');
+      }
     }
   }
 
@@ -427,10 +453,34 @@ export class PerfilComponent implements OnInit {
   }
 
   abrirEdicaoLivro(livro: LivroDoUsuario): void {
-    this.livroEditando = { ...livro, estrelas: livro.avaliacao?.nota || undefined };
+    this.livroEditando = {
+      ...livro,
+      estrelas: livro.avaliacao?.nota || undefined,
+      // 🆕 Garante que os novos campos existem
+      generos: livro.generos || [],
+      anoPublicacao: livro.anoPublicacao || null,
+      editora: livro.editora || null,
+      idioma: livro.idioma || null
+    };
     this.edicaoCapaPreview = livro.imagem || null;
     this.modalEdicaoLivroAberto = true;
   }
+
+validarAno(): void {
+  if (this.livroEditando?.anoPublicacao) {
+    const anoStr = this.livroEditando.anoPublicacao.toString();
+
+    // 🆕 Limita a 4 dígitos
+    if (anoStr.length > 4) {
+      this.livroEditando.anoPublicacao = parseInt(anoStr.slice(0, 4));
+    }
+
+    const ano = parseInt(this.livroEditando.anoPublicacao.toString());
+    if (ano < 1000 || ano > 9999) {
+      this.livroEditando.anoPublicacao = null;
+    }
+  }
+}
 
   fecharEdicaoLivro(): void {
     this.modalEdicaoLivroAberto = false;
@@ -503,7 +553,12 @@ export class PerfilComponent implements OnInit {
       descricao: this.livroEditando.descricao,
       imagem: this.livroEditando.imagem,
       status: this.livroEditando.status,
-      tipo: this.livroEditando.tipo || 'livro'
+      tipo: this.livroEditando.tipo || 'livro',
+      generos: this.livroEditando.generos || [],
+      anoPublicacao: this.livroEditando.anoPublicacao ?
+      parseInt(this.livroEditando.anoPublicacao.toString()) : null,
+      editora: this.livroEditando.editora || null,
+      idioma: this.livroEditando.idioma || null
     };
     if (this.livroEditando.status === 3 && this.livroEditando.estrelas) dados.estrelas = this.livroEditando.estrelas;
 
@@ -700,10 +755,11 @@ export class PerfilComponent implements OnInit {
   }
 
   carregarAtividades(): void {
-    if (!this.usuario?.id) return;
+    const usuarioId = this.usuario?.id || this.meuId;
+    if (!usuarioId) return;
 
     this.carregandoAtividades = true;
-    this.perfilService.getAtividades(this.usuario.id).subscribe({
+    this.perfilService.getAtividades(usuarioId).subscribe({
       next: (data) => {
         this.atividades = data;
         this.carregandoAtividades = false;
@@ -718,7 +774,7 @@ export class PerfilComponent implements OnInit {
 
 
   carregarProgresso(): void {
-    const usuarioId = this.modoVisualizacao ? this.usuarioIdVisualizado : this.usuario?.id;
+    const usuarioId = this.modoVisualizacao ? this.usuarioIdVisualizado : (this.usuario?.id || this.meuId);
     if (!usuarioId) return;
 
     this.carregandoProgresso = true;
