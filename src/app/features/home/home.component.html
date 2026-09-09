@@ -131,7 +131,7 @@
                 decoding="async" />
             <span class="livro-titulo">{{ livro.titulo || 'Sem título' }}</span>
             <span class="livro-autor">{{ livro.autor }}</span>
-            <span class="livro-rating" *ngIf="livro.media > 0">⭐ {{ livro.media }}</span>
+            <span class="livro-rating" *ngIf="(livro.media || 0) > 0">⭐ {{ livro.media }}</span>
           </div>
 
         </div>
