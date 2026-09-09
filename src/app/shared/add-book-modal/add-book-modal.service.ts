@@ -8,6 +8,7 @@ import { environment } from '../../../environments/environment';
 })
 export class AddBookModalService {
   private apiUrl = `${environment.apiUrl}/Livro`;
+  private apiCatalogoUrl = `${environment.apiUrl}/Catalogo`;
   private httpSemAuth: HttpClient;
 
   constructor(private http: HttpClient, private httpBackend: HttpBackend) {
@@ -24,7 +25,6 @@ export class AddBookModalService {
     anoPublicacao?: number | null;
     editora?: string | null;
     idioma?: string | null;
-    // 🆕
     tipo?: string;
     status?: number;
   }): Observable<any> {
@@ -33,5 +33,16 @@ export class AddBookModalService {
 
   buscarPorCodigoBarras(isbn: string): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/buscar/isbn/${isbn}`);
+  }
+
+  // 🆕 Buscar por título (OCR scanner)
+  buscarPorTitulo(titulo: string, autor?: string): Observable<any> {
+    let url = `${this.apiCatalogoUrl}/buscar-por-titulo?titulo=${encodeURIComponent(titulo)}`;
+
+    if (autor && autor.trim()) {
+      url += `&autor=${encodeURIComponent(autor.trim())}`;
+    }
+
+    return this.http.get<any>(url);
   }
 }

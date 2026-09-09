@@ -8,11 +8,15 @@ import { BarcodeFormat } from '@zxing/library';
 import { AddBookModalService } from './add-book-modal.service';
 import { UploadService } from '../services/upload.service';
 import { AlertService } from '../services/alert.service';
+// Adicionar imports
+import { BookScannerComponent } from '../book-scanner/book-scanner.component';
+import { BookInfo } from '../book-scanner/book-scanner.model';
+
 
 @Component({
   selector: 'app-add-book-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, ZXingScannerModule],
+  imports: [CommonModule, FormsModule, ZXingScannerModule, BookScannerComponent],
   templateUrl: './add-book-modal.component.html',
   styleUrl: './add-book-modal.component.scss'
 })
@@ -20,12 +24,13 @@ export class AddBookModalComponent {
   @Output() fechar = new EventEmitter<void>();
   @Output() livroAdicionado = new EventEmitter<any>();
 
-  etapa: 'escolha' | 'scanner' | 'digitar' | 'manual' | 'confirmar' = 'escolha';
+  etapa: 'escolha' | 'scanner' | 'digitar' | 'manual' | 'confirmar' | 'scanner-ocr' = 'escolha';
   escaneando = false;
   buscandoInfo = false;
   livroEncontrado = false;
   livroNaoEncontrado = false;
   flashAtivo = false;
+
 
   private readonly TAMANHO_MAXIMO = 10 * 1024 * 1024;
   private readonly COMPRESSAO_MAX_WIDTH = 1200;
@@ -305,5 +310,57 @@ export class AddBookModalComponent {
         this.novoLivro.anoPublicacao = null;
       }
     }
+  }
+
+  ativarScannerOCR(): void {
+    this.etapa = 'scanner-ocr';
+    this.cdr.markForCheck();
+  }
+
+  onLivroReconhecido(bookInfo: BookInfo): void {
+    this.buscandoInfo = true;
+    this.etapa = 'confirmar';
+    this.cdr.markForCheck();
+
+    // Buscar no backend
+    this.addBookService.buscarPorTitulo(bookInfo.titulo, bookInfo.autor).subscribe({
+      next: (resultados) => {
+        this.buscandoInfo = false;
+
+        if (resultados && resultados.length > 0) {
+          const livro = resultados[0];
+
+          this.novoLivro.titulo = livro.titulo;
+          this.novoLivro.autor = livro.autor;
+          this.novoLivro.descricao = livro.descricao || '';
+          this.novoLivro.capa = livro.imagem || '';
+          this.novoLivro.codigoBarras = livro.codigoBarras || '';
+          this.novoLivro.editora = livro.editora || '';
+          this.novoLivro.anoPublicacao = livro.anoPublicacao || null;
+          this.novoLivro.numeroPaginas = livro.numeroPaginas || null;
+          this.novoLivro.generos = livro.generos || [];
+          this.novoLivro.idioma = livro.idioma || '';
+
+          this.livroEncontrado = true;
+          this.alertService.success('Livro encontrado!');
+        } else {
+          // Usar dados do OCR
+          this.novoLivro.titulo = bookInfo.titulo;
+          this.novoLivro.autor = bookInfo.autor;
+          this.livroEncontrado = true;
+          this.alertService.info('Livro adicionado com dados do OCR');
+        }
+
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.buscandoInfo = false;
+        // Usar dados do OCR
+        this.novoLivro.titulo = bookInfo.titulo;
+        this.novoLivro.autor = bookInfo.autor;
+        this.livroEncontrado = true;
+        this.cdr.markForCheck();
+      }
+    });
   }
 }
