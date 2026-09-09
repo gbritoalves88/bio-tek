@@ -27,9 +27,14 @@ export interface LivroDoUsuario {
   status: number;
   estrelas?: number;
   dataCriacao: string;
-  tipo?: string;                    // 🆕
-  minutoAtual?: number | null;      // 🆕
-  totalMinutos?: number | null;     // 🆕
+  tipo?: string;
+  minutoAtual?: number | null;
+  totalMinutos?: number | null;
+  // 🆕 Novos campos
+  generos?: string[];
+  anoPublicacao?: number | null;
+  editora?: string | null;
+  idioma?: string | null;
   avaliacao?: Avaliacao | null;
   comentarios?: Comentario[];
 }
@@ -59,7 +64,7 @@ export interface AtividadeLeitura {
   id: string;
   comentario: string;
   dataCriacao: string;
-  origem?: string; // "Atividade" | "Pausa" | "Retomada"
+  origem?: string;
   progresso?: number;
   paginaAtual?: number;
   totalPaginas?: number;

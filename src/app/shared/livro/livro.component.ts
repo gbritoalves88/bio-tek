@@ -161,6 +161,13 @@ export class LivroComponent implements OnInit {
     });
   }
 
+  abrirAlterarStatus(): void {
+    this.livroEditando = { ...this.livro };
+    this.modalEdicaoAberto = true;
+    this.cdr.markForCheck();
+  }
+
+
   fecharModalPosAdicionar(): void {
     this.modalPosAdicionar = false;
     this.livroAdicionado = null;

@@ -198,6 +198,10 @@
           <span class="detalhe-label">Gêneros</span>
           <span class="detalhe-valor">{{ novoLivro.generos.join(' • ') }}</span>
         </div>
+        <div class="detalhe-linha" *ngIf="novoLivro.idioma">
+          <span class="detalhe-label">Idioma</span>
+          <span class="detalhe-valor">{{ novoLivro.idioma }}</span>
+        </div>
         <div class="detalhe-linha" *ngIf="novoLivro.codigoBarras">
           <span class="detalhe-label">ISBN</span>
           <span class="detalhe-valor isbn">{{ novoLivro.codigoBarras }}</span>
@@ -265,6 +269,45 @@
       <input type="text" placeholder="Título" [(ngModel)]="novoLivro.titulo" name="titulo">
       <input type="text" placeholder="Autor" [(ngModel)]="novoLivro.autor" name="autor">
       <input type="text" placeholder="Descrição (opcional)" [(ngModel)]="novoLivro.descricao" name="descricao">
+
+      <!-- 🆕 Gêneros -->
+      <div class="form-group">
+        <label class="form-label">Gêneros (opcional - até 3)</label>
+        <div class="generos-selecao">
+          <button type="button"
+                  *ngFor="let genero of generosDisponiveis"
+                  class="genero-botao"
+                  [class.selecionado]="novoLivro.generos.includes(genero)"
+                  (click)="toggleGenero(genero)">
+            {{ genero }}
+          </button>
+        </div>
+      </div>
+
+      <!-- 🆕 Ano de publicação -->
+      <input
+          type="text"
+        inputmode="numeric"
+        placeholder="Ano de publicação (opcional)"
+        [(ngModel)]="novoLivro.anoPublicacao"
+        name="anoPublicacao"
+        min="1000"
+        max="9999"
+        maxlength="4"
+        (input)="validarAno()">
+
+      <!-- 🆕 Editora -->
+      <input type="text" placeholder="Editora (opcional)" [(ngModel)]="novoLivro.editora" name="editora">
+
+      <!-- 🆕 Idioma -->
+      <select [(ngModel)]="novoLivro.idioma" name="idioma" class="select-idioma">
+        <option value="">Idioma (opcional)</option>
+        <option value="Português">Português</option>
+        <option value="Inglês">Inglês</option>
+        <option value="Espanhol">Espanhol</option>
+        <option value="Francês">Francês</option>
+        <option value="Outro">Outro</option>
+      </select>
 
       <div class="upload-capa-simples">
         <button type="button" class="btn-upload-small" (click)="tirarFoto()">

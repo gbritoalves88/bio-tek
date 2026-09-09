@@ -9,6 +9,8 @@ export interface LivroDetalhes {
   codigoBarras?: string;
   generos?: string[];
   descricao?: string;
+  idioma?: string;      // 🆕
+  tipo?: string;        // 🆕
   avaliacaoMedia: number;
   totalAvaliacoes: number;
   totalNaBiblioteca: number;

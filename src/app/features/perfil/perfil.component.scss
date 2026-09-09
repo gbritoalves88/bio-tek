@@ -1623,7 +1623,46 @@ width: 100%;
   }
 }
 
+// ===== SELEÇÃO DE GÊNEROS (EDIÇÃO) =====
+.generos-selecao {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
 
+.genero-botao {
+  padding: 8px 14px;
+  border-radius: 20px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    border-color: var(--accent);
+  }
+
+  &.selecionado {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: white;
+    font-weight: 600;
+  }
+}
+
+// 🆕 Inputs de número e texto na edição
+.bs-input[type="number"] {
+  -moz-appearance: textfield;
+
+  &::-webkit-inner-spin-button,
+  &::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+}
 .comentario-topo {
   display: flex;
   justify-content: space-between;

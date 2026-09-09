@@ -488,6 +488,42 @@
     <input type="text" [(ngModel)]="livroEditando.autor" class="bs-input">
     <label class="input-label">Descrição</label>
     <textarea [(ngModel)]="livroEditando.descricao" rows="3" class="bs-input"></textarea>
+    <!-- 🆕 Gêneros -->
+    <label class="input-label">Gêneros (opcional)</label>
+    <div class="generos-selecao">
+      <button type="button"
+              *ngFor="let genero of generosDisponiveis"
+              class="genero-botao"
+              [class.selecionado]="livroEditando.generos?.includes(genero)"
+              (click)="toggleGeneroEdicao(genero)">
+        {{ genero }}
+      </button>
+    </div>
+    <!-- 🆕 Ano de Publicação -->
+    <label class="input-label">Ano de Publicação</label>
+    <input
+      type="text"
+      inputmode="numeric"
+      maxlength="4"
+      placeholder="Ano de Publicação"
+      [(ngModel)]="livroEditando.anoPublicacao"
+      class="bs-input">
+
+    <!-- 🆕 Editora -->
+    <label class="input-label">Editora</label>
+    <input type="text" [(ngModel)]="livroEditando.editora" class="bs-input">
+
+    <!-- 🆕 Idioma -->
+    <label class="input-label">Idioma</label>
+    <select [(ngModel)]="livroEditando.idioma" class="bs-select">
+      <option value="">Selecione...</option>
+      <option value="Português">Português</option>
+      <option value="Inglês">Inglês</option>
+      <option value="Espanhol">Espanhol</option>
+      <option value="Francês">Francês</option>
+      <option value="Outro">Outro</option>
+    </select>
+
     <label class="input-label">Capa do Livro</label>
     <div class="upload-capa-simples">
       <button type="button" class="btn-upload-small" (click)="tirarFotoEdicaoLivro()" title="Tirar foto">

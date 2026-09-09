@@ -41,7 +41,7 @@
           {{ getTipoTexto(livro.tipo) }}
         </span>
 
-        <!-- 🆕 AÇÕES LADO A LADO -->
+        <!-- 🆕 AÇÕES QUANDO NÃO TEM O LIVRO -->
         <div class="livro-acoes" *ngIf="!editavel">
           <button class="btn-adicionar"
                   (click)="adicionarABiblioteca()"
@@ -50,11 +50,11 @@
           </button>
 
           <a [href]="linkAmazon"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="btn-amazon"
-            *ngIf="linkAmazon"
-            (click)="registrarCliqueAmazon()">
+             target="_blank"
+             rel="noopener noreferrer"
+             class="btn-amazon"
+             *ngIf="linkAmazon"
+             (click)="registrarCliqueAmazon()">
             <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
               <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/>
             </svg>
@@ -62,18 +62,24 @@
           </a>
         </div>
 
-        <!-- 🆕 Botão Amazon quando editável -->
-        <a [href]="linkAmazon"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="btn-amazon btn-amazon-full"
-          *ngIf="editavel && linkAmazon"
-          (click)="registrarCliqueAmazon()">
-          <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/>
-          </svg>
-          <span>Adquirir</span>
-        </a>
+        <!-- 🆕 AÇÕES QUANDO TEM O LIVRO -->
+        <div class="livro-acoes" *ngIf="editavel">
+          <button class="btn-alterar-status" (click)="abrirAlterarStatus()">
+            Alterar Status
+          </button>
+
+          <a [href]="linkAmazon"
+             target="_blank"
+             rel="noopener noreferrer"
+             class="btn-amazon"
+             *ngIf="linkAmazon"
+             (click)="registrarCliqueAmazon()">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/>
+            </svg>
+            <span>Adquirir</span>
+          </a>
+        </div>
       </div>
     </div>
 
@@ -114,6 +120,31 @@
           <span>Autor</span>
           <strong>{{ livro.autor }}</strong>
         </div>
+
+        <!-- 🆕 Gêneros -->
+        <div class="info" *ngIf="livro.generos?.length">
+          <span>Gêneros</span>
+          <strong>{{ livro.generos.join(' • ') }}</strong>
+        </div>
+
+        <!-- 🆕 Ano de Publicação -->
+        <div class="info" *ngIf="livro.anoPublicacao">
+          <span>Ano</span>
+          <strong>{{ livro.anoPublicacao }}</strong>
+        </div>
+
+        <!-- 🆕 Editora -->
+        <div class="info" *ngIf="livro.editora">
+          <span>Editora</span>
+          <strong>{{ livro.editora }}</strong>
+        </div>
+
+        <!-- 🆕 Idioma -->
+        <div class="info" *ngIf="livro.idioma">
+          <span>Idioma</span>
+          <strong>{{ livro.idioma }}</strong>
+        </div>
+
         <div class="info" *ngIf="livro.tipo">
           <span>Tipo</span>
           <strong>{{ getTipoTexto(livro.tipo) }}</strong>
@@ -159,50 +190,35 @@
         </div>
       </div>
     </div>
-
-    <!-- Ações -->
-    <div class="acoes" *ngIf="editavel">
-      <button class="btn-editar" (click)="editarLivro()">Editar</button>
-      <button class="btn-remover" (click)="removerLivro()">Remover</button>
-    </div>
   </ng-container>
 </section>
 
-<!-- Bottom Sheet: Editar -->
+<!-- Bottom Sheet: Alterar Status -->
 <app-bottom-sheet [aberto]="modalEdicaoAberto" (fechar)="fecharEdicao()">
+  <div class="bottom-sheet-header">
+    <h3>Alterar Livro</h3>
+    <button class="bottom-sheet-close" (click)="fecharEdicao()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </button>
+  </div>
 
-    <div class="bottom-sheet-header">
-      <h3>Editar Livro</h3>
-      <button class="bottom-sheet-close" (click)="fecharEdicao()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-        </svg>
-      </button>
-    </div>
   <ng-container *ngIf="livroEditando">
-      <div class="bs-form">
-        <label>Título</label>
-        <input type="text" [(ngModel)]="livroEditando.titulo" class="bs-input">
+    <div class="bs-form">
+      <label class="input-label">Tipo</label>
+      <select [(ngModel)]="livroEditando.tipo" class="bs-select">
+        <option value="livro">📖 Livro</option>
+        <option value="audiobook">🎧 Audiobook</option>
+      </select>
 
-        <label>Autor</label>
-        <input type="text" [(ngModel)]="livroEditando.autor" class="bs-input">
-
-        <label>Descrição</label>
-        <textarea [(ngModel)]="livroEditando.descricao" rows="3" class="bs-input"></textarea>
-
-        <label>Tipo</label>
-        <select [(ngModel)]="livroEditando.tipo" class="bs-select">
-          <option value="livro">📖 Livro</option>
-          <option value="audiobook">🎧 Audiobook</option>
-        </select>
-
-        <label>Status</label>
-        <select [(ngModel)]="livroEditando.status" class="bs-select">
-          <option [ngValue]="1">📕 Quero ler</option>
-          <option [ngValue]="2">📖 Lendo</option>
-          <option [ngValue]="3">✅ Lido</option>
-        </select>
-      </div>
+      <label class="input-label">Status</label>
+      <select [(ngModel)]="livroEditando.status" class="bs-select">
+        <option [ngValue]="1">📕 Quero ler</option>
+        <option [ngValue]="2">📖 Lendo</option>
+        <option [ngValue]="3">✅ Lido</option>
+      </select>
+    </div>
 
     <button class="bs-salvar" (click)="salvarEdicao()">Salvar</button>
   </ng-container>

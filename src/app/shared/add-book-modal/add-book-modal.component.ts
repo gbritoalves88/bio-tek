@@ -41,8 +41,18 @@ export class AddBookModalComponent {
     anoPublicacao: null as number | null,
     numeroPaginas: null as number | null,
     generos: [] as string[],
-    avaliacaoMedia: null as number | null
+    avaliacaoMedia: null as number | null,
+    idioma: '',
+    tipo: 'livro',  // Padrão
+    status: 1       // Padrão: Quero ler
   };
+
+  // Gêneros disponíveis para seleção
+  generosDisponiveis = [
+    'Fantasia', 'Ficção', 'Romance', 'Terror',
+    'Suspense', 'Biografia', 'História', 'Infantil',
+    'Aventura', 'Drama', 'Poesia', 'Ficção Científica'
+  ];
 
   allowedFormats = [BarcodeFormat.EAN_13, BarcodeFormat.EAN_8, BarcodeFormat.CODE_128, BarcodeFormat.UPC_A];
   scannerDisponivel = false;
@@ -66,7 +76,10 @@ export class AddBookModalComponent {
     this.etapa = 'escolha';
     this.novoLivro = {
       titulo: '', autor: '', descricao: '', codigoBarras: '', capa: '',
-      editora: '', anoPublicacao: null, numeroPaginas: null, generos: [], avaliacaoMedia: null
+      editora: '', anoPublicacao: null, numeroPaginas: null, generos: [], avaliacaoMedia: null,
+      idioma: '',
+      tipo: 'livro',
+      status: 1
     };
     this.livroEncontrado = false;
     this.livroNaoEncontrado = false;
@@ -77,6 +90,20 @@ export class AddBookModalComponent {
   abrirFormularioManual(): void {
     this.livroNaoEncontrado = false;
     this.cdr.markForCheck();
+  }
+
+  // Toggle gênero no formulário
+  toggleGenero(genero: string): void {
+    const index = this.novoLivro.generos.indexOf(genero);
+    if (index > -1) {
+      this.novoLivro.generos.splice(index, 1);
+    } else {
+      if (this.novoLivro.generos.length < 3) {
+        this.novoLivro.generos.push(genero);
+      } else {
+        this.alertService.warning('Máximo 3 gêneros');
+      }
+    }
   }
 
   // ===== SCANNER =====
@@ -133,6 +160,9 @@ export class AddBookModalComponent {
           this.novoLivro.numeroPaginas = livro.numeroPaginas || null;
           this.novoLivro.generos = livro.generos || [];
           this.novoLivro.avaliacaoMedia = livro.avaliacaoMedia || null;
+          this.novoLivro.idioma = livro.idioma || '';
+          this.novoLivro.tipo = livro.tipo || 'livro';
+          this.novoLivro.status = 1;
           this.livroEncontrado = true;
           this.etapa = 'confirmar';
           this.alertService.success('Livro encontrado!');
@@ -175,7 +205,6 @@ export class AddBookModalComponent {
             this.adicionarLivro();
           },
           error: () => {
-            // ❌ NÃO salvar com Base64
             this.alertService.error('Erro ao enviar imagem. Tente novamente.');
           }
         });
@@ -191,7 +220,14 @@ export class AddBookModalComponent {
       autor: this.novoLivro.autor.trim(),
       descricao: this.novoLivro.descricao || '',
       imagem: this.novoLivro.capa || null,
-      codigoBarras: this.novoLivro.codigoBarras || null
+      codigoBarras: this.novoLivro.codigoBarras || null,
+      generos: this.novoLivro.generos || [],
+      anoPublicacao: this.novoLivro.anoPublicacao ?
+        parseInt(this.novoLivro.anoPublicacao.toString()) : null,
+      editora: this.novoLivro.editora || null,
+      idioma: this.novoLivro.idioma || null,
+      tipo: this.novoLivro.tipo || 'livro',
+      status: this.novoLivro.status || 1
     }).subscribe({
       next: (livro) => {
         this.livroAdicionado.emit(livro);
@@ -253,5 +289,21 @@ export class AddBookModalComponent {
   voltarParaBusca(): void {
     this.etapa = 'digitar';
     this.cdr.markForCheck();
+  }
+
+  validarAno(): void {
+    if (this.novoLivro.anoPublicacao) {
+      const anoStr = this.novoLivro.anoPublicacao.toString();
+
+      // Se tem mais de 4 dígitos, corta
+      if (anoStr.length > 4) {
+        this.novoLivro.anoPublicacao = parseInt(anoStr.slice(0, 4));
+      }
+
+      // Se for menor que 1000 ou maior que 9999, limpa
+      if (this.novoLivro.anoPublicacao < 1000 || this.novoLivro.anoPublicacao > 9999) {
+        this.novoLivro.anoPublicacao = null;
+      }
+    }
   }
 }
