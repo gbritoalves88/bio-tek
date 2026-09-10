@@ -9,9 +9,19 @@ import { BookInfo } from './book-scanner.model';
   imports: [CommonModule],
   template: `
     <div class="scanner-overlay">
-      <video #video autoplay playsinline muted class="scanner-video"></video>
+      <!-- Câmera -->
+      <video #video autoplay playsinline muted class="scanner-video" *ngIf="!erroCamera"></video>
 
-      <div class="scan-overlay">
+      <!-- Mensagem de erro -->
+      <div class="scanner-erro" *ngIf="erroCamera">
+        <span class="erro-icone">📷</span>
+        <h3>Câmera não encontrada</h3>
+        <p>{{ mensagemErro }}</p>
+        <button (click)="cancelar()">Voltar</button>
+      </div>
+
+      <!-- Overlay de escaneamento -->
+      <div class="scan-overlay" *ngIf="!erroCamera">
         <div class="scan-box" [class.found]="resultado">
           <div class="scan-corner tl"></div>
           <div class="scan-corner tr"></div>
@@ -32,7 +42,8 @@ import { BookInfo } from './book-scanner.model';
         </div>
       </div>
 
-      <div class="scanner-actions">
+      <!-- Botões -->
+      <div class="scanner-actions" *ngIf="!erroCamera">
         <button (click)="cancelar()">✕ Cancelar</button>
         <button *ngIf="resultado" (click)="confirmar()">✅ Confirmar</button>
       </div>
@@ -53,6 +64,44 @@ import { BookInfo } from './book-scanner.model';
       width: 100%;
       height: 100%;
       object-fit: cover;
+    }
+
+    .scanner-erro {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .erro-icone {
+      font-size: 64px;
+      margin-bottom: 16px;
+    }
+
+    .scanner-erro h3 {
+      margin: 0 0 8px;
+      font-size: 20px;
+    }
+
+    .scanner-erro p {
+      margin: 0 0 24px;
+      color: #ccc;
+      font-size: 14px;
+    }
+
+    .scanner-erro button {
+      padding: 12px 24px;
+      border-radius: 25px;
+      border: none;
+      background: rgba(255,255,255,0.2);
+      color: #fff;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
     }
 
     .scan-overlay {
@@ -164,6 +213,8 @@ export class BookScannerComponent implements OnInit, OnDestroy {
   @ViewChild('video') video!: ElementRef<HTMLVideoElement>;
 
   resultado: BookInfo | null = null;
+  erroCamera = false;
+  mensagemErro = '';
   private stream: MediaStream | null = null;
 
   constructor(
@@ -172,14 +223,16 @@ export class BookScannerComponent implements OnInit, OnDestroy {
   ) {}
 
   async ngOnInit() {
-    await this.iniciarCamera();
+    const sucesso = await this.iniciarCamera();
 
-    this.scannerService.resultado$.subscribe(resultado => {
-      this.resultado = resultado;
-      this.cdr.markForCheck();
-    });
+    if (sucesso) {
+      this.scannerService.resultado$.subscribe(resultado => {
+        this.resultado = resultado;
+        this.cdr.markForCheck();
+      });
 
-    this.scannerService.startLoop(this.video.nativeElement);
+      this.scannerService.startLoop(this.video.nativeElement);
+    }
   }
 
   ngOnDestroy() {
@@ -187,16 +240,53 @@ export class BookScannerComponent implements OnInit, OnDestroy {
     this.scannerService.destroy();
   }
 
-  private async iniciarCamera() {
+  private async iniciarCamera(): Promise<boolean> {
     try {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        this.erroCamera = true;
+        this.mensagemErro = 'Seu navegador não suporta acesso à câmera.';
+        this.cdr.markForCheck();
+        return false;
+      }
+
       this.stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'environment', width: 640, height: 480 }
+        video: {
+          facingMode: 'environment',
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
+        },
+        audio: false
       });
 
       this.video.nativeElement.srcObject = this.stream;
       await this.video.nativeElement.play();
-    } catch (error) {
+      return true;
+    } catch (error: any) {
       console.error('Erro ao acessar câmera:', error);
+      this.erroCamera = true;
+
+      switch (error.name) {
+        case 'NotFoundError':
+        case 'DevicesNotFoundError':
+          this.mensagemErro = 'Nenhuma câmera encontrada no dispositivo.';
+          break;
+        case 'NotAllowedError':
+        case 'PermissionDeniedError':
+          this.mensagemErro = 'Permissão de câmera negada. Permita o acesso nas configurações.';
+          break;
+        case 'NotReadableError':
+        case 'TrackStartError':
+          this.mensagemErro = 'A câmera está em uso por outro aplicativo.';
+          break;
+        case 'OverconstrainedError':
+          this.mensagemErro = 'Nenhuma câmera compatível encontrada.';
+          break;
+        default:
+          this.mensagemErro = 'Erro ao acessar a câmera. Tente novamente.';
+      }
+
+      this.cdr.markForCheck();
+      return false;
     }
   }
 
