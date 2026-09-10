@@ -1,0 +1,163 @@
+<!-- src/app/shared/book-scanner/book-scanner.component.html -->
+<div class="scanner-overlay">
+  <!-- Câmera -->
+  <video #video autoplay playsinline muted class="scanner-video" *ngIf="!erroCamera"></video>
+
+  <!-- Erro de câmera -->
+  <div class="scanner-erro" *ngIf="erroCamera">
+    <span class="erro-icone">📷</span>
+    <h3>Câmera não encontrada</h3>
+    <p>{{ mensagemErro }}</p>
+    <button (click)="cancelar()">Voltar</button>
+  </div>
+
+  <!-- Overlay: MODO CAPA (ImageHash) - PADRÃO -->
+  <div class="scan-overlay" *ngIf="!erroCamera && modoScanner === 'capa' && !mostrandoResultadosCapa">
+    <div class="scan-box capa" #capaBox>
+      <div class="scan-corner tl"></div>
+      <div class="scan-corner tr"></div>
+      <div class="scan-corner bl"></div>
+      <div class="scan-corner br"></div>
+    </div>
+
+    <div class="scan-instructions" *ngIf="!buscandoPorCapa">
+      <span class="pulse"></span>
+      <p class="instruction-title">📸 Enquadre a capa do livro</p>
+      <p class="instruction-sub">
+        Capturando em {{ contadorCaptura }}s...
+      </p>
+    </div>
+
+    <div class="scan-result" *ngIf="buscandoPorCapa">
+      <span class="spinner-scan"></span>
+      <h3>Analisando capa...</h3>
+      <p>Aguarde um instante</p>
+    </div>
+  </div>
+
+  <!-- Overlay: MODO OCR (Tesseract) -->
+  <div class="scan-overlay" *ngIf="!erroCamera && !editando && !mostrandoResultadosCapa && modoScanner === 'ocr'">
+    <div class="scan-box ocr" [class.found]="resultado">
+      <div class="scan-corner tl"></div>
+      <div class="scan-corner tr"></div>
+      <div class="scan-corner bl"></div>
+      <div class="scan-corner br"></div>
+      <div class="scan-guide-line"></div>
+    </div>
+
+    <div class="scan-instructions" *ngIf="!resultado">
+      <span class="pulse"></span>
+      <p class="instruction-title">Aponte o título do livro</p>
+      <p class="instruction-sub">Centralize o título na área</p>
+    </div>
+
+    <div class="scan-result" *ngIf="resultado">
+      <span class="check">✅</span>
+      <h3>{{ resultado.titulo }}</h3>
+      <p *ngIf="resultado.autor">{{ resultado.autor }}</p>
+      <small>Confiança: {{ resultado.confianca }}%</small>
+      <button class="btn-editar" (click)="abrirEdicao()">✏️ Corrigir</button>
+    </div>
+  </div>
+
+  <!-- Resultados do ImageHash -->
+  <div class="resultados-overlay" *ngIf="mostrandoResultadosCapa">
+    <div class="resultados-card">
+      <div class="resultados-header">
+        <h3>📚 Livros encontrados</h3>
+        <button class="btn-close-resultados" (click)="fecharResultadosCapa()">✕</button>
+      </div>
+
+      <p class="resultados-info">
+        Escolha o livro correto ({{ resultadosCapa.length }} opções)
+      </p>
+
+      <div class="resultados-lista">
+        <div
+          class="resultado-item"
+          *ngFor="let livro of resultadosCapa"
+          (click)="selecionarResultado(livro)">
+
+          <div class="resultado-similaridade">
+            {{ livro.similaridade }}%
+          </div>
+
+          <img
+            [src]="livro.imagemUrl || 'assets/capas/perfilSemFoto.png'"
+            [alt]="livro.titulo"
+            class="resultado-capa"
+            loading="lazy" />
+
+          <div class="resultado-info">
+            <strong>{{ livro.titulo }}</strong>
+            <span>{{ livro.autor }}</span>
+            <small class="resultado-fonte">
+              {{ livro.fonte === 'Catalogo' ? '📖 Catálogo' : '📚 Biblioteca' }}
+            </small>
+          </div>
+
+          <svg class="resultado-seta" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modo de edição -->
+  <div class="edit-overlay" *ngIf="editando">
+    <div class="edit-card">
+      <h3>Corrigir informações</h3>
+
+      <label>Título:</label>
+      <input type="text" [(ngModel)]="tituloEditado" placeholder="Título do livro">
+
+      <label>Autor:</label>
+      <input type="text" [(ngModel)]="autorEditado" placeholder="Autor do livro">
+
+      <div class="edit-actions">
+        <button (click)="cancelarEdicao()">Cancelar</button>
+        <button (click)="confirmarEdicao()">Confirmar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Botões -->
+  <div class="scanner-actions"
+       *ngIf="!erroCamera && !editando && !mostrandoResultadosCapa">
+
+    <button class="btn-cancelar" (click)="cancelar()">✕ Cancelar</button>
+
+    <!-- 🆕 Modo CAPA: botão para ir ao OCR -->
+    <button
+      class="btn-buscar-titulo"
+      *ngIf="modoScanner === 'capa' && !buscandoPorCapa"
+      (click)="ativarModoOCR()">
+      🔤 Buscar por título
+    </button>
+
+    <!-- 🆕 Modo CAPA: botão capturar -->
+    <button
+      class="btn-capturar-agora"
+      *ngIf="modoScanner === 'capa' && !buscandoPorCapa"
+      (click)="capturarAgora()">
+      📸 Capturar agora
+    </button>
+
+    <!-- 🆕 Modo OCR: botão para voltar ao CAPA -->
+    <button
+      class="btn-buscar-capa"
+      *ngIf="modoScanner === 'ocr'"
+      (click)="ativarModoCapa()">
+      🔍 Buscar por capa
+    </button>
+
+    <!-- Modo OCR: botão confirmar -->
+    <button
+      class="btn-confirmar"
+      *ngIf="modoScanner === 'ocr' && resultado"
+      (click)="confirmar()">
+      ✅ Confirmar
+    </button>
+  </div>
+</div>
