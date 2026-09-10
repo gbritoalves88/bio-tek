@@ -1,12 +1,13 @@
 import { Component, EventEmitter, Output, ViewChild, ElementRef, OnDestroy, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { BookScannerService } from './book-scanner.service';
 import { BookInfo } from './book-scanner.model';
 
 @Component({
   selector: 'app-book-scanner',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   template: `
     <div class="scanner-overlay">
       <!-- Câmera -->
@@ -21,29 +22,56 @@ import { BookInfo } from './book-scanner.model';
       </div>
 
       <!-- Overlay de escaneamento -->
-      <div class="scan-overlay" *ngIf="!erroCamera">
+      <div class="scan-overlay" *ngIf="!erroCamera && !editando">
+        <!-- Área de foco MENOR (só título) -->
         <div class="scan-box" [class.found]="resultado">
           <div class="scan-corner tl"></div>
           <div class="scan-corner tr"></div>
           <div class="scan-corner bl"></div>
           <div class="scan-corner br"></div>
+
+          <!-- Linha guia -->
+          <div class="scan-guide-line"></div>
         </div>
 
-        <div class="scan-status" *ngIf="!resultado">
+        <!-- Instruções -->
+        <div class="scan-instructions" *ngIf="!resultado">
           <span class="pulse"></span>
-          <p>Aponte para a capa ou lombada</p>
+          <p class="instruction-title">Aproxime o título do livro</p>
+          <p class="instruction-sub">Centralize o título na área</p>
         </div>
 
+        <!-- Resultado com opção de editar -->
         <div class="scan-result" *ngIf="resultado">
           <span class="check">✅</span>
           <h3>{{ resultado.titulo }}</h3>
           <p *ngIf="resultado.autor">{{ resultado.autor }}</p>
           <small>Confiança: {{ resultado.confianca }}%</small>
+
+          <button class="btn-editar" (click)="abrirEdicao()">✏️ Corrigir</button>
+        </div>
+      </div>
+
+      <!-- Modo de edição -->
+      <div class="edit-overlay" *ngIf="editando">
+        <div class="edit-card">
+          <h3>Corrigir informações</h3>
+
+          <label>Título:</label>
+          <input type="text" [(ngModel)]="tituloEditado" placeholder="Título do livro">
+
+          <label>Autor:</label>
+          <input type="text" [(ngModel)]="autorEditado" placeholder="Autor do livro">
+
+          <div class="edit-actions">
+            <button (click)="cancelarEdicao()">Cancelar</button>
+            <button (click)="confirmarEdicao()">Confirmar</button>
+          </div>
         </div>
       </div>
 
       <!-- Botões -->
-      <div class="scanner-actions" *ngIf="!erroCamera">
+      <div class="scanner-actions" *ngIf="!erroCamera && !editando">
         <button (click)="cancelar()">✕ Cancelar</button>
         <button *ngIf="resultado" (click)="confirmar()">✅ Confirmar</button>
       </div>
@@ -115,22 +143,25 @@ import { BookInfo } from './book-scanner.model';
     }
 
     .scan-box {
-      width: 300px;
-      height: 400px;
-      border: 2px solid rgba(255,255,255,0.5);
+      width: 90%;
+      max-width: 340px;
+      height: 120px;
+      border: 2px solid rgba(255,255,255,0.7);
       position: relative;
       transition: all 0.3s;
+      background: rgba(0,0,0,0.1);
     }
 
     .scan-box.found {
       border-color: #4caf50;
-      box-shadow: 0 0 20px rgba(76, 175, 80, 0.5);
+      box-shadow: 0 0 30px rgba(76, 175, 80, 0.6);
+      background: rgba(76, 175, 80, 0.1);
     }
 
     .scan-corner {
       position: absolute;
-      width: 30px;
-      height: 30px;
+      width: 25px;
+      height: 25px;
       border: 3px solid #fff;
     }
 
@@ -139,35 +170,157 @@ import { BookInfo } from './book-scanner.model';
     .bl { bottom: -3px; left: -3px; border-right: none; border-top: none; }
     .br { bottom: -3px; right: -3px; border-left: none; border-top: none; }
 
-    .scan-status {
+    .scan-guide-line {
+      position: absolute;
+      left: 10%;
+      right: 10%;
+      top: 50%;
+      height: 2px;
+      background: rgba(255,204,0,0.6);
+      animation: guide-pulse 2s infinite;
+    }
+
+    .scan-instructions {
       margin-top: 20px;
       text-align: center;
       color: #fff;
+      background: rgba(0,0,0,0.6);
+      padding: 12px 20px;
+      border-radius: 12px;
     }
 
     .pulse {
       display: inline-block;
-      width: 12px;
-      height: 12px;
+      width: 10px;
+      height: 10px;
       border-radius: 50%;
       background: #ffcc00;
       animation: pulse 1.5s infinite;
+      margin-right: 8px;
+    }
+
+    .instruction-title {
+      margin: 8px 0 4px;
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .instruction-sub {
+      margin: 0;
+      font-size: 13px;
+      color: #ccc;
     }
 
     .scan-result {
       margin-top: 20px;
       padding: 16px;
-      background: rgba(0,0,0,0.8);
+      background: rgba(0,0,0,0.85);
       border-radius: 12px;
       text-align: center;
       color: #fff;
       pointer-events: auto;
+      min-width: 250px;
     }
 
     .check {
       font-size: 32px;
       display: block;
       margin-bottom: 8px;
+    }
+
+    .scan-result h3 {
+      margin: 0 0 4px;
+      font-size: 18px;
+    }
+
+    .scan-result p {
+      margin: 0 0 8px;
+      color: #ccc;
+      font-size: 14px;
+    }
+
+    .scan-result small {
+      color: #999;
+    }
+
+    .btn-editar {
+      display: block;
+      margin: 12px auto 0;
+      padding: 8px 16px;
+      border-radius: 20px;
+      border: 1px solid #fff;
+      background: transparent;
+      color: #fff;
+      font-size: 13px;
+      cursor: pointer;
+      pointer-events: auto;
+    }
+
+    .edit-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.8);
+      z-index: 10;
+    }
+
+    .edit-card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 20px;
+      width: 90%;
+      max-width: 350px;
+    }
+
+    .edit-card h3 {
+      margin: 0 0 16px;
+      color: #333;
+      font-size: 18px;
+    }
+
+    .edit-card label {
+      display: block;
+      margin: 12px 0 4px;
+      color: #666;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .edit-card input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 15px;
+      box-sizing: border-box;
+    }
+
+    .edit-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .edit-actions button {
+      flex: 1;
+      padding: 10px;
+      border-radius: 8px;
+      border: none;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .edit-actions button:first-child {
+      background: #f0f0f0;
+      color: #333;
+    }
+
+    .edit-actions button:last-child {
+      background: #4caf50;
+      color: #fff;
     }
 
     .scanner-actions {
@@ -204,6 +357,11 @@ import { BookInfo } from './book-scanner.model';
       0%, 100% { opacity: 1; }
       50% { opacity: 0.3; }
     }
+
+    @keyframes guide-pulse {
+      0%, 100% { opacity: 0.6; }
+      50% { opacity: 0.2; }
+    }
   `]
 })
 export class BookScannerComponent implements OnInit, OnDestroy {
@@ -215,6 +373,9 @@ export class BookScannerComponent implements OnInit, OnDestroy {
   resultado: BookInfo | null = null;
   erroCamera = false;
   mensagemErro = '';
+  editando = false;
+  tituloEditado = '';
+  autorEditado = '';
   private stream: MediaStream | null = null;
 
   constructor(
@@ -227,8 +388,12 @@ export class BookScannerComponent implements OnInit, OnDestroy {
 
     if (sucesso) {
       this.scannerService.resultado$.subscribe(resultado => {
-        this.resultado = resultado;
-        this.cdr.markForCheck();
+        if (resultado && !this.editando) {
+          this.resultado = resultado;
+          this.tituloEditado = resultado.titulo;
+          this.autorEditado = resultado.autor;
+          this.cdr.markForCheck();
+        }
       });
 
       this.scannerService.startLoop(this.video.nativeElement);
@@ -295,6 +460,30 @@ export class BookScannerComponent implements OnInit, OnDestroy {
       this.stream.getTracks().forEach(track => track.stop());
       this.stream = null;
     }
+  }
+
+  abrirEdicao() {
+    this.editando = true;
+    this.tituloEditado = this.resultado?.titulo || '';
+    this.autorEditado = this.resultado?.autor || '';
+    this.cdr.markForCheck();
+  }
+
+  cancelarEdicao() {
+    this.editando = false;
+    this.cdr.markForCheck();
+  }
+
+  confirmarEdicao() {
+    if (this.tituloEditado.trim()) {
+      this.resultado = {
+        titulo: this.tituloEditado.trim(),
+        autor: this.autorEditado.trim(),
+        confianca: 100
+      };
+    }
+    this.editando = false;
+    this.cdr.markForCheck();
   }
 
   cancelar() {

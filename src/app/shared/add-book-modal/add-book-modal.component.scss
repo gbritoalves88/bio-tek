@@ -242,6 +242,48 @@
   }
 }
 
+
+// ===== BADGE BETA =====
+.badge-beta {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #ff6b6b, #ff4757);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-left: 6px;
+  vertical-align: middle;
+  animation: beta-pulse 2s infinite;
+}
+
+@keyframes beta-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(255, 71, 87, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 4px rgba(255, 71, 87, 0.2);
+  }
+}
+
+// 🆕 Destaque para o botão com BETA
+.metodo-btn:has(.badge-beta) {
+  border-color: rgba(255, 71, 87, 0.3);
+  background: linear-gradient(135deg,
+    rgba(255, 71, 87, 0.05) 0%,
+    var(--bg-primary) 50%,
+    var(--bg-primary) 100%
+  );
+
+  &:hover {
+    border-color: #ff4757;
+    box-shadow: 0 4px 12px rgba(255, 71, 87, 0.15);
+  }
+}
+
+
 // ===== INPUT NUMBER (Ano) =====
 input[type="number"] {
   width: 100%;
