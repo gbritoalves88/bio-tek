@@ -323,18 +323,19 @@ export class AddBookModalComponent {
       this.novoLivro.titulo = bookInfo.titulo;
       this.novoLivro.autor = bookInfo.autor;
       this.novoLivro.capa = bookInfo.imagemUrl;
-      this.novoLivro.codigoBarras = '';
-      this.novoLivro.descricao = '';
-      this.novoLivro.editora = '';
-      this.novoLivro.anoPublicacao = null;
-      this.novoLivro.numeroPaginas = null;
-      this.novoLivro.generos = [];
-      this.novoLivro.idioma = '';
-      this.novoLivro.tipo = 'livro';
-      this.novoLivro.status = 1;
 
-      this.buscandoInfo = false;
+      // 🆕 Dados completos
+      this.novoLivro.descricao = bookInfo.descricao || '';
+      this.novoLivro.editora = bookInfo.editora || '';
+      this.novoLivro.anoPublicacao = bookInfo.anoPublicacao || null;
+      this.novoLivro.numeroPaginas = bookInfo.numeroPaginas || null;
+      this.novoLivro.generos = bookInfo.generos || [];
+      this.novoLivro.idioma = bookInfo.idioma || '';
+      this.novoLivro.codigoBarras = bookInfo.codigoBarras || '';
+      this.novoLivro.avaliacaoMedia = bookInfo.avaliacaoMedia || null;
+
       this.livroEncontrado = true;
+      this.buscandoInfo = false;
       this.etapa = 'confirmar';
 
       this.alertService.success('Livro selecionado!');

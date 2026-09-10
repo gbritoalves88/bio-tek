@@ -1,0 +1,430 @@
+// src/app/shared/book-scanner/book-scanner.component.scss
+
+.scanner-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  background: #000;
+  display: flex;
+  flex-direction: column;
+}
+
+.scanner-video {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+// ===== ERRO =====
+.scanner-erro {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  text-align: center;
+  padding: 20px;
+
+  .erro-icone { font-size: 64px; margin-bottom: 16px; }
+  h3 { margin: 0 0 8px; font-size: 20px; }
+  p { margin: 0 0 24px; color: #ccc; font-size: 14px; }
+
+  button {
+    padding: 12px 24px;
+    border-radius: 25px;
+    border: none;
+    background: rgba(255,255,255,0.2);
+    color: #fff;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+}
+
+// ===== OVERLAY =====
+.scan-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+// ===== MODO OCR - Retângulo pequeno =====
+.scan-box.ocr {
+  width: 90%;
+  max-width: 340px;
+  height: 120px;
+  border: 2px solid rgba(255,255,255,0.7);
+  position: relative;
+  transition: all 0.3s;
+  background: rgba(0,0,0,0.1);
+
+  &.found {
+    border-color: #4caf50;
+    box-shadow: 0 0 30px rgba(76, 175, 80, 0.6);
+    background: rgba(76, 175, 80, 0.1);
+  }
+}
+
+// ===== MODO CAPA - Retângulo grande (2:3) =====
+.scan-box.capa {
+  width: 75%;
+  max-width: 280px;
+  aspect-ratio: 2/3;
+  border: 3px solid #ffcc00;
+  position: relative;
+  transition: all 0.3s;
+  background: rgba(0,0,0,0.1);
+  box-shadow: 0 0 30px rgba(255, 204, 0, 0.4);
+  animation: capa-pulse 2s infinite;
+
+  .scan-corner {
+    border-color: #ffcc00;
+    width: 30px;
+    height: 30px;
+  }
+}
+
+@keyframes capa-pulse {
+  0%, 100% {
+    border-color: rgba(255, 204, 0, 0.8);
+    box-shadow: 0 0 30px rgba(255, 204, 0, 0.4);
+  }
+  50% {
+    border-color: rgba(255, 204, 0, 1);
+    box-shadow: 0 0 40px rgba(255, 204, 0, 0.6);
+  }
+}
+
+.scan-corner {
+  position: absolute;
+  width: 25px;
+  height: 25px;
+  border: 3px solid #fff;
+}
+
+.tl { top: -3px; left: -3px; border-right: none; border-bottom: none; }
+.tr { top: -3px; right: -3px; border-left: none; border-bottom: none; }
+.bl { bottom: -3px; left: -3px; border-right: none; border-top: none; }
+.br { bottom: -3px; right: -3px; border-left: none; border-top: none; }
+
+.scan-guide-line {
+  position: absolute;
+  left: 10%;
+  right: 10%;
+  top: 50%;
+  height: 2px;
+  background: rgba(255,204,0,0.6);
+  animation: guide-pulse 2s infinite;
+}
+
+// ===== INSTRUÇÕES =====
+.scan-instructions {
+  margin-top: 20px;
+  text-align: center;
+  color: #fff;
+  background: rgba(0,0,0,0.7);
+  padding: 12px 20px;
+  border-radius: 12px;
+}
+
+.pulse {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #ffcc00;
+  animation: pulse 1.5s infinite;
+  margin-right: 8px;
+}
+
+.instruction-title { margin: 8px 0 4px; font-size: 16px; font-weight: 600; }
+.instruction-sub { margin: 0; font-size: 13px; color: #ccc; }
+
+// ===== RESULTADO =====
+.scan-result {
+  margin-top: 20px;
+  padding: 16px;
+  background: rgba(0,0,0,0.85);
+  border-radius: 12px;
+  text-align: center;
+  color: #fff;
+  pointer-events: auto;
+  min-width: 250px;
+
+  .check { font-size: 32px; display: block; margin-bottom: 8px; }
+  h3 { margin: 0 0 4px; font-size: 18px; }
+  p { margin: 0 0 8px; color: #ccc; font-size: 14px; }
+  small { color: #999; }
+}
+
+.spinner-scan {
+  display: inline-block;
+  width: 32px;
+  height: 32px;
+  border: 3px solid rgba(255,255,255,0.2);
+  border-top-color: #ffcc00;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-bottom: 8px;
+}
+
+.btn-editar {
+  display: block;
+  margin: 12px auto 0;
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: 1px solid #fff;
+  background: transparent;
+  color: #fff;
+  font-size: 13px;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+// ===== RESULTADOS IMAGEHASH =====
+.resultados-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.85);
+  z-index: 20;
+  padding: 16px;
+}
+
+.resultados-card {
+  background: #fff;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 420px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.resultados-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  border-bottom: 1px solid #eee;
+
+  h3 { margin: 0; font-size: 17px; color: #333; }
+}
+
+.btn-close-resultados {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: #999;
+  padding: 4px 8px;
+}
+
+.resultados-info {
+  margin: 0;
+  padding: 12px 16px;
+  font-size: 13px;
+  color: #666;
+  background: #f9f9f9;
+}
+
+.resultados-lista {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+}
+
+.resultado-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background 0.2s;
+  position: relative;
+
+  &:hover { background: #f5f5f5; }
+  &:active { background: #eee; }
+}
+
+.resultado-similaridade {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: #4caf50;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 10px;
+}
+
+.resultado-capa {
+  width: 50px;
+  aspect-ratio: 2/3;
+  object-fit: cover;
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  flex-shrink: 0;
+}
+
+.resultado-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+
+  strong {
+    font-size: 14px;
+    color: #333;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  span {
+    font-size: 12px;
+    color: #666;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.resultado-fonte { font-size: 11px; color: #999; }
+
+.resultado-seta {
+  width: 18px;
+  height: 18px;
+  stroke: #999;
+  flex-shrink: 0;
+}
+
+// ===== EDIT =====
+.edit-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.8);
+  z-index: 10;
+}
+
+.edit-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 20px;
+  width: 90%;
+  max-width: 350px;
+
+  h3 { margin: 0 0 16px; color: #333; font-size: 18px; }
+
+  label {
+    display: block;
+    margin: 12px 0 4px;
+    color: #666;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 15px;
+    box-sizing: border-box;
+  }
+}
+
+.edit-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+
+  button {
+    flex: 1;
+    padding: 10px;
+    border-radius: 8px;
+    border: none;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+
+    &:first-child { background: #f0f0f0; color: #333; }
+    &:last-child { background: #4caf50; color: #fff; }
+  }
+}
+
+// ===== AÇÕES =====
+.scanner-actions {
+  position: absolute;
+  bottom: 20px;
+  left: 0;
+  right: 0;
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  pointer-events: auto;
+  padding: 0 16px;
+  flex-wrap: wrap;
+
+  button {
+    padding: 12px 20px;
+    border-radius: 25px;
+    border: none;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+}
+
+.btn-cancelar { background: rgba(255,255,255,0.2); color: #fff; }
+
+.btn-buscar-capa {
+  background: linear-gradient(135deg, #ff6b6b, #ff4757);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(255, 71, 87, 0.3);
+}
+
+.btn-buscar-titulo {
+  background: linear-gradient(135deg, #4a90e2, #357abd);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(74, 144, 226, 0.3);
+}
+
+.btn-capturar-agora {
+  background: linear-gradient(135deg, #ffcc00, #ff9900);
+  color: #000;
+  font-weight: 700;
+}
+
+.btn-confirmar { background: #4caf50; color: #fff; }
+
+// ===== ANIMAÇÕES =====
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+@keyframes guide-pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 0.2; }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
