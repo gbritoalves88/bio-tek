@@ -318,11 +318,35 @@ export class AddBookModalComponent {
   }
 
   onLivroReconhecido(bookInfo: BookInfo): void {
+    // 🆕 Se veio do ImageHash (tem imagemUrl), usa direto
+    if (bookInfo.imagemUrl) {
+      this.novoLivro.titulo = bookInfo.titulo;
+      this.novoLivro.autor = bookInfo.autor;
+      this.novoLivro.capa = bookInfo.imagemUrl;
+      this.novoLivro.codigoBarras = '';
+      this.novoLivro.descricao = '';
+      this.novoLivro.editora = '';
+      this.novoLivro.anoPublicacao = null;
+      this.novoLivro.numeroPaginas = null;
+      this.novoLivro.generos = [];
+      this.novoLivro.idioma = '';
+      this.novoLivro.tipo = 'livro';
+      this.novoLivro.status = 1;
+
+      this.buscandoInfo = false;
+      this.livroEncontrado = true;
+      this.etapa = 'confirmar';
+
+      this.alertService.success('Livro selecionado!');
+      this.cdr.markForCheck();
+      return;
+    }
+
+    // 🔄 Se veio do OCR (só texto), busca no backend
     this.buscandoInfo = true;
     this.etapa = 'confirmar';
     this.cdr.markForCheck();
 
-    // Buscar no backend
     this.addBookService.buscarPorTitulo(bookInfo.titulo, bookInfo.autor).subscribe({
       next: (resultados) => {
         this.buscandoInfo = false;
@@ -355,7 +379,6 @@ export class AddBookModalComponent {
       },
       error: () => {
         this.buscandoInfo = false;
-        // Usar dados do OCR
         this.novoLivro.titulo = bookInfo.titulo;
         this.novoLivro.autor = bookInfo.autor;
         this.livroEncontrado = true;

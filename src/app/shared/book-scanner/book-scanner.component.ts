@@ -823,7 +823,11 @@ export class BookScannerComponent implements OnInit, OnDestroy {
     const bookInfo: BookInfo = {
       titulo: livro.titulo,
       autor: livro.autor,
-      confianca: Math.round(livro.similaridade)
+      confianca: Math.round(livro.similaridade),
+      // 🆕 Dados extras
+      idLivro: livro.idLivro,
+      imagemUrl: livro.imagemUrl,
+      fonte: livro.fonte
     };
 
     this.pararCamera();
