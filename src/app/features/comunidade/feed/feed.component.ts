@@ -175,46 +175,6 @@ export class FeedComponent implements OnInit {
       });
   }
 
-  enviarComentarioOld(): void {
-    if (!this.novoComentario?.trim() || !this.itemSelecionado) return;
-
-    const textoComentario = this.novoComentario.trim();
-    const comentarioTemp: any = {
-      id: 'temp-' + Date.now(),
-      comentario: textoComentario,
-      dataCriacao: new Date().toISOString(),
-      usuarioNickname: this.usuarioAtual?.nickname || '@user',
-      usuario: {
-        id: this.usuarioAtual?.id,
-        nickname: this.usuarioAtual?.nickname || '@user'
-      }
-    };
-
-    this.comentarios = [...this.comentarios, comentarioTemp];
-    this.novoComentario = '';
-    this.cdr.markForCheck();
-
-    this.comunidadeService
-      .enviarComentario(this.itemSelecionado.livro.id, textoComentario)
-      .subscribe({
-        next: (comentarioCriado: any) => {
-          this.comentarios = this.comentarios.map(c =>
-            c.id === comentarioTemp.id
-              ? { ...comentarioCriado, usuarioNickname: this.usuarioAtual?.nickname, usuario: { id: this.usuarioAtual?.id, nickname: this.usuarioAtual?.nickname } }
-              : c
-          );
-          this.alertService.success('Comentário enviado!');
-          this.cdr.markForCheck();
-        },
-        error: (err) => {
-          this.comentarios = this.comentarios.filter(c => c.id !== comentarioTemp.id);
-          console.error('Erro ao comentar:', err);
-          this.alertService.error('Erro ao enviar comentário');
-          this.cdr.markForCheck();
-        }
-      });
-  }
-
   seguirUsuario(idUsuario: string): void {
     this.comunidadeService.seguir(idUsuario).subscribe({
       next: () => {
