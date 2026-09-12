@@ -33,8 +33,8 @@ export class AddBookModalComponent {
 
 
   private readonly TAMANHO_MAXIMO = 10 * 1024 * 1024;
-  private readonly COMPRESSAO_MAX_WIDTH = 1200;
-  private readonly COMPRESSAO_QUALIDADE = 0.7;
+  private readonly COMPRESSAO_MAX_WIDTH = 800;
+  private readonly COMPRESSAO_QUALIDADE = 0.6;
 
   novoLivro = {
     titulo: '',
@@ -249,17 +249,40 @@ export class AddBookModalComponent {
   }
 
   // ===== IMAGEM =====
-  private comprimirImagem(base64: string, maxWidth: number = 1200, qualidade: number = 0.7): Promise<string> {
+  private comprimirImagem(base64: string, maxWidth: number = 800, qualidade: number = 0.6): Promise<string> {
     return new Promise((resolve) => {
       const img = new Image();
       img.src = base64;
       img.onload = () => {
         const canvas = document.createElement('canvas');
         let width = img.width, height = img.height;
-        if (width > maxWidth) { height = (maxWidth / width) * height; width = maxWidth; }
-        canvas.width = width; canvas.height = height;
-        canvas.getContext('2d')!.drawImage(img, 0, 0, width, height);
-        resolve(canvas.toDataURL('image/jpeg', qualidade));
+
+        if (width > maxWidth) {
+          height = (maxWidth / width) * height;
+          width = maxWidth;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+
+        const ctx = canvas.getContext('2d')!;
+        ctx.drawImage(img, 0, 0, width, height);
+
+        // 🆕 Forçar JPEG baseline (não progressivo)
+        // 1. Pega base64 inicial
+        const tempBase64 = canvas.toDataURL('image/jpeg', qualidade);
+
+        // 2. Recria a imagem (isso força baseline)
+        const img2 = new Image();
+        img2.onload = () => {
+          const canvas2 = document.createElement('canvas');
+          canvas2.width = img2.width;
+          canvas2.height = img2.height;
+          const ctx2 = canvas2.getContext('2d')!;
+          ctx2.drawImage(img2, 0, 0);
+          resolve(canvas2.toDataURL('image/jpeg', qualidade));
+        };
+        img2.src = tempBase64;
       };
     });
   }
