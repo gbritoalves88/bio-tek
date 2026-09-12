@@ -106,6 +106,79 @@ export class FeedComponent implements OnInit {
     if (!this.novoComentario?.trim() || !this.itemSelecionado) return;
 
     const textoComentario = this.novoComentario.trim();
+
+    const comentarioTemp: Comentario = {
+      id: 'temp-' + Date.now(),
+      idUsuario: this.usuarioAtual?.id || '',
+      comentario: textoComentario,
+      dataCriacao: new Date().toISOString(),
+      usuario: {
+        id: this.usuarioAtual?.id || '',
+        nome: this.usuarioAtual?.nome || '',
+        nickname: this.usuarioAtual?.nickname || '@user'
+      }
+    };
+
+    // 🆕 Adiciona na lista local
+    this.comentarios = [...this.comentarios, comentarioTemp];
+    this.novoComentario = '';
+    this.cdr.markForCheck();
+
+    this.comunidadeService
+      .enviarComentario(this.itemSelecionado.livro.id, textoComentario)
+      .subscribe({
+        next: (comentarioCriado: any) => {
+          // 🆕 Sempre usa dados do usuário local
+          this.comentarios = this.comentarios.map((c): Comentario => {
+            if (c.id === comentarioTemp.id) {
+              return {
+                id: comentarioCriado?.id || comentarioCriado?.Id || comentarioTemp.id,
+                idUsuario: this.usuarioAtual?.id || '',
+                comentario: textoComentario,
+                dataCriacao: comentarioCriado?.dataCriacao || new Date().toISOString(),
+                usuario: {
+                  id: this.usuarioAtual?.id || '',
+                  nome: this.usuarioAtual?.nome || '',
+                  nickname: this.usuarioAtual?.nickname || '@user'
+                }
+              };
+            }
+            return c;
+          });
+
+          // 🆕 Atualiza o item em atividades[]
+          const item = this.atividades.find(a => a.id === this.itemSelecionado?.id);
+          if (item) {
+            item.comentarios = [...this.comentarios];
+          }
+
+          // 🆕 Atualiza o itemSelecionado
+          if (this.itemSelecionado) {
+            this.itemSelecionado.comentarios = [...this.comentarios];
+          }
+
+          this.alertService.success('Comentário enviado!');
+          this.cdr.markForCheck();
+        },
+        error: (err) => {
+          // rollback
+          this.comentarios = this.comentarios.filter(c => c.id !== comentarioTemp.id);
+
+          if (this.itemSelecionado) {
+            this.itemSelecionado.comentarios = [...this.comentarios];
+          }
+
+          console.error('Erro ao comentar:', err);
+          this.alertService.error('Erro ao enviar comentário');
+          this.cdr.markForCheck();
+        }
+      });
+  }
+
+  enviarComentarioOld(): void {
+    if (!this.novoComentario?.trim() || !this.itemSelecionado) return;
+
+    const textoComentario = this.novoComentario.trim();
     const comentarioTemp: any = {
       id: 'temp-' + Date.now(),
       comentario: textoComentario,
