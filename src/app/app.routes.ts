@@ -6,9 +6,22 @@ import { PerfilCompletoGuard } from './core/guards/perfil-completo.guard';
 import { LoginGuard } from './core/guards/login.guard';
 
 export const routes: Routes = [
-  // ============ ROTAS PÚBLICAS ============
+  // ============ RAIZ → SPLASH ============
   {
     path: '',
+    redirectTo: 'splash',
+    pathMatch: 'full'
+  },
+
+  // ============ SPLASH ============
+  {
+    path: 'splash',
+    loadComponent: () => import('./features/splash/splash.component').then(m => m.SplashComponent)
+  },
+
+  // ============ ROTAS PÚBLICAS ============
+  {
+    path: 'login',
     loadComponent: () => import('./features/login/login.component').then(m => m.LoginComponent),
     canActivate: [LoginGuard]
   },
@@ -59,5 +72,5 @@ export const routes: Routes = [
   },
 
   // ============ FALLBACK ============
-  { path: '**', redirectTo: '' }
+  { path: '**', redirectTo: 'splash' }
 ];

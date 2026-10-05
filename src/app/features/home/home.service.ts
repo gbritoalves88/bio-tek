@@ -73,7 +73,15 @@ export class HomeService {
 
   // 🆕 Baixar imagem (sem cache, é proxy)
   baixarImagem(url: string): Observable<Blob> {
-    const urlProxy = `${this.livroApiUrl}/proxy-imagem?url=${encodeURIComponent(url)}`;
-    return this.http.get(urlProxy, { responseType: 'blob' });
+      const urlProxy = `${this.livroApiUrl}/proxy-imagem?url=${encodeURIComponent(url)}`;
+      return this.http.get(urlProxy, { responseType: 'blob' });
+    }
+
+    finalizarLeitura(id: string): Observable<any> {
+    return this.http.put(`${this.livroApiUrl}/${id}`, {
+      status: 3   // Lido
+    }).pipe(
+      tap(() => this.limparCache())
+    );
   }
 }

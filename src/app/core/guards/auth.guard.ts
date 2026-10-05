@@ -12,29 +12,36 @@ export class AuthGuard implements CanActivate {
   ) {}
 
   async canActivate(): Promise<boolean> {
-    const token = localStorage.getItem('token');
-    const refreshToken = localStorage.getItem('refreshToken');
+    const token = this.getTokenValido();
+    const refreshToken = this.getRefreshTokenValido();
 
     if (!token && !refreshToken) {
       this.router.navigate(['/']);
       return false;
     }
 
-    // Se tem token, tenta usar (mesmo que expirado — interceptor renova)
     if (token) {
       return true;
     }
 
-    // Se não tem token, mas tem refreshToken, tenta renovar
-    if (!token && refreshToken) {
+    // Só refreshToken, tenta renovar
+    if (refreshToken) {
       try {
         const response: any = await firstValueFrom(
           this.http.post(`${environment.apiUrl}/Auth/refresh`, { refreshToken })
         );
+
+        if (!response?.token || !response?.refreshToken) {
+          this.limparTokens();
+          this.router.navigate(['/']);
+          return false;
+        }
+
         localStorage.setItem('token', response.token);
         localStorage.setItem('refreshToken', response.refreshToken);
         return true;
       } catch {
+        this.limparTokens();
         this.router.navigate(['/']);
         return false;
       }
@@ -42,5 +49,24 @@ export class AuthGuard implements CanActivate {
 
     this.router.navigate(['/']);
     return false;
+  }
+
+  // 🆕 Helpers
+  private getTokenValido(): string | null {
+    const t = localStorage.getItem('token');
+    if (!t || t === 'undefined' || t === 'null' || t.length < 10) return null;
+    return t;
+  }
+
+  private getRefreshTokenValido(): string | null {
+    const t = localStorage.getItem('refreshToken');
+    if (!t || t === 'undefined' || t === 'null' || t.length < 10) return null;
+    return t;
+  }
+
+  private limparTokens(): void {
+    localStorage.removeItem('token');
+    localStorage.removeItem('refreshToken');
+    localStorage.removeItem('usuario');
   }
 }

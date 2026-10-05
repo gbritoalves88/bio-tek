@@ -1,3 +1,4 @@
+<app-pull-to-refresh [carregando]="carregando" (refresh)="carregarDashboard()">
 <section class="home">
   <div class="hero">
     <div>
@@ -61,7 +62,8 @@
           <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
           <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
         </svg>
-        Lendo agora
+        {{ livroAtual.pausado ? 'Continuar lendo' : 'Lendo agora' }}
+        <span class="badge-pausado" *ngIf="livroAtual.pausado">⏸️ Pausado</span>
       </h2>
       <div class="book-info">
         <img [src]="livroAtual.imagem || 'assets/capas/perfilSemFoto.png'" [alt]="livroAtual.titulo" class="book-cover"  loading="lazy" decoding="async" />
@@ -82,11 +84,26 @@
             </span>
 
             <span class="progress-texto" *ngIf="livroAtual.tipo === 'audiobook'">
-              {{ formatarMinutos(livroAtual.minutoAtual) }} / {{ formatarMinutos(livroAtual.totalMinutos) }} • {{ livroAtual.progresso }}% concluído
+              {{ formatarHHMM(livroAtual.totalMinutos) }} • {{ livroAtual.progresso || 0 }}% concluído
               <span *ngIf="livroAtual.progresso === 100">, Parabéns!</span>
             </span>
 
+            <span class="progress-restante" *ngIf="livroAtual.tipo === 'audiobook' && livroAtual.progresso && livroAtual.progresso < 100">
+              Faltam {{ formatarRestante((livroAtual.totalMinutos || 0) - (livroAtual.minutoAtual || 0)) }}
+            </span>
+
             <span class="palmas-inline" *ngIf="livroAtual.progresso === 100">👏👏👏</span>
+
+            <button
+              *ngIf="livroAtual.progresso === 100 && livroAtual.status !== 3"
+              class="btn-finalizar"
+              (click)="finalizarLeitura($event)"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+              Finalizar leitura
+            </button>
           </ng-container>
 
           <ng-template #semProgresso>
@@ -274,14 +291,38 @@
 
       <!-- AUDIOBOOK -->
       <div class="bs-pagina" *ngIf="livroAtual.tipo === 'audiobook'">
-        <label class="bs-label">🎧 Minuto atual</label>
+        <label class="bs-label">🎧 Posição atual / Duração total</label>
         <div class="bs-pagina-inputs">
-          <input type="number" [(ngModel)]="minutoAtual" placeholder="Min" min="0" class="bs-input-pagina" />
+          <input
+            type="text"
+            inputmode="numeric"
+            maxlength="6"
+            placeholder="00:00"
+            [(ngModel)]="posicaoAtualInput"
+            (input)="formatarEntradaHHMM($event); posicaoAtualInput = $any($event.target).value"
+            class="bs-input-tempo"
+          />
           <span class="bs-de">de</span>
-          <input type="number" [(ngModel)]="totalMinutos" placeholder="Total" min="0" class="bs-input-pagina" />
+          <input
+            type="text"
+            inputmode="numeric"
+            maxlength="6"
+            placeholder="00:00"
+            [(ngModel)]="duracaoTotalInput"
+            (input)="formatarEntradaHHMM($event); duracaoTotalInput = $any($event.target).value"
+            class="bs-input-tempo"
+          />
         </div>
 
-        <!-- 🆕 CAMPO DE FRASE OPCIONAL -->
+        <!-- 🆕 Linha com progresso e restante -->
+        <div class="bs-progresso-info" *ngIf="progressoAudiobook > 0">
+          <span class="bs-progresso-percent">{{ progressoAudiobook }}% concluído</span>
+          <span class="bs-progresso-restante" *ngIf="restanteAudiobook">
+            • Faltam {{ restanteAudiobook }}
+          </span>
+        </div>
+
+        <!-- 🆕 Campo de frase (mantém) -->
         <label class="bs-label">💬 Compartilhar frase (opcional)</label>
         <textarea
           [(ngModel)]="fraseAtividade"
@@ -292,9 +333,38 @@
         ></textarea>
         <span class="bs-contador">{{ fraseAtividade.length }}/200</span>
 
-        <button class="bs-btn bs-btn-sm bs-btn-outline" (click)="atualizarProgresso()" [disabled]="!minutoAtual && !totalMinutos">
+        <button
+          class="bs-btn bs-btn-sm bs-btn-outline"
+          (click)="atualizarProgresso()"
+          [disabled]="!posicaoAtualInput && !duracaoTotalInput"
+        >
           Atualizar progresso
         </button>
+      </div>
+
+      <!-- 🆕 Outros pausados -->
+      <div class="bs-outros-pausados" *ngIf="outrosPausados.length > 0">
+        <h4>⏸️ Outros pausados</h4>
+        <div class="bs-pausados-lista">
+          <div class="bs-pausado-item"
+              *ngFor="let p of outrosPausados"
+              (click)="trocarLivroAtual(p)">
+            <img [src]="p.imagem || 'assets/capas/perfilSemFoto.png'"
+                [alt]="p.titulo"
+                class="bs-pausado-capa"
+                loading="lazy"
+                decoding="async" />
+            <div class="bs-pausado-info">
+              <strong>{{ p.titulo }}</strong>
+              <span>{{ p.autor }}</span>
+            </div>
+            <button class="bs-pausado-play" (click)="trocarLivroAtual(p); $event.stopPropagation()" title="Retomar leitura">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="6 4 20 12 6 20 6 4"/>
+              </svg>
+            </button>
+          </div>
+        </div>
       </div>
 
       <div class="bs-acoes">
@@ -331,3 +401,4 @@
     </ng-container>
   </app-bottom-sheet>
 </section>
+</app-pull-to-refresh>

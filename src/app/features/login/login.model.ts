@@ -6,15 +6,15 @@ export interface UsuarioLogin {
   descricao?: string;
   avatar?: string;
   tema: number;
-  adm: boolean;  // ⬅️ minúsculo para consistência
-  Adm?: boolean;
-  aceitouTermos?: boolean;  // ⬅️ fallback
+  adm?: boolean;
+  Adm?: boolean;         // fallback enquanto backend não normalizar
+  aceitouTermos?: boolean;
 }
 
 export interface LoginResponse {
   token: string;
+  refreshToken?: string;   // ⬅️ opcional — sempre validar
   novoUsuario: boolean;
-  usuario: UsuarioLogin;
   precisaAceitarTermos?: boolean;
-  refreshToken: string;
+  usuario: UsuarioLogin;
 }
