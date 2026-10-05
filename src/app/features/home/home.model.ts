@@ -61,6 +61,7 @@ export interface LivroTop {
 
 export interface DashboardData {
   livroAtual: Livro | null;
+  outrosPausados?: any[];    // 🆕
   listaLeitura: LivroLeitura[];
   topAvaliados: LivroTop[];
   streak?: {

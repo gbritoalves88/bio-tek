@@ -41,6 +41,163 @@ $max-content-width: 900px;
   gap: 12px;
 }
 
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+// ===== AVATAR + MENU =====
+.header-avatar-wrapper {
+  position: relative;
+}
+
+.header-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid var(--accent);
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s, box-shadow 0.2s;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  &:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 2px var(--accent);
+  }
+
+  &:active { transform: scale(0.95); }
+}
+
+.avatar-menu-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 99;
+  background: transparent;
+}
+
+.avatar-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 100;
+  min-width: 220px;
+  overflow: hidden;
+  animation: fadeInDown 0.2s ease;
+}
+
+.avatar-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 16px;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.2s;
+  white-space: nowrap;
+  font-family: inherit;
+  text-align: left;
+
+  svg {
+    width: 16px;
+    height: 16px;
+    stroke: var(--text-secondary);
+    flex-shrink: 0;
+  }
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.05);
+    svg { stroke: var(--accent); }
+  }
+
+  &.sair:hover {
+    color: #e74c3c;
+    svg { stroke: #e74c3c; }
+  }
+
+  &.perigo {
+    color: var(--text-secondary);
+    &:hover {
+      color: #e74c3c;
+      background: rgba(231, 76, 60, 0.08);
+      svg { stroke: #e74c3c; }
+    }
+  }
+}
+
+// 🆕 Divisor entre seções do menu
+.avatar-menu-divider {
+  height: 1px;
+  background: var(--border-color);
+  margin: 4px 0;
+}
+
+// 🆕 Item de tema com switch
+.avatar-menu-item.tema-toggle {
+  justify-content: flex-start;
+
+  span:first-of-type {
+    flex: 1;
+  }
+
+  .toggle-switch {
+    position: relative;
+    width: 36px;
+    height: 20px;
+    background: var(--border-color);
+    border-radius: 10px;
+    transition: background 0.2s;
+    flex-shrink: 0;
+
+    &.on {
+      background: var(--accent);
+    }
+
+    .toggle-knob {
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 16px;
+      height: 16px;
+      background: white;
+      border-radius: 50%;
+      transition: transform 0.2s;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    }
+
+    &.on .toggle-knob {
+      transform: translateX(16px);
+    }
+  }
+}
+
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+// ===== LOGO =====
 .logo-link {
   display: flex;
   align-items: center;
@@ -63,24 +220,6 @@ $max-content-width: 900px;
   }
 }
 
-.header-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-shrink: 0;
-}
-
-.theme-btn {
-  padding: 8px 14px;
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  cursor: pointer;
-  background: transparent;
-  color: var(--text-primary);
-  font-size: 16px;
-  transition: all 0.3s;
-}
-
 // ===== MAIN LAYOUT =====
 .main-layout {
   flex: 1;
@@ -97,7 +236,7 @@ $max-content-width: 900px;
 
 // ===== SIDEBAR (apenas desktop) =====
 .sidebar {
-  display: none; // 🆕 Escondida no mobile
+  display: none; // Escondida no mobile
   width: $sidebar-width;
   height: calc(100vh - #{$header-height});
   background: var(--bg-sidebar);
@@ -280,7 +419,7 @@ $max-content-width: 900px;
   }
 
   .sidebar {
-    display: flex; // 🆕 Visível no desktop
+    display: flex; // Visível no desktop
   }
 
   .content {
@@ -291,7 +430,7 @@ $max-content-width: 900px;
   }
 
   .bottom-nav {
-    display: none; // 🆕 Escondida no desktop
+    display: none; // Escondida no desktop
   }
 }
 

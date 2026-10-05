@@ -5,11 +5,14 @@ import { UsuarioSocial } from './social.model';
 import { Router } from '@angular/router';
 import { AlertService } from '../../../shared/services/alert.service';
 import { FormsModule } from '@angular/forms';
+import { PullToRefreshComponent } from '../../../shared/pull-to-refresh/pull-to-refresh.component';
+
+
 
 @Component({
   selector: 'app-social',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PullToRefreshComponent],
   templateUrl: './social.component.html',
   styleUrl: './social.component.scss',
   host: { 'ngSkipHydration': 'true' }

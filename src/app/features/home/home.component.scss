@@ -804,6 +804,208 @@
     height: 150px;
   }
 }
+
+.bs-input-tempo {
+  width: 100px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 16px;
+  text-align: center;
+  letter-spacing: 1px;
+  outline: none;
+  font-variant-numeric: tabular-nums;
+
+  &:focus { border-color: var(--accent); }
+
+  &::placeholder {
+    color: var(--text-secondary);
+    opacity: 0.6;
+  }
+}
+
+.bs-progresso-info {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--text-secondary);
+
+  .bs-progresso-percent {
+    color: var(--accent);
+    font-weight: 600;
+  }
+}
+
+// 🆕 Linha de "Faltam X" no card da Home
+.progress-restante {
+  display: block;
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+// ===== SELO PAUSADO =====
+.badge-pausado {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: rgba(219, 124, 0, 0.15);
+  color: var(--accent);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
+// ===== OUTROS PAUSADOS (bottom sheet) =====
+// ===== OUTROS PAUSADOS (bottom sheet) =====
+.bs-outros-pausados {
+  margin-top: 16px;
+  margin-bottom: 24px;       // 🆕 espaço antes dos botões
+  padding-top: 16px;
+  padding-bottom: 20px;      // 🆕 espaço interno
+  border-top: 1px solid var(--border-color);
+
+  h4 {
+    margin: 0 0 12px;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-secondary);
+    font-weight: 600;
+  }
+}
+
+.bs-pausados-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;                 // 🆕 mais respiro entre itens
+}
+
+.bs-pausado-item {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 12px;        // 🆕 padding maior
+  border-radius: 10px;
+  background: var(--bg-primary);
+  cursor: pointer;
+  transition: background 0.2s;
+
+  &:hover {
+    background: var(--bg-card);
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+.bs-pausado-capa {
+  width: 40px;
+  aspect-ratio: 2/3;
+  object-fit: cover;
+  border-radius: 6px;
+  flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.bs-pausado-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+
+  strong {
+    font-size: 13px;
+    color: var(--text-primary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  span {
+    font-size: 11px;
+    color: var(--text-secondary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.btn-finalizar {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 6px 12px;
+  background: transparent;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  border-radius: 16px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: fit-content;
+
+  svg {
+    width: 14px;
+    height: 14px;
+    stroke: currentColor;
+  }
+
+  &:hover {
+    background: var(--accent);
+    color: #fff;
+  }
+
+  &:active {
+    transform: scale(0.97);
+  }
+}
+
+// 🆕 Botão de play
+.bs-pausado-play {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+
+  svg {
+    width: 16px;
+    height: 16px;
+    stroke: #fff;
+    fill: #fff;
+    margin-left: 2px;        // 🆕 centraliza visualmente o triangle
+  }
+
+  &:hover {
+    transform: scale(1.08);
+    opacity: 0.9;
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
 // ===== KEYFRAMES =====
 @keyframes fadeInUp {
   from { opacity: 0; transform: translateY(12px); }

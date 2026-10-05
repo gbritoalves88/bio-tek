@@ -152,9 +152,14 @@ export class TermoComponent {
       });
   }
 
-  recusar(): void {
+  recusarOld(): void {
       localStorage.removeItem('token');
       localStorage.removeItem('usuario');
       this.router.navigate(['/']);
   }
+
+  recusar(): void {
+  localStorage.clear();
+  this.router.navigate(['/login'], { replaceUrl: true });
+}
 }

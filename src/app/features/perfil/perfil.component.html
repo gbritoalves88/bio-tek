@@ -1,3 +1,4 @@
+<app-pull-to-refresh [carregando]="carregando" (refresh)="recarregar()">
 <section class="perfil">
   <!-- Skeleton Loading -->
   <div class="skeleton-container" *ngIf="carregando">
@@ -20,11 +21,11 @@
   <ng-container *ngIf="!carregando">
     <!-- Dados do perfil - Modo visualização -->
     <div class="perfil-container" *ngIf="usuario && !editando">
-      <div class="perfil-header-row">
+      <div class="perfil-header-row" *ngIf="modoVisualizacao">
         <div class="perfil-avatar">
           <!-- 🆕 AVATAR COM ZOOM -->
           <div class="avatar-pequeno clicavel" (click)="abrirZoomAvatar()">
-            <img [src]="usuario.avatar || 'assets/capas/perfilSemFoto.png'" [alt]="usuario.nome"
+            <img [src]="getAvatar(usuario)" [alt]="usuario.nome"
             loading="lazy"
             decoding="async" />
           </div>
@@ -106,21 +107,6 @@
           </ng-container>
         </div>
       </div>
-
-      <div class="stats">
-        <div class="stat-item">
-          <span class="stat-valor">{{ usuario.quantidadeLivros || 0 }}</span>
-          <span class="stat-label">Livros</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-valor">{{ usuario.quantidadeLivrosLidos || 0 }}</span>
-          <span class="stat-label">Lidos</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-valor">⭐ {{ usuario.mediaAvaliacoes || 0 }}</span>
-          <span class="stat-label">Média</span>
-        </div>
-      </div>
     </div>
 
     <!-- Edição do perfil -->
@@ -134,7 +120,7 @@
         <div class="avatar-edicao-container">
           <!-- 🆕 Adicionar referência -->
           <div class="avatar-grande editavel" #avatarEdicao (click)="fileInput.click()">
-            <img [src]="usuarioEdit.avatar || 'assets/capas/perfilSemFoto.png'" [alt]="usuarioEdit.nome"
+            <img [src]="getAvatar(usuarioEdit)" [alt]="usuarioEdit.nome"
               loading="lazy"
               decoding="async" />
             <div class="avatar-overlay">
@@ -184,7 +170,7 @@
 
     <!-- ========== BIBLIOTECA PESSOAL ========== -->
     <div class="biblioteca-pessoal" *ngIf="usuario && !editando">
-
+        <h1 class="titulo-estante" *ngIf="!modoVisualizacao">Minha Estante</h1>
 
       <!-- 🆕 ABAS -->
       <div class="tabs-perfil">
@@ -291,6 +277,29 @@
 
       <!-- 🆕 CONTAINER GERAL COM GAP -->
       <div class="progresso-geral" *ngIf="!carregandoProgresso && streak">
+        <!-- Seção Estatísticas -->
+        <div class="metricas-mes" *ngIf="usuario">
+          <h4>📊 Estatísticas</h4>
+          <div class="metricas-grid">
+            <div class="metrica-card">
+              <span class="metrica-icon">📚</span>
+              <strong>{{ usuario.quantidadeLivros || 0 }}</strong>
+              <span>livros</span>
+            </div>
+            <div class="metrica-card">
+              <span class="metrica-icon">✅</span>
+              <strong>{{ usuario.quantidadeLivrosLidos || 0 }}</strong>
+              <span>lidos</span>
+            </div>
+            <div class="metrica-card">
+              <span class="metrica-icon">⭐</span>
+              <strong>{{ usuario.mediaAvaliacoes || 0 }}</strong>
+              <span>média</span>
+            </div>
+          </div>
+        </div>
+
+
         <!-- Seção Streak -->
         <div class="progresso-container">
           <h4>🔥 Sequência de leitura</h4>
@@ -623,7 +632,7 @@
 <!-- 🆕 MODAL DE ZOOM DO AVATAR -->
 <div class="avatar-zoom-overlay" *ngIf="zoomAvatarAberto" (click)="fecharZoomAvatar()">
   <div class="avatar-zoom-modal" (click)="$event.stopPropagation()">
-    <img [src]="usuario?.avatar || 'assets/capas/perfilSemFoto.png'" [alt]="usuario?.nome" loading="lazy"
+    <img [src]="getAvatar(usuario)" [alt]="usuario?.nome" loading="lazy"
      decoding="async" />
     <button class="avatar-zoom-close" (click)="fecharZoomAvatar()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -632,3 +641,4 @@
     </button>
   </div>
 </div>
+</app-pull-to-refresh>

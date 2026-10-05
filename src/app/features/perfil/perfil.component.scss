@@ -219,9 +219,21 @@
 }
 
 // ===== BIBLIOTECA =====
-.biblioteca-pessoal {
-  margin-top: 24px;
-  width: 100%;
+.perfil:has(.titulo-estante) {
+  padding-top: 12px;  // reduz o padding do container pai
+}
+
+.biblioteca-pessoal:has(.titulo-estante) {
+  margin-top: 0;
+}
+
+.titulo-estante {
+  font-size: 33px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 16px;  // garante 0 no topo
+  padding: 0 4px;
+  letter-spacing: -0.3px;
 }
 
 .biblioteca-header {
@@ -1348,10 +1360,11 @@
 
 .metricas-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));  // ← o novo
   gap: 4px;
   width: 100%;
 }
+
 
 .metrica-card {
   display: flex;

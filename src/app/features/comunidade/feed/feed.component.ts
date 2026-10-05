@@ -6,11 +6,13 @@ import { ComunidadeService } from '../comunidade.service';
 import { AtividadeComunidade, Comentario } from '../comunidade.model';
 import { AlertService } from '../../../shared/services/alert.service';
 import { BottomSheetComponent } from '../../../shared/bottom-sheet/bottom-sheet.component';
+import { PullToRefreshComponent } from '../../../shared/pull-to-refresh/pull-to-refresh.component';
+
 
 @Component({
   selector: 'app-feed',
   standalone: true,
-  imports: [CommonModule, FormsModule, BottomSheetComponent],
+  imports: [CommonModule, FormsModule, BottomSheetComponent, PullToRefreshComponent],
   templateUrl: './feed.component.html',
   styleUrl: './feed.component.scss',
   host: { 'ngSkipHydration': 'true' }

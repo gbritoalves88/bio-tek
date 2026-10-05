@@ -1,5 +1,5 @@
 <!-- src/app/features/biblioteca/biblioteca.component.html -->
-
+<app-pull-to-refresh [carregando]="carregando" (refresh)="carregarTudo()">
 <section class="catalogo">
   <div class="header-section">
     <div class="header-top">
@@ -183,3 +183,5 @@
   (fechar)="modalAberto = false"
   (livroAdicionado)="onLivroAdicionado($event)">
 </app-add-book-modal>
+
+</app-pull-to-refresh>

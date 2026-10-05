@@ -11,6 +11,8 @@ import { AlertService } from '../services/alert.service';
 // Adicionar imports
 import { BookScannerComponent } from '../book-scanner/book-scanner.component';
 import { BookInfo } from '../book-scanner/book-scanner.model';
+import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
+import { Capacitor } from '@capacitor/core';
 
 
 @Component({
@@ -287,9 +289,36 @@ export class AddBookModalComponent {
     });
   }
 
-  tirarFoto(): void {
+  async tirarFoto(): Promise<void> {
+    // 📱 App nativo: usa plugin @capacitor/camera
+    if (Capacitor.isNativePlatform()) {
+      try {
+        const image = await Camera.getPhoto({
+          quality: 85,
+          allowEditing: false,
+          resultType: CameraResultType.DataUrl,
+          source: CameraSource.Prompt, // pergunta: câmera ou galeria
+          promptLabelHeader: 'Escolher foto',
+          promptLabelPhoto: 'Da galeria',
+          promptLabelPicture: 'Tirar foto'
+        });
+
+        if (image.dataUrl) {
+          this.novoLivro.capa = image.dataUrl;
+          this.cdr.markForCheck();
+        }
+      } catch (error) {
+        console.error('Erro ao tirar foto:', error);
+        this.alertService.error('Erro ao acessar câmera');
+      }
+      return;
+    }
+
+    // 🌐 Web: mantém o método atual
     const input = document.createElement('input');
-    input.type = 'file'; input.accept = 'image/*'; input.capture = 'environment';
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.capture = 'environment';
     input.onchange = async (event: any) => {
       const file = event.target.files?.[0];
       if (!file) return;
