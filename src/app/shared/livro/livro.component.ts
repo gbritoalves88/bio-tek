@@ -7,6 +7,9 @@ import { AlertService } from '../services/alert.service';
 import { BottomSheetComponent } from '../bottom-sheet/bottom-sheet.component';
 import { LivroDetalhesInterno } from './livro.model';
 import { AmazonService } from '../services/amazon.service';
+import { Capacitor } from '@capacitor/core';
+import { FileOpener } from '@capawesome-team/capacitor-file-opener';
+import { EpubFileService } from '../epub-reader/epub-file.service';
 
 @Component({
   selector: 'app-livro',
@@ -43,7 +46,8 @@ export class LivroComponent implements OnInit {
     private livroService: LivroService,
     private alertService: AlertService,
     private amazonService: AmazonService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private epubFileService: EpubFileService
   ) {}
 
   ngOnInit(): void {
@@ -262,4 +266,44 @@ export class LivroComponent implements OnInit {
     const mins = minutos % 60;
     return horas > 0 ? `${horas}h ${mins}min` : `${mins}min`;
   }
+
+  async lerLivro(): Promise<void> {
+    if (!this.livro?.arquivoLeitura) return;
+
+    // 📱 Capacitor
+    if (Capacitor.isNativePlatform()) {
+      try {
+        await FileOpener.openFile({
+          path: this.livro.arquivoLeitura,
+          mimeType: 'application/pdf'
+        });
+      } catch (err) {
+        console.error('Erro ao abrir arquivo:', err);
+        this.alertService.error('Não foi possível abrir o arquivo.');
+      }
+      return;
+    }
+
+    // 🌐 TWA/PWA
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.pdf,.epub,application/pdf,application/epub+zip';
+    input.onchange = (event: any) => {
+      const file = event.target.files?.[0];
+      if (!file) return;
+
+      // 🆕 EPUB → leitor interno
+      if (file.name.toLowerCase().endsWith('.epub')) {
+        this.epubFileService.setArquivo(file, this.livro.id);
+        return;
+      }
+
+      // PDF → viewer do Chrome
+      const blobUrl = URL.createObjectURL(file);
+      window.location.href = blobUrl;
+    };
+    input.click();
+  }
+
+
 }

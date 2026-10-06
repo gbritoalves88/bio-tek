@@ -4,6 +4,7 @@ import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/rou
 import { NotificationBellComponent } from '../../shared/notification-bell/notification-bell.component';
 import { ThemeStatusBarService } from '../../shared/services/theme-status-bar.service';
 import { getAvatarUrl } from '../../shared/utils/avatar-helper';
+import { EpubReaderComponent } from '../../shared/epub-reader/epub-reader.component';
 
 @Component({
   selector: 'app-shell',
@@ -13,7 +14,8 @@ import { getAvatarUrl } from '../../shared/utils/avatar-helper';
     RouterOutlet,
     RouterLink,
     RouterLinkActive,
-    NotificationBellComponent
+    NotificationBellComponent,
+    EpubReaderComponent
   ],
   templateUrl: './shell.component.html',
   styleUrl: './shell.component.scss'

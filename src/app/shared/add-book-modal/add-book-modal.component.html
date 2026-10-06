@@ -231,7 +231,7 @@
         </div>
       </div>
 
-      <div class="upload-capa-simples">
+       <div class="upload-capa-simples">
         <button type="button" class="btn-upload-small" (click)="tirarFoto()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
         </button>
@@ -241,9 +241,18 @@
         <input type="file" #fileInputFallback hidden (change)="onFileSelected($event)" accept="image/*">
       </div>
 
+      <!-- 🆕 Vincular arquivo -->
+      <button type="button" class="btn-vincular-arquivo" (click)="vincularArquivo()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+        </svg>
+        <span *ngIf="!temArquivoVinculado">Vincular arquivo</span>
+        <span *ngIf="temArquivoVinculado" class="arquivo-nome">📄 {{ nomeArquivoVinculado }}</span>
+      </button>
+
       <button class="btn-submit" (click)="adicionarLivroEncontrado()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Adicionar à biblioteca
+        Concluir cadastro
       </button>
     </div>
   </div>
@@ -328,7 +337,7 @@
         <option value="Outro">Outro</option>
       </select>
 
-      <div class="upload-capa-simples">
+        <div class="upload-capa-simples">
         <button type="button" class="btn-upload-small" (click)="tirarFoto()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
         </button>
@@ -339,7 +348,16 @@
       </div>
       <img *ngIf="novoLivro.capa" [src]="novoLivro.capa" class="preview-capa" />
 
-      <button class="btn-submit" (click)="adicionarLivroEncontrado()" [disabled]="!novoLivro.titulo?.trim() || !novoLivro.autor?.trim()">Salvar livro</button>
+      <!-- 🆕 Vincular arquivo -->
+      <button type="button" class="btn-vincular-arquivo" (click)="vincularArquivo()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+        </svg>
+        <span *ngIf="!temArquivoVinculado">Vincular arquivo</span>
+        <span *ngIf="temArquivoVinculado" class="arquivo-nome">📄 {{ nomeArquivoVinculado }}</span>
+      </button>
+
+      <button class="btn-submit" (click)="adicionarLivroEncontrado()" [disabled]="!novoLivro.titulo?.trim() || !novoLivro.autor?.trim()">Concluir cadastro</button>
     </div>
   </div>
 </div>

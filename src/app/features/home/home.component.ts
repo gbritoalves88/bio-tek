@@ -16,6 +16,8 @@ import { PullToRefreshComponent } from '../../shared/pull-to-refresh/pull-to-ref
 import { Capacitor } from '@capacitor/core';
 import { Share } from '@capacitor/share';
 import { Filesystem, Directory } from '@capacitor/filesystem';
+import { FileOpener } from '@capawesome-team/capacitor-file-opener';
+import { EpubFileService } from '../../shared/epub-reader/epub-file.service';
 
 @Component({
   selector: 'app-home',
@@ -60,7 +62,8 @@ export class HomeComponent implements OnInit {
     private analyticsService: AnalyticsService,
     private notificationService: NotificationService,
     private streakService: StreakService,
-    private router: Router
+    private router: Router,
+    private epubFileService: EpubFileService
   ) {}
 
   ngOnInit(): void {
@@ -629,6 +632,81 @@ export class HomeComponent implements OnInit {
     const total = this.parseHHMM(this.duracaoTotalInput);
     if (atual === null || !total || total === 0) return 0;
     return Math.min(100, Math.round((atual / total) * 100));
+  }
+
+  async lerLivro(livro: any, event?: Event): Promise<void> {
+    if (event) event.stopPropagation();
+
+    if (!livro?.arquivoLeitura) return;
+
+    // 📱 Capacitor: abre direto
+    if (Capacitor.isNativePlatform()) {
+      try {
+        await FileOpener.openFile({
+          path: livro.arquivoLeitura,
+          mimeType: 'application/pdf'
+        });
+      } catch (err) {
+        console.error('Erro ao abrir arquivo:', err);
+        this.alertService.error('Não foi possível abrir o arquivo.');
+      }
+      return;
+    }
+
+    // 🌐 TWA/PWA: picker
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.pdf,.epub,application/pdf,application/epub+zip';
+    input.onchange = (event: any) => {
+      const file = event.target.files?.[0];
+      if (!file) return;
+
+      this.abrirArquivo(file, livro.id);
+    };
+    input.click();
+  }
+
+  private abrirArquivo(file: File, livroId: string): void {
+    // 🆕 EPUB → abre o leitor interno
+    if (file.name.toLowerCase().endsWith('.epub')) {
+      this.epubFileService.setArquivo(file, livroId);
+      return;
+    }
+
+    // PDF → abre no viewer do Chrome
+    const blobUrl = URL.createObjectURL(file);
+    window.location.href = blobUrl;
+  }
+
+
+    async lerLivroAtual(): Promise<void> {
+    if (!this.livroAtual?.arquivoLeitura) return;
+
+    // 📱 Capacitor
+    if (Capacitor.isNativePlatform()) {
+      try {
+        await FileOpener.openFile({
+          path: this.livroAtual.arquivoLeitura,
+          mimeType: 'application/pdf'
+        });
+      } catch (err) {
+        console.error('Erro ao abrir arquivo:', err);
+        this.alertService.error('Não foi possível abrir o arquivo.');
+      }
+      return;
+    }
+
+    // 🌐 TWA/PWA
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.pdf,.epub,application/pdf,application/epub+zip';
+    input.onchange = (event: any) => {
+      const file = event.target.files?.[0];
+      if (!file) return;
+
+      this.abrirArquivo(file, this.livroAtual!.id);
+    };
+    input.click();
   }
 
 }
