@@ -12,11 +12,15 @@ import { AnalyticsService } from '../../core/services/analytics.service';
 import { NotificationService } from '../../shared/services/notification.service';
 import { StreakService } from '../../core/services/streak.service';
 import { Router } from '@angular/router';
+import { PullToRefreshComponent } from '../../shared/pull-to-refresh/pull-to-refresh.component';
+import { Capacitor } from '@capacitor/core';
+import { Share } from '@capacitor/share';
+import { Filesystem, Directory } from '@capacitor/filesystem';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, AddBookModalComponent, BottomSheetComponent, FormsModule],
+  imports: [CommonModule, AddBookModalComponent, BottomSheetComponent, FormsModule, PullToRefreshComponent],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss',
   host: { 'ngSkipHydration': 'true' }
@@ -32,12 +36,15 @@ export class HomeComponent implements OnInit {
   lendoAgoraAberto = false;
   paginaAtual: number | null = null;
   totalPaginas: number | null = null;
-  minutoAtual: number | null = null;
-  totalMinutos: number | null = null;
+
+  // 🆕 Audiobook — input em HH:MM (string com máscara)
+  posicaoAtualInput = '';    // "00:39"
+  duracaoTotalInput = '';    // "06:40"
   compartilhando = false;
   previewImagem = '';
   fraseAtividade = '';
   streak: StreakData | null = null;
+  outrosPausados: any[] = [];
 
   citacao = {
     texto: 'Um leitor vive mil vidas antes de morrer. O homem que nunca lê vive apenas uma.',
@@ -58,7 +65,14 @@ export class HomeComponent implements OnInit {
 
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
-      this.homeService.limparCache(); // 🆕 Limpar cache SEMPRE
+      // 🆕 Verifica token antes de qualquer coisa
+      const token = localStorage.getItem('token');
+      if (!token || token === 'undefined' || token === 'null' || token.length < 10) {
+        this.router.navigate(['/']);
+        return;
+      }
+
+      this.homeService.limparCache();
       this.carregarDashboard();
       this.carregarStreak();
       this.verificarNotificacoes();
@@ -75,6 +89,7 @@ export class HomeComponent implements OnInit {
     this.homeService.getDashboard().subscribe({
       next: (data: DashboardData) => {
         this.livroAtual = data.livroAtual || null;
+        this.outrosPausados = data.outrosPausados || [];
         this.listaLeitura = data.listaLeitura || [];
         this.topAvaliados = data.topAvaliados || [];
         this.streak = data.streak || null;
@@ -97,7 +112,7 @@ export class HomeComponent implements OnInit {
       error: (err) => {
         console.error('Erro:', err);
         this.carregando = false;
-        this.alertService.error('Erro ao carregar dados da home');
+        //this.alertService.error('Erro ao carregar dados da home');
       }
     });
   }
@@ -200,15 +215,16 @@ export class HomeComponent implements OnInit {
     const tipo = this.livroAtual?.tipo || 'livro';
 
     if (tipo === 'audiobook') {
-      this.minutoAtual = this.livroAtual?.minutoAtual || null;
-      this.totalMinutos = this.livroAtual?.totalMinutos || null;
+      // 🆕 Preenche HH:MM a partir dos minutos salvos
+      this.posicaoAtualInput = this.formatarHHMM(this.livroAtual?.minutoAtual);
+      this.duracaoTotalInput = this.formatarHHMM(this.livroAtual?.totalMinutos);
       this.paginaAtual = null;
       this.totalPaginas = null;
     } else {
       this.paginaAtual = this.livroAtual?.paginaAtual || null;
       this.totalPaginas = this.livroAtual?.totalPaginas || null;
-      this.minutoAtual = null;
-      this.totalMinutos = null;
+      this.posicaoAtualInput = '';
+      this.duracaoTotalInput = '';
     }
 
     this.cdr.markForCheck();
@@ -222,11 +238,29 @@ export class HomeComponent implements OnInit {
     const dados: any = {};
 
     if (tipo === 'audiobook') {
-      progresso = this.totalMinutos && this.minutoAtual
-        ? Math.round((this.minutoAtual / this.totalMinutos) * 100)
+      const minAtual = this.parseHHMM(this.posicaoAtualInput);
+      const minTotal = this.parseHHMM(this.duracaoTotalInput);
+
+      // 🆕 Validação
+      if (minAtual === null && this.posicaoAtualInput) {
+        this.alertService.warning('Posição atual inválida');
+        return;
+      }
+      if (minTotal === null && this.duracaoTotalInput) {
+        this.alertService.warning('Duração total inválida');
+        return;
+      }
+      if (minAtual !== null && minTotal !== null && minAtual > minTotal) {
+        this.alertService.warning('A posição não pode ser maior que a duração');
+        return;
+      }
+
+      progresso = (minTotal && minAtual)
+        ? Math.round((minAtual / minTotal) * 100)
         : undefined;
-      if (this.minutoAtual) dados.minutoAtual = this.minutoAtual;
-      if (this.totalMinutos) dados.totalMinutos = this.totalMinutos;
+
+      if (minAtual !== null && minAtual > 0) dados.minutoAtual = minAtual;
+      if (minTotal !== null && minTotal > 0) dados.totalMinutos = minTotal;
     } else {
       progresso = this.totalPaginas && this.paginaAtual
         ? Math.round((this.paginaAtual / this.totalPaginas) * 100)
@@ -237,7 +271,6 @@ export class HomeComponent implements OnInit {
 
     if (progresso !== undefined) dados.progresso = progresso;
 
-    // Se tiver frase, incluir
     const temComentario = this.fraseAtividade && this.fraseAtividade.trim();
     if (temComentario) {
       dados.frase = this.fraseAtividade.trim();
@@ -292,30 +325,52 @@ export class HomeComponent implements OnInit {
     this.cdr.markForCheck();
 
     try {
-      const imagemFinal = await this.gerarImagemCompartilhamento();
-      const blob = await fetch(imagemFinal).then(r => r.blob());
-      const file = new File([blob], 'bliteca-leitura.png', { type: 'image/png' });
+      const imagemBase64 = await this.gerarImagemCompartilhamento();
 
-      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({
+      if (Capacitor.isNativePlatform()) {
+        // 📱 Nativo
+        const base64Limpo = imagemBase64.split(',')[1];
+        const filename = `bliteca-${Date.now()}.png`;
+
+        // Salva em cache
+        await Filesystem.writeFile({
+          path: filename,
+          data: base64Limpo,
+          directory: Directory.Cache
+        });
+
+        const fileUri = await Filesystem.getUri({
+          path: filename,
+          directory: Directory.Cache
+        });
+
+        await Share.share({
           title: 'Bliteca',
           text: `📖 Estou lendo "${this.livroAtual.titulo}" no Bliteca!`,
-          files: [file]
-        });
-      } else if (navigator.share) {
-        await navigator.share({
-          title: 'Bliteca',
-          text: `📖 Estou lendo "${this.livroAtual.titulo}" no Bliteca! https://bliteca.com`
+          url: fileUri.uri,
+          dialogTitle: 'Compartilhar leitura'
         });
       } else {
-        const a = document.createElement('a');
-        a.href = imagemFinal;
-        a.download = 'bliteca-leitura.png';
-        a.click();
+        // 🌐 Web
+        const blob = await fetch(imagemBase64).then(r => r.blob());
+        const file = new File([blob], 'bliteca-leitura.png', { type: 'image/png' });
+
+        if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({
+            title: 'Bliteca',
+            text: `📖 Estou lendo "${this.livroAtual.titulo}" no Bliteca!`,
+            files: [file]
+          });
+        } else {
+          const a = document.createElement('a');
+          a.href = imagemBase64;
+          a.download = 'bliteca-leitura.png';
+          a.click();
+        }
       }
     } catch (error: any) {
-      if (error.name !== 'AbortError') {
-        console.error('Erro:', error);
+      if (error?.message !== 'Share canceled' && error?.name !== 'AbortError') {
+        console.error('Erro ao compartilhar:', error);
       }
     } finally {
       this.compartilhando = false;
@@ -393,6 +448,46 @@ export class HomeComponent implements OnInit {
     }
   }
 
+  trocarLivroAtual(livro: any): void {
+    if (!livro?.id) return;
+
+    // 1) Despausa o livro selecionado
+    this.homeService.atualizarProgresso(livro.id, { pausado: false }).subscribe({
+      next: () => {
+        // 2) Limpa cache (Home + Streak se quiser)
+        this.homeService.limparCache();
+
+        // 3) Recarrega o dashboard
+        this.carregarDashboard();
+
+        // 4) Fecha o bottom sheet (o dashboard vai reabrir o estado correto)
+        this.fecharLendoAgora();
+
+        this.alertService.success(`"${livro.titulo}" retomado!`);
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        console.error('Erro ao retomar livro:', err);
+        this.alertService.error('Erro ao retomar livro');
+      }
+    });
+  }
+
+  finalizarLeitura(event?: Event): void {
+    if (event) event.stopPropagation();
+    if (!this.livroAtual) return;
+
+
+    this.homeService.finalizarLeitura(this.livroAtual.id).subscribe({
+      next: () => {
+        this.carregarDashboard();
+        this.alertService.success('🎉 Livro finalizado!');
+        this.analyticsService.logUpdateProgress(100);
+      },
+      error: () => this.alertService.error('Erro ao finalizar leitura')
+    });
+  }
+
 
   async baixarImagemTeste(): Promise<void> {
     if (!this.livroAtual) return;
@@ -414,18 +509,17 @@ export class HomeComponent implements OnInit {
     if (!isPlatformBrowser(this.platformId)) return;
 
     const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
-
     if (!usuario?.id) return;
 
-    // Só solicita se nunca perguntou (default)
+    // 🆕 Verifica se a API existe (Capacitor não tem)
+    if (typeof Notification === 'undefined') {
+      return;
+    }
+
     if (Notification.permission === 'default') {
       this.notificationService.requestPermission(usuario.id)
-        .then(() => {
-          console.log('Permissão solicitada na Home');
-        })
-        .catch((error) => {
-          console.error('Erro ao solicitar permissão:', error);
-        });
+        .then(() => console.log('Permissão solicitada na Home'))
+        .catch((error) => console.error('Erro ao solicitar permissão:', error));
     }
   }
 
@@ -458,6 +552,83 @@ export class HomeComponent implements OnInit {
     this.router.navigate(['/inicio/perfil'], {
       queryParams: { aba: 'progresso' }
     });
+  }
+
+  // ============ HELPERS DE TEMPO (AUDIOBOOK) ============
+
+  /** "06:40" → 400 minutos. Retorna null se inválido. */
+  private parseHHMM(texto: string): number | null {
+    if (!texto) return null;
+    const match = texto.match(/^(\d{1,3}):(\d{2})$/);
+    if (!match) return null;
+    const h = parseInt(match[1], 10);
+    const m = parseInt(match[2], 10);
+    if (m >= 60) return null;
+    return (h * 60) + m;
+  }
+
+  /** 400 minutos → "06:40" */
+  formatarHHMM(minutos: number | null | undefined): string {
+    if (!minutos || minutos < 0) return '00:00';
+    const h = Math.floor(minutos / 60);
+    const m = minutos % 60;
+    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+  }
+
+  /** 361 minutos → "6h 01min" */
+  formatarRestante(minutos: number | null | undefined): string {
+    if (!minutos || minutos <= 0) return '';
+    const h = Math.floor(minutos / 60);
+    const m = minutos % 60;
+    if (h === 0) return `${m}min`;
+    if (m === 0) return `${h}h`;
+    return `${h}h ${String(m).padStart(2, '0')}min`;
+  }
+
+  /** Máscara: usuário digita "1" → "00:01", "13" → "00:13", "130" → "01:30" */
+  formatarEntradaHHMM(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    // Remove tudo que não é dígito
+    let digits = input.value.replace(/\D/g, '');
+
+    // Limita a 5 dígitos (até 999h 59min)
+    if (digits.length > 5) digits = digits.slice(0, 5);
+
+    // Monta HH:MM
+    if (digits.length <= 2) {
+      input.value = digits;
+      return;
+    }
+
+    const minutos = digits.slice(-2);
+    const horas = digits.slice(0, -2);
+
+    // Se minutos > 59, empurra pro lado
+    const m = parseInt(minutos, 10);
+    let hFinal = parseInt(horas, 10);
+    let mFinal = m;
+
+    if (m >= 60) {
+      hFinal += Math.floor(m / 60);
+      mFinal = m % 60;
+    }
+
+    input.value = `${String(hFinal).padStart(2, '0')}:${String(mFinal).padStart(2, '0')}`;
+  }
+
+  // 🆕 Exibição formatada do audiobook no bottom sheet
+  get restanteAudiobook(): string {
+    const atual = this.parseHHMM(this.posicaoAtualInput);
+    const total = this.parseHHMM(this.duracaoTotalInput);
+    if (atual === null || total === null || atual >= total) return '';
+    return this.formatarRestante(total - atual);
+  }
+
+  get progressoAudiobook(): number {
+    const atual = this.parseHHMM(this.posicaoAtualInput);
+    const total = this.parseHHMM(this.duracaoTotalInput);
+    if (atual === null || !total || total === 0) return 0;
+    return Math.min(100, Math.round((atual / total) * 100));
   }
 
 }

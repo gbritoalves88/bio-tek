@@ -1,0 +1,49 @@
+.ptr-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.ptr-spinner {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 0;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  transition: height 0.2s ease;
+  z-index: 10;
+
+  &.visivel {
+    height: 50px;
+  }
+}
+
+.ptr-spinner-icon {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--border-color, #ddd);
+  border-top-color: var(--accent, #db7c00);
+  border-radius: 50%;
+  opacity: 0.5;
+
+  &.girando {
+    opacity: 1;
+    animation: ptr-spin 0.8s linear infinite;
+  }
+}
+
+.ptr-content {
+  transition: padding-top 0.2s ease;
+
+  &.com-spinner {
+    padding-top: 50px;
+  }
+}
+
+@keyframes ptr-spin {
+  to { transform: rotate(360deg); }
+}

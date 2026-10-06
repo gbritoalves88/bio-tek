@@ -7,11 +7,12 @@ import { AddBookModalComponent } from '../../shared/add-book-modal/add-book-moda
 import { AlertService } from '../../shared/services/alert.service';
 import { BottomSheetComponent } from '../../shared/bottom-sheet/bottom-sheet.component';
 import { CatalogoLivro } from './biblioteca.model';
+import { PullToRefreshComponent } from '../../shared/pull-to-refresh/pull-to-refresh.component';
 
 @Component({
   selector: 'app-biblioteca',
   standalone: true,
-  imports: [CommonModule, FormsModule, AddBookModalComponent, BottomSheetComponent],
+  imports: [CommonModule, FormsModule, AddBookModalComponent, BottomSheetComponent, PullToRefreshComponent],
   templateUrl: './biblioteca.component.html',
   styleUrl: './biblioteca.component.scss',
   host: { 'ngSkipHydration': 'true' }
@@ -81,6 +82,7 @@ export class BibliotecaComponent implements OnInit {
 
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
+      this.catalogoService.limparCache();  // 🆕 sempre limpa
       this.carregarTudo();
     }
   }
@@ -461,11 +463,20 @@ export class BibliotecaComponent implements OnInit {
     this.salvandoPreferencias = true;
 
     this.catalogoService.salvarPreferencias(this.generosSelecionados).subscribe({
-      next: () => {
+      next: (result: any) => {
         this.salvandoPreferencias = false;
         this.mostrarModalPreferencias = false;
         this.generosPreferidos = [...this.generosSelecionados];
         this.primeiroAcesso = false;
+
+        // 🆕 Atualiza localStorage com os gêneros
+        const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+        usuario.generosPreferidos = [...this.generosSelecionados];
+        localStorage.setItem('usuario', JSON.stringify(usuario));
+
+        // 🆕 Limpa cache do catálogo (backend + frontend)
+        this.catalogoService.limparCache();
+
         this.alertService.success('Preferências salvas!');
         this.cdr.markForCheck();
       },
@@ -477,8 +488,15 @@ export class BibliotecaComponent implements OnInit {
     });
   }
 
+
   pularPreferencias(): void {
     this.mostrarModalPreferencias = false;
+
+    // 🆕 Marca no localStorage que já pulou
+    const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+    usuario.pulouPreferencias = true;
+    localStorage.setItem('usuario', JSON.stringify(usuario));
+
     this.cdr.markForCheck();
   }
 }

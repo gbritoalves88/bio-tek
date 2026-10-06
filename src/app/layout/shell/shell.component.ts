@@ -1,7 +1,9 @@
 import { Component, Inject, OnInit, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/router';
-import { NotificationBellComponent } from '../../shared/notification-bell/notification-bell.component'; // ⬅️ Adicionar
+import { NotificationBellComponent } from '../../shared/notification-bell/notification-bell.component';
+import { ThemeStatusBarService } from '../../shared/services/theme-status-bar.service';
+import { getAvatarUrl } from '../../shared/utils/avatar-helper';
 
 @Component({
   selector: 'app-shell',
@@ -11,7 +13,7 @@ import { NotificationBellComponent } from '../../shared/notification-bell/notifi
     RouterOutlet,
     RouterLink,
     RouterLinkActive,
-    NotificationBellComponent  // ⬅️ Adicionar
+    NotificationBellComponent
   ],
   templateUrl: './shell.component.html',
   styleUrl: './shell.component.scss'
@@ -23,9 +25,15 @@ export class ShellComponent implements OnInit {
   isAdmin = false;
   adminExpandido = false;
 
+  // 🆕 Avatar + menu
+  avatarUrl = '';
+  nomeUsuario = '';
+  menuAvatarAberto = false;
+
   constructor(
     @Inject(PLATFORM_ID) private platformId: Object,
-    private router: Router
+    private router: Router,
+    private themeStatusBar: ThemeStatusBarService
   ) {}
 
   ngOnInit() {
@@ -33,9 +41,13 @@ export class ShellComponent implements OnInit {
     this.isAdmin = usuario?.adm === true;
 
     if (isPlatformBrowser(this.platformId)) {
-      const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+      const usuarioStorage = JSON.parse(localStorage.getItem('usuario') || '{}');
 
-      this.isDarkMode = usuario.tema !== 2;
+      this.isDarkMode = usuarioStorage.tema !== 2;
+
+      // 🆕 Avatar + nome
+      this.avatarUrl = getAvatarUrl(usuarioStorage);
+      this.nomeUsuario = usuarioStorage?.nome || 'Usuário';
 
       if (this.isDarkMode) {
         document.body.classList.add('dark-theme');
@@ -44,12 +56,65 @@ export class ShellComponent implements OnInit {
         document.body.classList.add('light-theme');
         document.body.classList.remove('dark-theme');
       }
+
+      this.themeStatusBar.aplicarTema(this.isDarkMode ? 1 : 2);
     }
-
-
   }
 
-  toggleTheme() {
+  // 🆕 Toggle do menu do avatar
+  toggleMenuAvatar(event: Event): void {
+    event.stopPropagation();
+    this.menuAvatarAberto = !this.menuAvatarAberto;
+  }
+
+  fecharMenuAvatar(): void {
+    this.menuAvatarAberto = false;
+  }
+
+  // 🆕 Ações do menu
+  abrirEdicaoPerfil(): void {
+    this.menuAvatarAberto = false;
+    this.router.navigate(['/inicio/perfil'], { queryParams: { editar: 'true' } });
+  }
+
+  abrirContato(): void {
+    this.menuAvatarAberto = false;
+    window.location.href = 'mailto:g.britoalves888@gmail.com?subject=Bliteca%20-%20Contato';
+  }
+
+  avaliarApp(): void {
+    this.menuAvatarAberto = false;
+    const appId = 'com.bliteca.app';
+    window.open(`https://play.google.com/store/apps/details?id=${appId}&review=true`, '_blank');
+  }
+
+  compartilharApp(): void {
+    this.menuAvatarAberto = false;
+    const playStoreUrl = 'https://play.google.com/store/apps/details?id=com.bliteca.app';
+    const texto = '📚 Bliteca - Organize suas leituras, avalie livros e conecte-se com outros leitores!';
+
+    if (navigator.share) {
+      navigator.share({ title: 'Bliteca', text: texto, url: playStoreUrl })
+        .catch(() => this.copiarLink(playStoreUrl));
+    } else {
+      this.copiarLink(playStoreUrl);
+    }
+  }
+
+  private copiarLink(texto: string): void {
+    navigator.clipboard.writeText(texto)
+      .then(() => alert('Link copiado!'))
+      .catch(() => alert('Compartilhe: ' + texto));
+  }
+
+  confirmarExcluirConta(): void {
+    this.menuAvatarAberto = false;
+    // Por enquanto, navega pro Perfil (onde a lógica de modal já existe)
+    this.router.navigate(['/inicio/perfil']);
+  }
+
+  // 🆕 Toggle de tema (trazido de volta)
+  toggleTheme(): void {
     if (!isPlatformBrowser(this.platformId)) return;
 
     this.isDarkMode = !this.isDarkMode;
@@ -62,10 +127,11 @@ export class ShellComponent implements OnInit {
       document.body.classList.remove('dark-theme');
     }
 
-    // Salvar apenas no localStorage
     const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
     usuario.tema = this.isDarkMode ? 1 : 2;
     localStorage.setItem('usuario', JSON.stringify(usuario));
+
+    this.themeStatusBar.aplicarTema(this.isDarkMode ? 1 : 2);
   }
 
   toggleMenu() {
@@ -78,9 +144,8 @@ export class ShellComponent implements OnInit {
 
   sair() {
     localStorage.removeItem('token');
-    localStorage.removeItem('refreshToken'); // ✅ ADICIONAR
+    localStorage.removeItem('refreshToken');
     localStorage.removeItem('usuario');
     this.router.navigate(['/']);
   }
-
 }

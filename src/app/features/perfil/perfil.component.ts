@@ -9,12 +9,14 @@ import { BottomSheetComponent } from '../../shared/bottom-sheet/bottom-sheet.com
 import { AlertService } from '../../shared/services/alert.service';
 import { AddBookModalComponent } from '../../shared/add-book-modal/add-book-modal.component';
 import { StreakService } from '../../core/services/streak.service';
+import { PullToRefreshComponent } from '../../shared/pull-to-refresh/pull-to-refresh.component';
+import { getAvatarUrl, getAvatarPadrao } from '../../shared/utils/avatar-helper';
 
 
 @Component({
   selector: 'app-perfil',
   standalone: true,
-  imports: [CommonModule, FormsModule, BottomSheetComponent,  AddBookModalComponent],
+  imports: [CommonModule, FormsModule, BottomSheetComponent,  AddBookModalComponent, PullToRefreshComponent],
   templateUrl: './perfil.component.html',
   styleUrl: './perfil.component.scss',
   host: { 'ngSkipHydration': 'true' }
@@ -154,6 +156,20 @@ export class PerfilComponent implements OnInit {
           }
         });
       });
+    }
+  }
+
+  recarregar(): void {
+    if (this.modoVisualizacao && this.usuarioIdVisualizado) {
+      this.carregarPerfilVisualizacao(this.usuarioIdVisualizado);
+    } else {
+      this.carregarMeuPerfil(false);
+
+      if (this.abaAtiva === 'progresso') {
+        this.carregarProgresso();
+      } else if (this.abaAtiva === 'atividades') {
+        this.carregarAtividades();
+      }
     }
   }
 
@@ -348,6 +364,11 @@ export class PerfilComponent implements OnInit {
     if (!this.usuarioEdit || !this.usuario) return;
 
     const eraPrimeiroAcesso = this.nicknameEditavel;
+
+    // 🆕 Se o usuário não escolheu avatar, usa o aleatório
+    if (!this.usuarioEdit.avatar) {
+      this.usuarioEdit.avatar = getAvatarPadrao(this.usuario.id);
+    }
 
     const dados: Partial<Usuario> = {
       nome: this.usuarioEdit.nome,
@@ -1041,6 +1062,10 @@ validarAno(): void {
     if (this.usuarioEdit.nome?.trim() && this.usuarioEdit.nickname?.trim()) {
       this.salvarPerfil();
     }
+  }
+
+  getAvatar(usuario: any): string {
+    return getAvatarUrl(usuario);
   }
 
 }
