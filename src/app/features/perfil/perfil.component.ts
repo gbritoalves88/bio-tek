@@ -11,6 +11,8 @@ import { AddBookModalComponent } from '../../shared/add-book-modal/add-book-moda
 import { StreakService } from '../../core/services/streak.service';
 import { PullToRefreshComponent } from '../../shared/pull-to-refresh/pull-to-refresh.component';
 import { getAvatarUrl, getAvatarPadrao } from '../../shared/utils/avatar-helper';
+import { Capacitor } from '@capacitor/core';
+import { FilePicker } from '@capawesome/capacitor-file-picker';
 
 
 @Component({
@@ -481,7 +483,8 @@ export class PerfilComponent implements OnInit {
       generos: livro.generos || [],
       anoPublicacao: livro.anoPublicacao || null,
       editora: livro.editora || null,
-      idioma: livro.idioma || null
+      idioma: livro.idioma || null,
+      arquivoLeitura: livro.arquivoLeitura || null
     };
     this.edicaoCapaPreview = livro.imagem || null;
     this.modalEdicaoLivroAberto = true;
@@ -579,7 +582,8 @@ validarAno(): void {
       anoPublicacao: this.livroEditando.anoPublicacao ?
       parseInt(this.livroEditando.anoPublicacao.toString()) : null,
       editora: this.livroEditando.editora || null,
-      idioma: this.livroEditando.idioma || null
+      idioma: this.livroEditando.idioma || null,
+      arquivoLeitura: this.livroEditando.arquivoLeitura || null
     };
     if (this.livroEditando.status === 3 && this.livroEditando.estrelas) dados.estrelas = this.livroEditando.estrelas;
 
@@ -1068,4 +1072,72 @@ validarAno(): void {
     return getAvatarUrl(usuario);
   }
 
+
+  // 🆕 Vincular arquivo na edição do livro
+  async vincularArquivoEdicao(): Promise<void> {
+    if (!this.livroEditando) return;
+
+    // 🌐 TWA/PWA: usa input file
+    if (!Capacitor.isNativePlatform()) {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.pdf,.epub,application/pdf,application/epub+zip';
+      input.onchange = (event: any) => {
+        const file = event.target.files?.[0];
+        if (!file || !this.livroEditando) return;
+
+        const nome = file.name;
+        const tamanho = file.size;
+        const modificado = file.lastModified;
+
+        this.livroEditando.arquivoLeitura = `pwa://${nome}|${tamanho}|${modificado}`;
+
+        this.alertService.success(`Arquivo vinculado: ${nome}`);
+        this.cdr.markForCheck();
+      };
+      input.click();
+      return;
+    }
+
+    // 📱 Capacitor: FilePicker
+    try {
+      const result = await FilePicker.pickFiles({
+        types: ['application/pdf', 'application/epub+zip'],
+        readData: false
+      });
+
+      if (!result.files || result.files.length === 0) return;
+
+      const file = result.files[0];
+      const uri = file.path || '';
+
+      if (!uri) {
+        this.alertService.error('Não foi possível obter o caminho do arquivo.');
+        return;
+      }
+
+      this.livroEditando.arquivoLeitura = uri;
+      this.alertService.success(`Arquivo vinculado: ${file.name}`);
+      this.cdr.markForCheck();
+
+    } catch (error: any) {
+      if (error?.message?.includes('cancel')) return;
+      console.error('Erro ao vincular arquivo:', error);
+      this.alertService.error('Erro ao selecionar arquivo.');
+    }
+  }
+
+  // 🆕 Extrai o nome do arquivo (funciona com pwa:// e content://)
+  getNomeArquivoEdicao(uri: string | null | undefined): string {
+    if (!uri) return '';
+
+    if (uri.startsWith('pwa://')) {
+      const semPrefixo = uri.replace('pwa://', '');
+      const partes = semPrefixo.split('|');
+      return decodeURIComponent(partes[0] || '');
+    }
+
+    const partes = uri.split('/');
+    return decodeURIComponent(partes[partes.length - 1] || '');
+  }
 }

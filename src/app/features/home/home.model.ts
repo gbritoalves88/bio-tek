@@ -19,6 +19,7 @@ export interface Livro {
   anoPublicacao?: number;
   editora?: string;
   idioma?: string;
+  arquivoLeitura?: string | null;  // 🆕
 }
 
 export interface LivroLeitura {
@@ -38,6 +39,7 @@ export interface LivroLeitura {
   anoPublicacao?: number;
   editora?: string;
   idioma?: string;
+  arquivoLeitura?: string | null;  // 🆕
 }
 
 export interface LivroTop {
@@ -57,6 +59,7 @@ export interface LivroTop {
   anoPublicacao?: number;
   editora?: string;
   idioma?: string;
+  arquivoLeitura?: string | null;  // 🆕
 }
 
 export interface DashboardData {

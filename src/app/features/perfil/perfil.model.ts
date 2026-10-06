@@ -35,6 +35,7 @@ export interface LivroDoUsuario {
   anoPublicacao?: number | null;
   editora?: string | null;
   idioma?: string | null;
+  arquivoLeitura?: string | null;
   avaliacao?: Avaliacao | null;
   comentarios?: Comentario[];
 }

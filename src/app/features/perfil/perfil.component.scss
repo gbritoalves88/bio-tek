@@ -218,6 +218,58 @@
   .stat-label { font-size: 10px; color: var(--text-secondary); }
 }
 
+// ===== VINCULAR ARQUIVO (edição) =====
+.btn-vincular-arquivo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px dashed var(--border-color);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: 12px;
+
+  svg {
+    width: 16px;
+    height: 16px;
+    stroke: currentColor;
+    flex-shrink: 0;
+  }
+
+  &:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(219, 124, 0, 0.05);
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+
+  &:has(.arquivo-nome) {
+    border-style: solid;
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(219, 124, 0, 0.08);
+  }
+
+  .arquivo-nome {
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+  }
+}
+
 // ===== BIBLIOTECA =====
 .perfil:has(.titulo-estante) {
   padding-top: 12px;  // reduz o padding do container pai

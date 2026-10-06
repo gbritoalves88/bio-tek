@@ -13,7 +13,7 @@ import { BookScannerComponent } from '../book-scanner/book-scanner.component';
 import { BookInfo } from '../book-scanner/book-scanner.model';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { Capacitor } from '@capacitor/core';
-
+import { FilePicker } from '@capawesome/capacitor-file-picker';
 
 @Component({
   selector: 'app-add-book-modal',
@@ -50,6 +50,7 @@ export class AddBookModalComponent {
     generos: [] as string[],
     avaliacaoMedia: null as number | null,
     idioma: '',
+    arquivoLeitura: '' as string | null,
     tipo: 'livro',  // Padrão
     status: 1       // Padrão: Quero ler
   };
@@ -85,6 +86,7 @@ export class AddBookModalComponent {
       titulo: '', autor: '', descricao: '', codigoBarras: '', capa: '',
       editora: '', anoPublicacao: null, numeroPaginas: null, generos: [], avaliacaoMedia: null,
       idioma: '',
+      arquivoLeitura: null,
       tipo: 'livro',
       status: 1
     };
@@ -233,6 +235,7 @@ export class AddBookModalComponent {
         parseInt(this.novoLivro.anoPublicacao.toString()) : null,
       editora: this.novoLivro.editora || null,
       idioma: this.novoLivro.idioma || null,
+      arquivoLeitura: this.novoLivro.arquivoLeitura || null,
       tipo: this.novoLivro.tipo || 'livro',
       status: this.novoLivro.status || 1
     }).subscribe({
@@ -438,5 +441,79 @@ export class AddBookModalComponent {
         this.cdr.markForCheck();
       }
     });
+  }
+
+  async vincularArquivo(): Promise<void> {
+    // 🌐 TWA/PWA: usa input file
+    if (!Capacitor.isNativePlatform()) {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.pdf,.epub,application/pdf,application/epub+zip';
+      input.onchange = (event: any) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        // 🆕 Impressão digital: nome + tamanho + data
+        // Formato: "pwa://nome.pdf|1234567|1696880000000"
+        const nome = file.name;
+        const tamanho = file.size;
+        const modificado = file.lastModified;
+
+        this.novoLivro.arquivoLeitura = `pwa://${nome}|${tamanho}|${modificado}`;
+
+        this.alertService.success(`Arquivo vinculado: ${nome}`);
+        this.cdr.markForCheck();
+      };
+      input.click();
+      return;
+    }
+
+    // 📱 Capacitor (Android nativo): FilePicker com URI persistente
+    try {
+      const result = await FilePicker.pickFiles({
+        types: ['application/pdf', 'application/epub+zip'],
+        readData: false
+      });
+
+      if (!result.files || result.files.length === 0) return;
+
+      const file = result.files[0];
+      const uri = file.path || '';
+
+      if (!uri) {
+        this.alertService.error('Não foi possível obter o caminho do arquivo.');
+        return;
+      }
+
+      this.novoLivro.arquivoLeitura = uri;
+      this.alertService.success(`Arquivo vinculado: ${file.name}`);
+      this.cdr.markForCheck();
+
+    } catch (error: any) {
+      if (error?.message?.includes('cancel')) return;
+      console.error('Erro ao vincular arquivo:', error);
+      this.alertService.error('Erro ao selecionar arquivo.');
+    }
+  }
+
+
+  get temArquivoVinculado(): boolean {
+    return !!this.novoLivro.arquivoLeitura;
+  }
+
+  get nomeArquivoVinculado(): string {
+    const uri = this.novoLivro.arquivoLeitura;
+    if (!uri) return '';
+
+    // 🆕 Formato TWA: "pwa://nome.pdf|123|456"
+    if (uri.startsWith('pwa://')) {
+      const semPrefixo = uri.replace('pwa://', '');
+      const partes = semPrefixo.split('|');
+      return decodeURIComponent(partes[0] || '');
+    }
+
+    // 🆕 Formato Capacitor: "content://..." ou caminho normal
+    const partes = uri.split('/');
+    return decodeURIComponent(partes[partes.length - 1] || '');
   }
 }
