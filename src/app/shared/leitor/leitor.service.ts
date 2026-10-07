@@ -4,12 +4,10 @@ import { BehaviorSubject } from 'rxjs';
 @Injectable({
   providedIn: 'root'
 })
-export class EpubFileService {
-  // 🆕 Guarda o File do EPUB que o usuário escolheu
+export class LeitorService {
   private arquivoSubject = new BehaviorSubject<File | null>(null);
   public arquivo$ = this.arquivoSubject.asObservable();
 
-  // 🆕 Guarda o ID do livro que está sendo lido
   private livroIdSubject = new BehaviorSubject<string>('');
   public livroId$ = this.livroIdSubject.asObservable();
 

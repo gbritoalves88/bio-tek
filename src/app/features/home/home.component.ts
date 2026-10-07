@@ -17,7 +17,7 @@ import { Capacitor } from '@capacitor/core';
 import { Share } from '@capacitor/share';
 import { Filesystem, Directory } from '@capacitor/filesystem';
 import { FileOpener } from '@capawesome-team/capacitor-file-opener';
-import { EpubFileService } from '../../shared/epub-reader/epub-file.service';
+import { LeitorService } from '../../shared/leitor/leitor.service';
 
 @Component({
   selector: 'app-home',
@@ -46,7 +46,7 @@ export class HomeComponent implements OnInit {
   previewImagem = '';
   fraseAtividade = '';
   streak: StreakData | null = null;
-  outrosPausados: any[] = [];
+  outrosEmAndamento: any[] = [];
 
   citacao = {
     texto: 'Um leitor vive mil vidas antes de morrer. O homem que nunca lê vive apenas uma.',
@@ -63,7 +63,7 @@ export class HomeComponent implements OnInit {
     private notificationService: NotificationService,
     private streakService: StreakService,
     private router: Router,
-    private epubFileService: EpubFileService
+    private leitorService: LeitorService
   ) {}
 
   ngOnInit(): void {
@@ -92,7 +92,7 @@ export class HomeComponent implements OnInit {
     this.homeService.getDashboard().subscribe({
       next: (data: DashboardData) => {
         this.livroAtual = data.livroAtual || null;
-        this.outrosPausados = data.outrosPausados || [];
+        this.outrosEmAndamento = data.outrosEmAndamento || [];
         this.listaLeitura = data.listaLeitura || [];
         this.topAvaliados = data.topAvaliados || [];
         this.streak = data.streak || null;
@@ -634,6 +634,36 @@ export class HomeComponent implements OnInit {
     return Math.min(100, Math.round((atual / total) * 100));
   }
 
+  async lerLivroAtual(): Promise<void> {
+    if (!this.livroAtual?.arquivoLeitura) return;
+
+    // 📱 Capacitor: abre direto
+    if (Capacitor.isNativePlatform()) {
+      try {
+        await FileOpener.openFile({
+          path: this.livroAtual.arquivoLeitura,
+          mimeType: 'application/pdf'
+        });
+      } catch (err) {
+        console.error('Erro ao abrir arquivo:', err);
+        this.alertService.error('Não foi possível abrir o arquivo.');
+      }
+      return;
+    }
+
+    // 🌐 TWA/PWA: picker + modal
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.pdf,.epub,application/pdf,application/epub+zip';
+    input.onchange = (event: any) => {
+      const file = event.target.files?.[0];
+      if (!file) return;
+
+      this.abrirArquivo(file, this.livroAtual!.id);
+    };
+    input.click();
+  }
+
   async lerLivro(livro: any, event?: Event): Promise<void> {
     if (event) event.stopPropagation();
 
@@ -667,46 +697,7 @@ export class HomeComponent implements OnInit {
   }
 
   private abrirArquivo(file: File, livroId: string): void {
-    // 🆕 EPUB → abre o leitor interno
-    if (file.name.toLowerCase().endsWith('.epub')) {
-      this.epubFileService.setArquivo(file, livroId);
-      return;
-    }
-
-    // PDF → abre no viewer do Chrome
-    const blobUrl = URL.createObjectURL(file);
-    window.location.href = blobUrl;
+    // 🆕 PDF e EPUB → abrem no modal
+    this.leitorService.setArquivo(file, livroId);
   }
-
-
-    async lerLivroAtual(): Promise<void> {
-    if (!this.livroAtual?.arquivoLeitura) return;
-
-    // 📱 Capacitor
-    if (Capacitor.isNativePlatform()) {
-      try {
-        await FileOpener.openFile({
-          path: this.livroAtual.arquivoLeitura,
-          mimeType: 'application/pdf'
-        });
-      } catch (err) {
-        console.error('Erro ao abrir arquivo:', err);
-        this.alertService.error('Não foi possível abrir o arquivo.');
-      }
-      return;
-    }
-
-    // 🌐 TWA/PWA
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.pdf,.epub,application/pdf,application/epub+zip';
-    input.onchange = (event: any) => {
-      const file = event.target.files?.[0];
-      if (!file) return;
-
-      this.abrirArquivo(file, this.livroAtual!.id);
-    };
-    input.click();
-  }
-
 }

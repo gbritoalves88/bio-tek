@@ -9,7 +9,7 @@ import { LivroDetalhesInterno } from './livro.model';
 import { AmazonService } from '../services/amazon.service';
 import { Capacitor } from '@capacitor/core';
 import { FileOpener } from '@capawesome-team/capacitor-file-opener';
-import { EpubFileService } from '../epub-reader/epub-file.service';
+import { LeitorService } from '../leitor/leitor.service';
 
 @Component({
   selector: 'app-livro',
@@ -47,7 +47,7 @@ export class LivroComponent implements OnInit {
     private alertService: AlertService,
     private amazonService: AmazonService,
     private cdr: ChangeDetectorRef,
-    private epubFileService: EpubFileService
+    private leitorService: LeitorService
   ) {}
 
   ngOnInit(): void {
@@ -284,7 +284,7 @@ export class LivroComponent implements OnInit {
       return;
     }
 
-    // 🌐 TWA/PWA
+    // 🌐 TWA/PWA: picker → modal
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = '.pdf,.epub,application/pdf,application/epub+zip';
@@ -292,15 +292,8 @@ export class LivroComponent implements OnInit {
       const file = event.target.files?.[0];
       if (!file) return;
 
-      // 🆕 EPUB → leitor interno
-      if (file.name.toLowerCase().endsWith('.epub')) {
-        this.epubFileService.setArquivo(file, this.livro.id);
-        return;
-      }
-
-      // PDF → viewer do Chrome
-      const blobUrl = URL.createObjectURL(file);
-      window.location.href = blobUrl;
+      // 🆕 PDF e EPUB → abrem no modal
+      this.leitorService.setArquivo(file, this.livro.id);
     };
     input.click();
   }
