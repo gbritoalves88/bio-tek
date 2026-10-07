@@ -1,0 +1,234 @@
+.loading-atividades {
+  display: flex;
+  justify-content: center;
+  padding: 40px;
+
+  .spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid var(--border-color);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+}
+
+// ===== CONTAINER GERAL =====
+.progresso-geral {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+// ===== STREAK =====
+.progresso-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  animation: fadeInUp 0.4s ease both;
+
+  h4 {
+    font-size: 14px;
+    font-weight: 600;
+    margin: 0;
+    color: var(--text-primary);
+    text-align: center;
+  }
+}
+
+.streak-cards {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+}
+
+.streak-destaque {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 20px;
+  background: var(--bg-primary);
+  border-radius: 16px;
+  text-align: center;
+
+  .streak-numero {
+    font-size: 40px;
+    font-weight: 700;
+    color: var(--accent);
+    line-height: 1;
+  }
+
+  .streak-label {
+    font-size: 12px;
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+}
+
+.streak-melhor {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 20px;
+  background: rgba(255, 193, 7, 0.1);
+  border: 1px solid rgba(255, 193, 7, 0.3);
+  border-radius: 16px;
+  text-align: center;
+
+  .melhor-numero {
+    font-size: 40px;
+    font-weight: 700;
+    color: #ffc107;
+    line-height: 1;
+  }
+
+  .melhor-label {
+    font-size: 12px;
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+}
+
+.calendario {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  width: 100%;
+  padding: 12px 0;
+}
+
+.calendario-dia {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  padding: 10px 4px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  transition: all 0.2s ease;
+
+  .dia-nome {
+    font-size: 10px;
+    color: var(--text-secondary);
+    font-weight: 500;
+    text-transform: uppercase;
+  }
+
+  .dia-check {
+    font-size: 16px;
+    color: var(--text-secondary);
+    font-weight: 600;
+  }
+
+  &.ativo {
+    background: rgba(255, 193, 7, 0.1);
+    border-color: #ffc107;
+
+    .dia-nome { color: #ffc107; }
+    .dia-check { color: #ffc107; }
+  }
+}
+
+// ===== MÉTRICAS =====
+.metricas-mes {
+  width: 100%;
+  padding: 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  box-sizing: border-box;
+
+  h4 {
+    font-size: 12px;
+    font-weight: 600;
+    margin: 0 0 8px;
+    color: var(--text-primary);
+    text-align: center;
+  }
+}
+
+.metricas-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+  gap: 4px;
+  width: 100%;
+}
+
+.metrica-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  padding: 8px 2px;
+  background: var(--bg-primary);
+  border-radius: 8px;
+  text-align: center;
+  box-sizing: border-box;
+
+  .metrica-icon { font-size: 14px; }
+
+  strong {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--accent);
+    line-height: 1;
+  }
+
+  span {
+    font-size: 8px;
+    color: var(--text-secondary);
+    white-space: nowrap;
+  }
+}
+
+.empty {
+  text-align: center;
+  color: var(--text-secondary);
+  padding: 20px;
+  font-size: 12px;
+
+  p { margin: 0 0 4px; }
+  small { opacity: 0.7; }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+// ===== RESPONSIVO =====
+@media (max-width: 480px) {
+  .calendario {
+    gap: 4px;
+  }
+
+  .calendario-dia {
+    padding: 8px 2px;
+
+    .dia-nome { font-size: 9px; }
+    .dia-check { font-size: 14px; }
+  }
+
+  .streak-numero,
+  .melhor-numero {
+    font-size: 32px !important;
+  }
+}

@@ -1,0 +1,45 @@
+<!-- Loading -->
+<div class="loading-atividades" *ngIf="carregando">
+  <div class="spinner"></div>
+</div>
+
+<!-- Lista de atividades -->
+<div class="atividades-lista" *ngIf="!carregando">
+  <div class="atividade-item" *ngFor="let atividade of atividades">
+    <img [src]="atividade.livro?.imagem || 'assets/capas/perfilSemFoto.png'"
+         [alt]="atividade.livro?.titulo || 'Livro'"
+         class="atividade-capa"
+         loading="lazy"
+         decoding="async" />
+
+    <div class="atividade-info">
+      <strong class="atividade-titulo">{{ atividade.livro?.titulo || 'Livro' }}</strong>
+
+      <!-- PAUSA/RETOMADA -->
+      <div class="atividade-progresso" *ngIf="atividade.origem === 'Pausa' || atividade.origem === 'Retomada'">
+        <span class="progresso-texto">
+          {{ atividade.origem === 'Pausa' ? '⏸️ ' : '▶️ ' }}{{ atividade.comentario }}
+        </span>
+      </div>
+
+      <!-- ATIVIDADE NORMAL (frase ou marco) -->
+      <div class="atividade-progresso" *ngIf="atividade.origem === 'Atividade'">
+        <div class="barra-progresso" *ngIf="atividade.progresso">
+          <div class="barra-preenchida" [style.width.%]="atividade.progresso"></div>
+        </div>
+        <span class="progresso-texto" *ngIf="atividade.progresso">{{ atividade.progresso }}%</span>
+      </div>
+
+      <p class="atividade-frase" *ngIf="atividade.comentario">
+        "{{ atividade.comentario }}"
+      </p>
+
+      <span class="atividade-data">{{ atividade.dataCriacao | date:'dd/MM/yyyy HH:mm' }}</span>
+    </div>
+  </div>
+
+  <div class="empty" *ngIf="atividades.length === 0">
+    <p>Nenhuma atividade ainda.</p>
+    <small>Atualize seu progresso de leitura com uma frase!</small>
+  </div>
+</div>
