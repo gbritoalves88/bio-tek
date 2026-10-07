@@ -66,84 +66,322 @@
 </div>
 
 <!-- Modal de Termos de Uso -->
-<div class="termos-modal-overlay" *ngIf="mostrarTermos" (click)="fecharModalTermos()">
-  <div class="termos-modal-content" (click)="$event.stopPropagation()">
+<div
+  class="termos-modal-overlay"
+  *ngIf="mostrarTermos"
+  (click)="fecharModalTermos()"
+>
+  <div
+    class="termos-modal-content"
+    (click)="$event.stopPropagation()"
+  >
+
     <div class="termos-modal-header">
       <h2>Termos de Uso</h2>
-      <button class="termos-modal-close" (click)="fecharModalTermos()">✕</button>
+
+      <button
+        class="termos-modal-close"
+        (click)="fecharModalTermos()"
+      >
+        ✕
+      </button>
     </div>
+
     <div class="termos-modal-body">
-      <p class="termos-data">Última atualização: 2026</p>
+
+      <p class="termos-data">
+        Última atualização: Outubro de 2026
+      </p>
 
       <h3>1. Sobre o BliTeca</h3>
-      <p>O BliTeca é uma plataforma voltada para organização de leituras, avaliações de livros e interação entre leitores através de comentários, atividades e recursos sociais.</p>
+
+      <p>
+        O BliTeca é uma plataforma voltada para organização de leituras,
+        avaliações de livros e interação entre leitores através de
+        comentários, atividades e recursos sociais.
+      </p>
 
       <h3>2. Conta do Usuário</h3>
-      <p>O usuário é responsável pelas informações fornecidas em sua conta e pela segurança de seu acesso. O login poderá ser realizado através de provedores externos, como Google.</p>
+
+      <p>
+        O usuário é responsável pelas informações fornecidas em sua conta
+        e pela segurança de seu acesso. O login poderá ser realizado
+        através de provedores externos, como o Google.
+      </p>
 
       <h3>3. Conteúdo Publicado</h3>
-      <p>Ao utilizar a plataforma, você concorda em não publicar conteúdo ofensivo, discriminatório ou ilegal. Comentários com discurso de ódio serão removidos.</p>
+
+      <p>
+        Ao utilizar a plataforma, você concorda em não publicar conteúdo
+        ofensivo, discriminatório, ilegal ou que viole direitos de terceiros.
+      </p>
+
+      <p>
+        Comentários e avaliações podem ser visualizados por outros usuários
+        de acordo com as funcionalidades da plataforma.
+      </p>
 
       <h3>4. Direitos Autorais</h3>
-      <p>As capas, títulos e informações dos livros exibidos no BliTeca são obtidos através de APIs públicas. Todos os direitos relacionados às obras pertencem aos seus respectivos detentores.</p>
 
-      <h3>5. Política de Dados e Privacidade</h3>
-      <p>O BliTeca coleta apenas os dados necessários para funcionamento da plataforma. Seus dados não são vendidos ou compartilhados para fins comerciais.</p>
+      <p>
+        As informações e imagens relacionadas aos livros exibidos no
+        BliTeca podem ser obtidas através de serviços e APIs de terceiros.
+        Os direitos sobre as respectivas obras pertencem aos seus
+        titulares, quando aplicável.
+      </p>
 
-      <h3>6. Exclusão de Conta</h3>
-      <p>O usuário poderá solicitar a exclusão de sua conta através das configurações da plataforma.</p>
+      <h3>5. Arquivos de Leitura</h3>
 
-      <h3>7. Disponibilidade do Serviço</h3>
-      <p>O BliTeca é fornecido "como está", sem garantias de funcionamento ininterrupto. A plataforma poderá passar por manutenções ou instabilidades ocasionais.</p>
+      <p>
+        O BliTeca permite que o usuário vincule arquivos de leitura,
+        como PDF e EPUB, armazenados em seu próprio dispositivo,
+        aos livros cadastrados na plataforma.
+      </p>
 
-      <h3>8. Limitação de Responsabilidade</h3>
-      <p>O BliTeca não se responsabiliza por conteúdo publicado por usuários, perda de dados causada por terceiros ou instabilidades de serviços externos.</p>
+      <p>
+        O usuário é responsável por possuir ou ter autorização para
+        utilizar os arquivos selecionados.
+      </p>
 
-      <h3>9. Menores de Idade</h3>
-      <p>Usuários menores de 18 anos devem utilizar a plataforma com supervisão de um responsável legal.</p>
+      <p>
+        O BliTeca não fornece, disponibiliza, comercializa ou distribui
+        livros ou arquivos protegidos por direitos autorais.
+      </p>
 
-      <h3>10. Alterações nos Termos</h3>
-      <p>Os presentes termos poderão ser atualizados periodicamente. O uso contínuo da plataforma após alterações implica concordância com os novos termos.</p>
+      <p>
+        Os arquivos selecionados permanecem armazenados no dispositivo
+        do usuário e são utilizados para disponibilizar a funcionalidade
+        de leitura e, quando aplicável, registrar o progresso da leitura.
+      </p>
+
+      <p>
+        O BliTeca não disponibiliza esses arquivos para outros usuários
+        da plataforma.
+      </p>
+
+      <h3>6. Política de Dados e Privacidade</h3>
+
+      <p>
+        O BliTeca coleta e utiliza dados necessários para o funcionamento
+        da plataforma, conforme descrito em sua Política de Privacidade.
+      </p>
+
+      <h3>7. Exclusão de Conta</h3>
+
+      <p>
+        O usuário poderá solicitar a exclusão de sua conta e dos dados
+        associados ao BliTeca através dos canais disponibilizados
+        pela plataforma.
+      </p>
+
+      <h3>8. Disponibilidade do Serviço</h3>
+
+      <p>
+        O BliTeca é fornecido "como está", sem garantias de funcionamento
+        ininterrupto. A plataforma poderá passar por manutenções,
+        atualizações ou instabilidades ocasionais.
+      </p>
+
+      <h3>9. Limitação de Responsabilidade</h3>
+
+      <p>
+        O BliTeca não se responsabiliza pela origem, conteúdo ou pelos
+        direitos relacionados aos arquivos selecionados pelo usuário,
+        nem por conteúdo publicado por usuários ou por indisponibilidade
+        causada por terceiros ou serviços externos.
+      </p>
+
+      <h3>10. Menores de Idade</h3>
+
+      <p>
+        Usuários menores de 18 anos devem utilizar a plataforma de acordo
+        com as orientações e responsabilidades de seus responsáveis legais.
+      </p>
+
+      <h3>11. Alterações nos Termos</h3>
+
+      <p>
+        Os presentes termos poderão ser atualizados periodicamente.
+        O uso contínuo da plataforma após alterações poderá implicar
+        concordância com os novos termos, observadas as regras aplicáveis.
+      </p>
+
     </div>
+
     <div class="termos-modal-footer">
-      <button class="btn-fechar" (click)="fecharModalTermos()">Fechar</button>
+      <button
+        class="btn-fechar"
+        (click)="fecharModalTermos()"
+      >
+        Fechar
+      </button>
     </div>
+
   </div>
 </div>
-
 <!-- Modal de Política de Privacidade -->
-<div class="termos-modal-overlay" *ngIf="mostrarPolitica" (click)="fecharModalTermos()">
-  <div class="termos-modal-content" (click)="$event.stopPropagation()">
+<div
+  class="termos-modal-overlay"
+  *ngIf="mostrarPolitica"
+  (click)="fecharModalTermos()"
+>
+  <div
+    class="termos-modal-content"
+    (click)="$event.stopPropagation()"
+  >
+
     <div class="termos-modal-header">
       <h2>Política de Privacidade</h2>
-      <button class="termos-modal-close" (click)="fecharModalTermos()">✕</button>
+
+      <button
+        class="termos-modal-close"
+        (click)="fecharModalTermos()"
+      >
+        ✕
+      </button>
     </div>
+
     <div class="termos-modal-body">
-      <p class="termos-data">Última atualização: 2026</p>
+
+      <p class="termos-data">
+        Última atualização: Outubro de 2026
+      </p>
 
       <h3>1. Dados Coletados</h3>
-      <p>Coletamos seu nome, email, avatar e nickname quando você faz login através do Google. Também armazenamos seus livros, avaliações e comentários.</p>
 
-      <h3>2. Uso dos Dados</h3>
-      <p>Utilizamos seus dados para personalizar sua experiência, exibir sua biblioteca, recomendar livros e permitir interações com outros usuários.</p>
+      <p>
+        Coletamos seu nome, e-mail, avatar e nickname quando você
+        faz login através do Google.
+      </p>
 
-      <h3>3. Compartilhamento de Dados</h3>
-      <p>Não compartilhamos seus dados pessoais com terceiros. Suas avaliações e comentários são públicos na plataforma.</p>
+      <p>
+        Também armazenamos informações relacionadas aos seus livros,
+        avaliações, comentários, atividades e progresso de leitura.
+      </p>
 
-      <h3>4. Segurança</h3>
-      <p>Seus dados são armazenados de forma segura em servidores protegidos. Sua senha não é armazenada (login via Google OAuth).</p>
+      <h3>2. Arquivos de Leitura no Dispositivo</h3>
 
-      <h3>5. Seus Direitos</h3>
-      <p>Você pode solicitar a exclusão de sua conta a qualquer momento. Seus dados serão removidos permanentemente.</p>
+      <p>
+        O BliTeca permite que você selecione arquivos de leitura,
+        como PDF e EPUB, armazenados no seu próprio dispositivo.
+      </p>
 
-      <h3>6. Cookies</h3>
-      <p>Utilizamos cookies apenas para manter sua sessão ativa. Não utilizamos cookies de rastreamento de terceiros.</p>
+      <p>
+        O acesso ao arquivo ocorre após uma ação do usuário,
+        que seleciona o arquivo através do recurso de seleção
+        disponibilizado pelo dispositivo.
+      </p>
 
-      <h3>7. Alterações na Política</h3>
-      <p>Esta política pode ser atualizada periodicamente. Notificaremos sobre mudanças significativas.</p>
+      <p>
+        Os arquivos selecionados permanecem armazenados no dispositivo
+        do usuário e não são disponibilizados para outros usuários
+        da plataforma.
+      </p>
+
+      <p>
+        O BliTeca poderá armazenar informações necessárias para manter
+        o vínculo entre o livro e o arquivo selecionado, como nome,
+        tipo e referência necessária para acessá-lo, quando aplicável.
+      </p>
+
+      <p>
+        Também poderão ser armazenadas informações relacionadas à leitura,
+        como página atual, progresso e data da última leitura.
+      </p>
+
+      <p>
+        O conteúdo dos arquivos de leitura não é utilizado para publicação
+        na comunidade, publicidade ou compartilhamento com outros usuários.
+      </p>
+
+      <h3>3. Uso dos Dados</h3>
+
+      <p>
+        Utilizamos seus dados para autenticação, funcionamento da conta,
+        exibição do perfil, biblioteca, recomendações, atividades,
+        interações sociais e demais funcionalidades da plataforma.
+      </p>
+
+      <p>
+        Informações relacionadas aos arquivos de leitura são utilizadas
+        para permitir a leitura do arquivo selecionado, manter o vínculo
+        com o livro e registrar o progresso de leitura.
+      </p>
+
+      <h3>4. Compartilhamento de Dados</h3>
+
+      <p>
+        O BliTeca não vende seus dados pessoais para terceiros.
+      </p>
+
+      <p>
+        Suas avaliações, comentários, livros cadastrados e determinadas
+        atividades podem ser exibidos publicamente dentro da plataforma,
+        de acordo com suas funcionalidades.
+      </p>
+
+      <p>
+        Os arquivos PDF e EPUB selecionados para leitura permanecem
+        privados e não são disponibilizados a outros usuários.
+      </p>
+
+      <h3>5. Segurança</h3>
+
+      <p>
+        Adotamos medidas razoáveis para proteger os dados armazenados
+        pelo BliTeca.
+      </p>
+
+      <p>
+        Sua senha não é armazenada pelo BliTeca quando a autenticação
+        é realizada através do Google OAuth.
+      </p>
+
+      <h3>6. Seus Direitos</h3>
+
+      <p>
+        Você pode solicitar informações sobre seus dados pessoais,
+        correção de informações ou exclusão de sua conta, observadas
+        as obrigações legais aplicáveis.
+      </p>
+
+      <p>
+        A exclusão da conta não implica a exclusão de arquivos que
+        estejam armazenados diretamente no dispositivo do usuário,
+        pois esses arquivos permanecem sob controle do próprio usuário.
+      </p>
+
+      <h3>7. Cookies e Armazenamento Local</h3>
+
+      <p>
+        Utilizamos cookies e mecanismos de armazenamento local
+        necessários para manter sua sessão e garantir o funcionamento
+        adequado da plataforma.
+      </p>
+
+      <p>
+        Não utilizamos cookies de rastreamento de terceiros para
+        venda de dados pessoais.
+      </p>
+
+      <h3>8. Alterações na Política</h3>
+
+      <p>
+        Esta política poderá ser atualizada periodicamente para refletir
+        alterações nas funcionalidades do BliTeca, serviços utilizados
+        ou obrigações aplicáveis.
+      </p>
+
     </div>
+
     <div class="termos-modal-footer">
-      <button class="btn-fechar" (click)="fecharModalTermos()">Fechar</button>
+      <button
+        class="btn-fechar"
+        (click)="fecharModalTermos()"
+      >
+        Fechar
+      </button>
     </div>
+
   </div>
 </div>

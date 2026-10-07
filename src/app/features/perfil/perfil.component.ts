@@ -13,12 +13,16 @@ import { PullToRefreshComponent } from '../../shared/pull-to-refresh/pull-to-ref
 import { getAvatarUrl, getAvatarPadrao } from '../../shared/utils/avatar-helper';
 import { Capacitor } from '@capacitor/core';
 import { FilePicker } from '@capawesome/capacitor-file-picker';
-
+import { EstanteComponent } from './estante/estante.component';
+import { AtividadesComponent } from './atividade/atividade.component';
+import { ProgressoComponent } from './progresso/progresso.component';
 
 @Component({
   selector: 'app-perfil',
   standalone: true,
-  imports: [CommonModule, FormsModule, BottomSheetComponent,  AddBookModalComponent, PullToRefreshComponent],
+  imports: [CommonModule, FormsModule, BottomSheetComponent,  PullToRefreshComponent,
+    EstanteComponent, AtividadesComponent, ProgressoComponent
+  ],
   templateUrl: './perfil.component.html',
   styleUrl: './perfil.component.scss',
   host: { 'ngSkipHydration': 'true' }
@@ -29,34 +33,34 @@ export class PerfilComponent implements OnInit {
   usuarioEdit: Partial<Usuario> = {};
   carregando = true;
   uploadErro = '';
-  metricas: MetricasMes | null = null;
+  //metricas: MetricasMes | null = null;
 
-  livros: LivroDoUsuario[] = [];
-  filtroStatus: number | null = null;
-  filtroAvaliado = false;
+  //livros: LivroDoUsuario[] = [];
+  //filtroStatus: number | null = null;
+  //filtroAvaliado = false;
 
-  modalAdicionarAberto = false;
-  modalEdicaoLivroAberto = false;
-  livroEditando: LivroDoUsuario | null = null;
-  novoLivro: Partial<LivroDoUsuario> = {};
-  novaCapaPreview: string | null = null;
-  edicaoCapaPreview: string | null = null;
+  //modalAdicionarAberto = false;
+  //modalEdicaoLivroAberto = false;
+  //livroEditando: LivroDoUsuario | null = null;
+  //novoLivro: Partial<LivroDoUsuario> = {};
+  //novaCapaPreview: string | null = null;
+  //edicaoCapaPreview: string | null = null;
 
-  comentariosAberto = false;
-  livroComentarioId = '';
-  livroComentarioTitulo = '';
-  livroComentarioProntos: any[] | null = null;
+  //comentariosAberto = false;
+  //livroComentarioId = '';
+  //livroComentarioTitulo = '';
+  //livroComentarioProntos: any[] | null = null;
   confirmarExclusaoConta = false;
 
   //abaAtiva: 'biblioteca' | 'atividades' = 'biblioteca';
-  atividades: AtividadeLeitura[] = [];
-  carregandoAtividades = false;
+  //atividades: AtividadeLeitura[] = [];
+  //carregandoAtividades = false;
   zoomAvatarAberto = false;
 
   abaAtiva: 'biblioteca' | 'atividades' | 'progresso' = 'biblioteca';
-  streak: StreakData | null = null;
-  historico: string[] = [];
-  carregandoProgresso = false;
+  //streak: StreakData | null = null;
+  //historico: string[] = [];
+  //carregandoProgresso = false;
   passoOnboarding = 0; // 0 = avatar, 1 = nome, 2 = nickname, 3 = biografia, 4 = tema, 5 = salvar
   onboardingAtivo = false;
   posicaoHighlight = { top: 0, left: 0, width: 0, height: 0 };
@@ -83,15 +87,15 @@ export class PerfilComponent implements OnInit {
   menuConfigAberto = false;
   modoVisualizacao = false;
   usuarioIdVisualizado: string | null = null;
-  confirmarExclusao = false;
-  livroParaExcluir: string | null = null;
-  novoComentarioPerfil = '';
+  //confirmarExclusao = false;
+  //livroParaExcluir: string | null = null;
+  //novoComentarioPerfil = '';
   meuId = '';
-  bottomSheetLivroAberto = false;
-  livroSelecionado: LivroDoUsuario | null = null;
+  //bottomSheetLivroAberto = false;
+  //livroSelecionado: LivroDoUsuario | null = null;
 
-  @ViewChild('fileInputLivro') fileInputLivro!: ElementRef;
-  @ViewChild('fileInputEdicaoLivro') fileInputEdicaoLivro!: ElementRef;
+  //@ViewChild('fileInputLivro') fileInputLivro!: ElementRef;
+  /* @ViewChild('fileInputEdicaoLivro') fileInputEdicaoLivro!: ElementRef; */
   @ViewChild('inputNome') inputNome!: ElementRef;
   @ViewChild('inputNickname') inputNickname!: ElementRef;
   @ViewChild('inputBiografia') inputBiografia!: ElementRef;
@@ -107,8 +111,8 @@ export class PerfilComponent implements OnInit {
     private route: ActivatedRoute,
     private location: Location,
     @Inject(PLATFORM_ID) private platformId: Object,
-    public cdr: ChangeDetectorRef,
-    private streakService: StreakService
+    public cdr: ChangeDetectorRef//,
+   // private streakService: StreakService
   ) {}
 
   get nicknameEditavel(): boolean {
@@ -138,18 +142,18 @@ export class PerfilComponent implements OnInit {
             this.carregarMeuPerfil(forcarEdicao);
 
             // 🆕 Aumenta o delay e força o carregamento dos dados
-            if (aba === 'progresso') {
+           /*  if (aba === 'progresso') {
               setTimeout(() => {
                 this.abaAtiva = 'progresso';  // Define direto
-                this.carregarProgresso();      // Força o carregamento
+              //  this.carregarProgresso();      // Força o carregamento
               }, 800);  // Aumenta para 800ms
             }
             if (aba === 'atividades') {
               setTimeout(() => {
                 this.abaAtiva = 'atividades';
-                this.carregarAtividades();      // Força o carregamento
+               // this.carregarAtividades();      // Força o carregamento
               }, 800);
-            }
+            } */
             if (aba === 'biblioteca') {
               setTimeout(() => {
                 this.abaAtiva = 'biblioteca';
@@ -168,9 +172,9 @@ export class PerfilComponent implements OnInit {
       this.carregarMeuPerfil(false);
 
       if (this.abaAtiva === 'progresso') {
-        this.carregarProgresso();
+       // this.carregarProgresso();
       } else if (this.abaAtiva === 'atividades') {
-        this.carregarAtividades();
+      //  this.carregarAtividades();
       }
     }
   }
@@ -190,7 +194,7 @@ export class PerfilComponent implements OnInit {
     this.perfilService.getPerfilCompleto(id).subscribe({
       next: (data: Usuario) => {
         this.usuario = data;
-        this.livros = data.livros || [];
+        //this.livros = data.livros || [];
         this.carregando = false;
 
         this.atualizarLocalStorage(data);
@@ -216,7 +220,7 @@ export class PerfilComponent implements OnInit {
     this.perfilService.getPerfilCompleto(id).subscribe({
       next: (data: Usuario) => {
         this.usuario = data;
-        this.livros = data.livros || [];
+        //this.livros = data.livros || [];
         this.carregando = false;
         this.cdr.markForCheck();
       },
@@ -239,7 +243,7 @@ export class PerfilComponent implements OnInit {
   }
 
   // 🆕 Toggle gênero na edição
-  toggleGeneroEdicao(genero: string): void {
+ /*  toggleGeneroEdicao(genero: string): void {
     if (!this.livroEditando) return;
 
     if (!this.livroEditando.generos) {
@@ -256,7 +260,7 @@ export class PerfilComponent implements OnInit {
         this.alertService.warning('Máximo 3 gêneros');
       }
     }
-  }
+  } */
 
   abrirZoomAvatar(): void {
     this.zoomAvatarAberto = true;
@@ -451,31 +455,31 @@ export class PerfilComponent implements OnInit {
     });
   }
 
-  get livrosFiltrados(): LivroDoUsuario[] {
-    let resultado = [...this.livros];
-    if (this.filtroStatus !== null) resultado = resultado.filter(l => l.status === this.filtroStatus);
-    if (this.filtroAvaliado) resultado = resultado.filter(l => l.avaliacao !== null);
-    resultado.sort((a, b) => new Date(b.dataCriacao).getTime() - new Date(a.dataCriacao).getTime());
-    return resultado;
-  }
+  //get livrosFiltrados(): LivroDoUsuario[] {
+    //let resultado = [...this.livros];
+    //if (this.filtroStatus !== null) resultado = resultado.filter(l => l.status === this.filtroStatus);
+    //if (this.filtroAvaliado) resultado = resultado.filter(l => l.avaliacao !== null);
+    //resultado.sort((a, b) => new Date(b.dataCriacao).getTime() - new Date(a.dataCriacao).getTime());
+    //return resultado;
+  //}
 
-  getStatusTexto(status: number): string {
-    switch (status) { case 2: return '📖 Lendo'; case 3: return '✅ Lido'; default: return '📕 Quero ler'; }
-  }
+  //getStatusTexto(status: number): string {
+  //  switch (status) { case 2: return '📖 Lendo'; case 3: return '✅ Lido'; default: return '📕 Quero ler'; }
+  //}
 
-  getStatusClass(status: number): string {
-    switch (status) { case 2: return 'lendo'; case 3: return 'lido'; default: return 'nao-lido'; }
-  }
+  //getStatusClass(status: number): string {
+  //  switch (status) { case 2: return 'lendo'; case 3: return 'lido'; default: return 'nao-lido'; }
+  //}
 
-  abrirModalAdicionarLivro(): void { this.modalAdicionarAberto = true; }
-
-  onLivroAdicionado(): void {
+  /* abrirModalAdicionarLivro(): void { this.modalAdicionarAberto = true; }
+ */
+/*   onLivroAdicionado(): void {
     this.modalAdicionarAberto = false;
     this.alertService.success('Livro adicionado!');
     this.carregarPerfil();
   }
-
-  abrirEdicaoLivro(livro: LivroDoUsuario): void {
+ */
+  /* abrirEdicaoLivro(livro: LivroDoUsuario): void {
     this.livroEditando = {
       ...livro,
       estrelas: livro.avaliacao?.nota || undefined,
@@ -488,9 +492,9 @@ export class PerfilComponent implements OnInit {
     };
     this.edicaoCapaPreview = livro.imagem || null;
     this.modalEdicaoLivroAberto = true;
-  }
+  } */
 
-validarAno(): void {
+/* validarAno(): void {
   if (this.livroEditando?.anoPublicacao) {
     const anoStr = this.livroEditando.anoPublicacao.toString();
 
@@ -504,14 +508,14 @@ validarAno(): void {
       this.livroEditando.anoPublicacao = null;
     }
   }
-}
+} */
 
-  fecharEdicaoLivro(): void {
+ /*  fecharEdicaoLivro(): void {
     this.modalEdicaoLivroAberto = false;
     this.livroEditando = null;
     this.edicaoCapaPreview = null;
-  }
-
+  } */
+/*
   async tirarFotoEdicaoLivro(): Promise<void> {
     const input = document.createElement('input');
     input.type = 'file'; input.accept = 'image/*'; input.capture = 'environment';
@@ -531,9 +535,9 @@ validarAno(): void {
       } catch (error: any) { this.alertService.error(error.message); }
     };
     input.click();
-  }
+  } */
 
-  async onFileSelectedEdicaoLivro(event: Event): Promise<void> {
+ /*  async onFileSelectedEdicaoLivro(event: Event): Promise<void> {
     const file = (event.target as HTMLInputElement).files?.[0];
     if (!file) return;
     try {
@@ -547,9 +551,9 @@ validarAno(): void {
       this.alertService.success('Imagem selecionada!');
       this.cdr.markForCheck();
     } catch (error: any) { this.alertService.error(error.message); }
-  }
+  } */
 
-  async salvarEdicaoLivro(): Promise<void> {
+ /*  async salvarEdicaoLivro(): Promise<void> {
     if (!this.livroEditando) return;
     let imagemUrl = this.livroEditando.imagem || '';
     if (imagemUrl && imagemUrl.startsWith('data:')) {
@@ -567,8 +571,8 @@ validarAno(): void {
     } else {
       this.enviarEdicaoLivro();
     }
-  }
-
+  } */
+/*
   private enviarEdicaoLivro(): void {
     if (!this.livroEditando) return;
     const dados: any = {
@@ -595,18 +599,18 @@ validarAno(): void {
       },
       error: () => this.alertService.error('Erro ao atualizar livro')
     });
-  }
+  } */
 
-  deletarLivro(id: string): void {
+/*   deletarLivro(id: string): void {
     if (confirm('Remover este livro?')) {
       this.perfilService.deletarLivro(id).subscribe({
         next: () => { this.alertService.success('Livro removido!'); this.carregarPerfil(); },
         error: () => this.alertService.error('Erro ao remover livro')
       });
     }
-  }
+  } */
 
-  abrirComentarios(livro: LivroDoUsuario): void {
+/*   abrirComentarios(livro: LivroDoUsuario): void {
     this.livroComentarioId = livro.id;
     this.livroComentarioTitulo = livro.titulo;
     this.livroComentarioProntos = livro.comentarios?.map((c: any) => ({
@@ -615,9 +619,9 @@ validarAno(): void {
       comentario: c.comentario, dataCriacao: c.dataCriacao
     })) || null;
     this.comentariosAberto = true;
-  }
+  } */
 
- enviarComentarioPerfil(): void {
+ /* enviarComentarioPerfil(): void {
   if (!this.novoComentarioPerfil?.trim() || !this.livroComentarioId) return;
 
   const comentarioTexto = this.novoComentarioPerfil.trim();
@@ -649,23 +653,23 @@ validarAno(): void {
         this.alertService.error('Erro ao enviar comentário');
       }
     });
-  }
+  } */
 
 
   toggleMenuConfig(): void { this.menuConfigAberto = !this.menuConfigAberto; }
 
-  confirmarExcluirLivro(): void {
+  /* confirmarExcluirLivro(): void {
     if (this.livroParaExcluir) {
       this.perfilService.deletarLivro(this.livroParaExcluir).subscribe({
         next: () => { this.alertService.success('Livro removido!'); this.carregarPerfil(); this.fecharConfirmacaoExclusao(); },
         error: () => this.alertService.error('Erro ao remover livro')
       });
     }
-  }
+  } */
 
-  abrirConfirmacaoExclusao(id: string): void { this.livroParaExcluir = id; this.confirmarExclusao = true; }
+ /*  abrirConfirmacaoExclusao(id: string): void { this.livroParaExcluir = id; this.confirmarExclusao = true; }
   fecharConfirmacaoExclusao(): void { this.confirmarExclusao = false; this.livroParaExcluir = null; }
-
+ */
   abrirContato(): void {
     this.menuConfigAberto = false;
     window.location.href = 'mailto:g.britoalves888@gmail.com?subject=Bliteca%20-%20Contato';
@@ -731,7 +735,7 @@ validarAno(): void {
     });
   }
 
-  deletarComentarioPerfil(id: string): void {
+  /* deletarComentarioPerfil(id: string): void {
     this.perfilService.deletarComentario(id).subscribe({
       next: () => {
         if (this.livroComentarioProntos) {
@@ -745,9 +749,9 @@ validarAno(): void {
         this.alertService.error('Erro ao remover comentário');
       }
     });
-  }
+  } */
 
-  adicionarLivroDoPerfil(livro: LivroDoUsuario): void {
+  /* adicionarLivroDoPerfil(livro: LivroDoUsuario): void {
     this.perfilService.adicionarLivro({
       titulo: livro.titulo,
       autor: livro.autor,
@@ -765,21 +769,22 @@ validarAno(): void {
         }
       }
     });
-  }
+  } */
 
-  abrirBottomSheetLivro(livro: LivroDoUsuario): void {
+  /*  abrirBottomSheetLivro(livro: LivroDoUsuario): void {
     this.livroSelecionado = livro;
     this.bottomSheetLivroAberto = true;
     this.cdr.markForCheck();
-  }
+  } */
+  /*
 
   fecharBottomSheetLivro(): void {
     this.bottomSheetLivroAberto = false;
     this.livroSelecionado = null;
     this.cdr.markForCheck();
-  }
+  } */
 
-  carregarAtividades(): void {
+ /*  carregarAtividades(): void {
     const usuarioId = this.usuario?.id || this.meuId;
     if (!usuarioId) return;
 
@@ -795,10 +800,10 @@ validarAno(): void {
         this.carregandoAtividades = false;
       }
     });
-  }
+  } */
 
 
-  carregarProgresso(): void {
+ /*  carregarProgresso(): void {
     const usuarioId = this.modoVisualizacao ? this.usuarioIdVisualizado : (this.usuario?.id || this.meuId);
     if (!usuarioId) return;
 
@@ -835,21 +840,21 @@ validarAno(): void {
         this.cdr.markForCheck();
       }
     });
-  }
+  } */
 
   trocarAba(aba: 'biblioteca' | 'atividades' | 'progresso'): void {
     this.abaAtiva = aba;
 
-    if (aba === 'atividades' && this.atividades.length === 0) {
+   /*  if (aba === 'atividades' && this.atividades.length === 0) {
       this.carregarAtividades();
-    }
+    } */
 
-    if (aba === 'progresso' && !this.streak) {
+   /*  if (aba === 'progresso' && !this.streak) {
       this.carregarProgresso();
-    }
+    } */
   }
 
-  // 🆕 PROPIEDADE PARA O CALENDÁRIO
+/*   // 🆕 PROPIEDADE PARA O CALENDÁRIO
   get ultimos7Dias(): { dia: string; data: string }[] {
     const dias = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
     const resultado: { dia: string; data: string }[] = [];
@@ -871,14 +876,14 @@ validarAno(): void {
 
     return resultado;
   }
-
+ */
   // 🆕 MÉTODO PARA VERIFICAR SE O DIA FOI ATIVO
-  diaAtivo(dataStr: string): boolean {
+ /*  diaAtivo(dataStr: string): boolean {
     return this.historico.includes(dataStr);
-  }
+  } */
 
   // 🆕 Método para navegar para detalhes do livro
-  abrirDetalhesLivro(livro: any, event?: Event): void {
+ /*  abrirDetalhesLivro(livro: any, event?: Event): void {
     if (event) {
       event.stopPropagation();
     }
@@ -896,7 +901,7 @@ validarAno(): void {
         origem: 'perfil'
       }
     });
-  }
+  } */
 
   // ============ ONBOARDING ============
 
@@ -1074,7 +1079,7 @@ validarAno(): void {
 
 
   // 🆕 Vincular arquivo na edição do livro
-  async vincularArquivoEdicao(): Promise<void> {
+ /*  async vincularArquivoEdicao(): Promise<void> {
     if (!this.livroEditando) return;
 
     // 🌐 TWA/PWA: usa input file
@@ -1125,9 +1130,9 @@ validarAno(): void {
       console.error('Erro ao vincular arquivo:', error);
       this.alertService.error('Erro ao selecionar arquivo.');
     }
-  }
+  } */
 
-  // 🆕 Extrai o nome do arquivo (funciona com pwa:// e content://)
+/*   // 🆕 Extrai o nome do arquivo (funciona com pwa:// e content://)
   getNomeArquivoEdicao(uri: string | null | undefined): string {
     if (!uri) return '';
 
@@ -1139,5 +1144,5 @@ validarAno(): void {
 
     const partes = uri.split('/');
     return decodeURIComponent(partes[partes.length - 1] || '');
-  }
+  } */
 }

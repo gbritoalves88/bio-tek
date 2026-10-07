@@ -1,0 +1,89 @@
+<!-- Loading -->
+<div class="loading-atividades" *ngIf="carregando">
+  <div class="spinner"></div>
+</div>
+
+<!-- Container geral -->
+<div class="progresso-geral" *ngIf="!carregando && streak">
+
+  <!-- Seção Estatísticas -->
+  <div class="metricas-mes" *ngIf="usuario">
+    <h4>📊 Estatísticas</h4>
+    <div class="metricas-grid">
+      <div class="metrica-card">
+        <span class="metrica-icon">📚</span>
+        <strong>{{ usuario.quantidadeLivros || 0 }}</strong>
+        <span>livros</span>
+      </div>
+      <div class="metrica-card">
+        <span class="metrica-icon">✅</span>
+        <strong>{{ usuario.quantidadeLivrosLidos || 0 }}</strong>
+        <span>lidos</span>
+      </div>
+      <div class="metrica-card">
+        <span class="metrica-icon">⭐</span>
+        <strong>{{ usuario.mediaAvaliacoes || 0 }}</strong>
+        <span>média</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Seção Streak -->
+  <div class="progresso-container">
+    <h4>🔥 Sequência de leitura</h4>
+    <div class="streak-cards">
+      <div class="streak-destaque">
+        <div class="streak-numero">🔥 {{ streak.sequenciaAtual }}</div>
+        <div class="streak-label">dias de leitura</div>
+      </div>
+      <div class="streak-melhor">
+        <div class="melhor-numero">🏆 {{ streak.maiorSequencia }}</div>
+        <div class="melhor-label">melhor sequência</div>
+      </div>
+    </div>
+    <div class="calendario">
+      <div
+        class="calendario-dia"
+        *ngFor="let dia of ultimos7Dias"
+        [class.ativo]="diaAtivo(dia.data)"
+      >
+        <span class="dia-nome">{{ dia.dia }}</span>
+        <span class="dia-check">{{ diaAtivo(dia.data) ? '✓' : '○' }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Seção Métricas -->
+  <div class="metricas-mes" *ngIf="metricas">
+    <h4>📊 Seu progresso este mês</h4>
+    <div class="metricas-grid">
+      <div class="metrica-card">
+        <span class="metrica-icon">📚</span>
+        <strong>{{ metricas.livrosLidos }}</strong>
+        <span>livros lidos</span>
+      </div>
+      <div class="metrica-card">
+        <span class="metrica-icon">📄</span>
+        <strong>{{ metricas.paginasLidas }}</strong>
+        <span>páginas lidas</span>
+      </div>
+      <div class="metrica-card">
+        <span class="metrica-icon">🎧</span>
+        <strong>{{ metricas.minutosOuvidos }}</strong>
+        <span>minutos ouvidos</span>
+      </div>
+      <div class="metrica-card">
+        <span class="metrica-icon">🔥</span>
+        <strong>{{ metricas.diasDeLeitura }}</strong>
+        <span>dias de leitura</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Estado vazio -->
+<div class="empty" *ngIf="!carregando && !streak">
+  <p>Nenhuma atividade de leitura ainda.</p>
+  <small>Atualize seu progresso para começar sua sequência!</small>
+</div>
