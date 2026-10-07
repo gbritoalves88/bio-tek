@@ -39,6 +39,7 @@
     "epubjs": "^0.3.93",
     "express": "^5.1.0",
     "firebase": "^12.17.1",
+    "pdfjs-dist": "^6.4.299",
     "rxjs": "~7.8.0",
     "tesseract.js": "^7.0.0",
     "tslib": "^2.3.0"

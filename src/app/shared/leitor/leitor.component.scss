@@ -1,5 +1,5 @@
 // ===== OVERLAY (tela cheia) =====
-.epub-overlay {
+.leitor-overlay {
   position: fixed;
   inset: 0;
   z-index: 5000;
@@ -10,7 +10,7 @@
 }
 
 // ===== HEADER =====
-.epub-header {
+.leitor-header {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -32,8 +32,8 @@
   }
 }
 
-.epub-close,
-.epub-nav {
+.leitor-close,
+.leitor-nav {
   width: 36px;
   height: 36px;
   border-radius: 50%;
@@ -64,14 +64,14 @@
   }
 }
 
-.epub-header-actions {
+.leitor-header-actions {
   display: flex;
   gap: 6px;
   flex-shrink: 0;
 }
 
-// ===== ÁREA DE RENDERIZAÇÃO =====
-.epub-area {
+// ===== ÁREA EPUB =====
+.leitor-area {
   flex: 1;
   width: 100%;
   overflow: hidden;
@@ -79,8 +79,83 @@
   background: var(--bg-primary);
 }
 
+// ===== ÁREA PDF =====
+.leitor-area-pdf {
+  flex: 1;
+  width: 100%;
+  overflow: auto;
+  background: var(--bg-primary);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 12px;
+
+  canvas {
+    max-width: 100%;
+    height: auto;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+  }
+}
+
+// ===== CONTROLES PDF =====
+.pdf-controles {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 8px 16px;
+  background: var(--bg-card);
+  border-top: 1px solid var(--border-color);
+  flex-shrink: 0;
+  min-height: 48px;
+}
+
+.pdf-nav {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--border-color);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+
+  svg {
+    width: 18px;
+    height: 18px;
+    stroke: currentColor;
+  }
+
+  &:hover:not(:disabled) {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(var(--accent-rgb), 0.08);
+  }
+
+  &:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+
+  &:active:not(:disabled) {
+    transform: scale(0.95);
+  }
+}
+
+.pdf-pagina {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  min-width: 60px;
+  text-align: center;
+}
+
 // ===== FOOTER =====
-.epub-footer {
+.leitor-footer {
   padding: 8px 16px;
   background: var(--bg-card);
   border-top: 1px solid var(--border-color);

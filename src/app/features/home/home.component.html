@@ -283,10 +283,6 @@
           class="bs-textarea"
         ></textarea>
         <span class="bs-contador">{{ fraseAtividade.length }}/200</span>
-
-        <button class="bs-btn bs-btn-sm bs-btn-outline" (click)="atualizarProgresso()" [disabled]="!paginaAtual && !totalPaginas">
-          Atualizar progresso
-        </button>
       </div>
 
       <!-- AUDIOBOOK -->
@@ -332,22 +328,67 @@
           class="bs-textarea"
         ></textarea>
         <span class="bs-contador">{{ fraseAtividade.length }}/200</span>
+      </div>
 
+      <!-- 🆕 Ações (Atualizar progresso / Parar / Ler / Compartilhar) -->
+      <div class="bs-acoes">
+        <!-- Atualizar progresso -->
         <button
-          class="bs-btn bs-btn bs-btn-outline"
+          class="bs-btn bs-btn-outline"
           (click)="atualizarProgresso()"
-          [disabled]="!posicaoAtualInput && !duracaoTotalInput"
+          [disabled]="
+            (livroAtual.tipo === 'audiobook'
+              ? (!posicaoAtualInput && !duracaoTotalInput)
+              : (!paginaAtual && !totalPaginas))
+          "
         >
           Atualizar progresso
         </button>
+
+        <!-- Parar / Continuar -->
+        <button class="bs-btn bs-btn-outline" (click)="togglePausar()">
+          <ng-container *ngIf="!livroAtual.pausado">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>
+            </svg>
+            Parar leitura
+          </ng-container>
+          <ng-container *ngIf="livroAtual.pausado">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="5 3 19 12 5 21 5 3"/>
+            </svg>
+            Continuar leitura
+          </ng-container>
+        </button>
+
+        <!-- Ler agora -->
+        <button class="bs-btn bs-btn-primary" *ngIf="livroAtual.arquivoLeitura" (click)="lerLivroAtual()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+          </svg>
+          Ler agora
+        </button>
+
+        <!-- Compartilhar -->
+        <button class="bs-btn bs-btn-primary" (click)="compartilharLeitura()" [disabled]="compartilhando">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="18" cy="5" r="3"/>
+            <circle cx="6" cy="12" r="3"/>
+            <circle cx="18" cy="19" r="3"/>
+            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+          </svg>
+          {{ compartilhando ? 'Gerando...' : 'Compartilhar leitura' }}
+        </button>
       </div>
 
-      <!-- 🆕 Outros pausados -->
-      <div class="bs-outros-pausados" *ngIf="outrosPausados.length > 0">
-        <h4>⏸️ Outros pausados</h4>
+      <!-- 🆕 Continuar lendo -->
+      <div class="bs-outros-pausados" *ngIf="outrosEmAndamento.length > 0">
+        <h4>📚 Continuar lendo</h4>
         <div class="bs-pausados-lista">
           <div class="bs-pausado-item"
-              *ngFor="let p of outrosPausados"
+              *ngFor="let p of outrosEmAndamento"
               (click)="trocarLivroAtual(p)">
             <img [src]="p.imagem || 'assets/capas/perfilSemFoto.png'"
                 [alt]="p.titulo"
@@ -365,43 +406,6 @@
             </button>
           </div>
         </div>
-      </div>
-
-      <div class="bs-acoes">
-        <!-- 🆕 Botão Ler -->
-        <button class="bs-btn bs-btn-primary" *ngIf="livroAtual.arquivoLeitura" (click)="lerLivroAtual()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
-            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
-          </svg>
-          Ler agora
-        </button>
-
-         <button class="bs-btn bs-btn-primary" (click)="compartilharLeitura()" [disabled]="compartilhando">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="18" cy="5" r="3"/>
-            <circle cx="6" cy="12" r="3"/>
-            <circle cx="18" cy="19" r="3"/>
-            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
-            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
-          </svg>
-          {{ compartilhando ? 'Gerando...' : 'Compartilhar leitura' }}
-        </button>
-
-        <button class="bs-btn bs-btn-outline" (click)="togglePausar()">
-          <ng-container *ngIf="!livroAtual.pausado">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>
-            </svg>
-            Parar leitura
-          </ng-container>
-          <ng-container *ngIf="livroAtual.pausado">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polygon points="5 3 19 12 5 21 5 3"/>
-            </svg>
-            Continuar leitura
-          </ng-container>
-        </button>
       </div>
 
       <p class="bs-ultima-leitura" *ngIf="livroAtual.ultimaLeitura">
