@@ -308,6 +308,14 @@ export class PerfilComponent implements OnInit {
 
     this.editando = false;
     this.uploadErro = '';
+
+    // 🆕 Remove o ?editar=true da URL pra não travar próximo clique
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { editar: null },
+      queryParamsHandling: 'merge',
+      replaceUrl: true
+    });
   }
 
   async onAvatarSelected(event: Event): Promise<void> {
