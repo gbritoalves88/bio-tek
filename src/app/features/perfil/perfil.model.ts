@@ -38,6 +38,7 @@ export interface LivroDoUsuario {
   arquivoLeitura?: string | null;
   avaliacao?: Avaliacao | null;
   comentarios?: Comentario[];
+  idColecao?: string | null;
 }
 
 export interface Usuario {
