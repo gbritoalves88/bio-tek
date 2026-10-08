@@ -386,6 +386,86 @@ $max-content-width: 900px;
   }
 }
 
+// ===== MODAL DE CONFIRMAÇÃO (desativar conta) =====
+.confirm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(2px);
+}
+
+.confirm-modal {
+  background: var(--bg-card);
+  border-radius: 20px;
+  padding: 24px 28px;
+  text-align: center;
+  max-width: 320px;
+  width: 90%;
+  animation: fadeInScale 0.2s ease;
+}
+
+.confirm-icon {
+  font-size: 48px;
+  margin-bottom: 12px;
+  opacity: 0.8;
+}
+
+.confirm-message {
+  font-size: 15px;
+  color: var(--text-primary);
+  margin-bottom: 24px;
+  line-height: 1.4;
+}
+
+.confirm-submessage {
+  font-size: 12px;
+  color: var(--text-secondary);
+  text-align: center;
+  margin: -16px 0 20px;
+  line-height: 1.5;
+  padding: 0 4px;
+
+  strong { color: var(--accent); font-weight: 600; }
+}
+
+.confirm-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.confirm-btn {
+  padding: 8px 20px;
+  border-radius: 30px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+
+  &.cancel {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    &:hover { border-color: var(--accent); color: var(--accent); }
+  }
+
+  &.delete {
+    background: #e74c3c;
+    color: white;
+    &:hover { background: #c0392b; }
+  }
+}
+
+@keyframes fadeInScale {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
 // ===== ÍCONES SVG =====
 .icon {
   width: 20px;

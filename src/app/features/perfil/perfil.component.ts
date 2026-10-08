@@ -366,6 +366,7 @@ export class PerfilComponent implements OnInit {
       this.salvarDadosPerfil();
     }
   }
+
   private salvarDadosPerfil(): void {
     if (!this.usuarioEdit || !this.usuario) return;
 
@@ -412,11 +413,18 @@ export class PerfilComponent implements OnInit {
 
         this.alertService.success('Perfil atualizado!');
 
+
+
         if (eraPrimeiroAcesso) {
           // 🆕 Navega com replace para limpar histórico
           this.router.navigate(['/inicio'], { replaceUrl: true });
         } else {
-          this.carregarPerfil();
+          // 🆕 Navega pra home primeiro (limpa a query ?editar=true)
+          this.router.navigate(['/inicio'], { replaceUrl: true })
+            .then(() => {
+              // 🆕 Depois recarrega (já sem o ?editar=true)
+              window.location.reload();
+            });
         }
       },
       error: () => this.alertService.error('Erro ao salvar')
@@ -656,7 +664,7 @@ export class PerfilComponent implements OnInit {
   } */
 
 
-  toggleMenuConfig(): void { this.menuConfigAberto = !this.menuConfigAberto; }
+ /*  toggleMenuConfig(): void { this.menuConfigAberto = !this.menuConfigAberto; } */
 
   /* confirmarExcluirLivro(): void {
     if (this.livroParaExcluir) {
@@ -670,7 +678,7 @@ export class PerfilComponent implements OnInit {
  /*  abrirConfirmacaoExclusao(id: string): void { this.livroParaExcluir = id; this.confirmarExclusao = true; }
   fecharConfirmacaoExclusao(): void { this.confirmarExclusao = false; this.livroParaExcluir = null; }
  */
-  abrirContato(): void {
+/*   abrirContato(): void {
     this.menuConfigAberto = false;
     window.location.href = 'mailto:g.britoalves888@gmail.com?subject=Bliteca%20-%20Contato';
   }
@@ -733,7 +741,7 @@ export class PerfilComponent implements OnInit {
         this.alertService.error('Erro ao excluir conta. Tente novamente.');
       }
     });
-  }
+  } */
 
   /* deletarComentarioPerfil(id: string): void {
     this.perfilService.deletarComentario(id).subscribe({
@@ -1145,4 +1153,15 @@ export class PerfilComponent implements OnInit {
     const partes = uri.split('/');
     return decodeURIComponent(partes[partes.length - 1] || '');
   } */
+
+  avataresDisponiveis = Array.from({ length: 9 }, (_, i) =>
+    `https://img.bliteca.com.br/avatares/${i + 1}.png`
+  );
+
+  selecionarAvatar(url: string): void {
+    if (!this.usuarioEdit) return;
+    this.usuarioEdit.avatar = url;
+    this.uploadErro = '';
+    this.cdr.markForCheck();
+  }
 }
