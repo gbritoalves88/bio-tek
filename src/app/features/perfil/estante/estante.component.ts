@@ -9,6 +9,8 @@ import { AlertService } from '../../../shared/services/alert.service';
 import { BottomSheetComponent } from '../../../shared/bottom-sheet/bottom-sheet.component';
 import { Capacitor } from '@capacitor/core';
 import { FilePicker } from '@capawesome/capacitor-file-picker';
+import { EstanteService } from './estante.service';
+import { Prateleira } from './estante.model';
 
 
 @Component({
@@ -43,7 +45,17 @@ export class EstanteComponent implements OnInit {
   livroComentarioProntos: any[] | null = null;
   novoComentarioPerfil = '';
   meuId = '';
+  // 🆕 Prateleiras
+  prateleiras: Prateleira[] = [];
+  carregandoPrateleiras = true;
 
+  // 🆕 Bottom sheet de cadastro de prateleira
+  modalPrateleiraAberto = false;
+  prateleiraEditando = {
+    nome: '',
+    descricao: ''
+  };
+  salvandoPrateleira = false;
   // 🆕 Modal de exclusão
   confirmarExclusao = false;
   livroParaExcluir: string | null = null;
@@ -53,6 +65,11 @@ export class EstanteComponent implements OnInit {
     'Suspense', 'Biografia', 'História', 'Infantil',
     'Aventura', 'Drama', 'Poesia', 'Ficção Científica'
   ];
+  prateleiraSelecionada: Prateleira | null = null;
+  bottomSheetPrateleiraAberto = false;
+  livrosDaPrateleira: LivroDoUsuario[] = [];
+  // 🆕 Exclusão de prateleira
+  excluindoPrateleira = false;
 
   private readonly TAMANHO_MAXIMO = 10 * 1024 * 1024;
 
@@ -64,7 +81,8 @@ export class EstanteComponent implements OnInit {
     private alertService: AlertService,
     private router: Router,
     private location: Location,
-    public cdr: ChangeDetectorRef
+    public cdr: ChangeDetectorRef,
+    private estanteService: EstanteService
   ) {}
 
   ngOnInit(): void {
@@ -73,6 +91,7 @@ export class EstanteComponent implements OnInit {
 
     if (this.usuarioId) {
       this.carregarLivros();
+      this.carregarPrateleiras();
     }
   }
 
@@ -95,6 +114,11 @@ export class EstanteComponent implements OnInit {
 
   get livrosFiltrados(): LivroDoUsuario[] {
     let resultado = [...this.livros];
+
+    // 🆕 Oculta livros que estão em alguma prateleira
+    // (eles aparecem dentro da prateleira correspondente)
+    resultado = resultado.filter(l => !l.idColecao);
+
     if (this.filtroStatus !== null) {
       resultado = resultado.filter(l => l.status === this.filtroStatus);
     }
@@ -145,7 +169,8 @@ export class EstanteComponent implements OnInit {
       anoPublicacao: livro.anoPublicacao || null,
       editora: livro.editora || null,
       idioma: livro.idioma || null,
-      arquivoLeitura: livro.arquivoLeitura || null
+      arquivoLeitura: livro.arquivoLeitura || null,
+      idColecao: livro.idColecao || null
     };
     this.edicaoCapaPreview = livro.imagem || null;
     this.modalEdicaoLivroAberto = true;
@@ -259,7 +284,8 @@ export class EstanteComponent implements OnInit {
         : null,
       editora: this.livroEditando.editora || null,
       idioma: this.livroEditando.idioma || null,
-      arquivoLeitura: this.livroEditando.arquivoLeitura || null
+      arquivoLeitura: this.livroEditando.arquivoLeitura || null,
+      idColecao: this.livroEditando.idColecao || null
     };
     if (this.livroEditando.status === 3 && this.livroEditando.estrelas) {
       dados.estrelas = this.livroEditando.estrelas;
@@ -459,4 +485,134 @@ export class EstanteComponent implements OnInit {
     const partes = uri.split('/');
     return decodeURIComponent(partes[partes.length - 1] || '');
   }
+
+  // ============ PRATELEIRAS ============
+  carregarPrateleiras(): void {
+    // Só carrega se não for modo visualização
+    if (this.modoVisualizacao) {
+      this.carregandoPrateleiras = false;
+      return;
+    }
+
+    this.carregandoPrateleiras = true;
+
+    this.estanteService.getMinhasPrateleiras().subscribe({
+      next: (data) => {
+        this.prateleiras = data;
+        this.carregandoPrateleiras = false;
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        console.error('Erro ao carregar prateleiras:', err);
+        this.carregandoPrateleiras = false;
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  abrirModalPrateleira(): void {
+    this.prateleiraEditando = { nome: '', descricao: '' };
+    this.modalPrateleiraAberto = true;
+    this.cdr.markForCheck();
+  }
+
+  fecharModalPrateleira(): void {
+    this.modalPrateleiraAberto = false;
+    this.prateleiraEditando = { nome: '', descricao: '' };
+    this.cdr.markForCheck();
+  }
+
+  salvarPrateleira(): void {
+    const nome = this.prateleiraEditando.nome?.trim();
+    const descricao = this.prateleiraEditando.descricao?.trim() || null;
+
+    if (!nome) {
+      this.alertService.warning('Nome da prateleira é obrigatório');
+      return;
+    }
+
+    if (nome.length > 50) {
+      this.alertService.warning('Nome deve ter no máximo 50 caracteres');
+      return;
+    }
+
+    this.salvandoPrateleira = true;
+
+    this.estanteService.criarPrateleira({ nome, descricao }).subscribe({
+      next: (nova) => {
+        this.salvandoPrateleira = false;
+        this.alertService.success(`Prateleira "${nova.nome}" criada!`);
+        this.fecharModalPrateleira();
+        this.carregarPrateleiras();
+      },
+      error: (err) => {
+        this.salvandoPrateleira = false;
+        const msg = err?.error?.mensagem || 'Erro ao criar prateleira';
+        this.alertService.error(msg);
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  // 🆕 Nome da prateleira pelo ID
+  getNomePrateleira(idColecao: string | null | undefined): string {
+    if (!idColecao) return '';
+    const prateleira = this.prateleiras.find(p => p.id === idColecao);
+    return prateleira?.nome || '';
+  }
+
+    // 🆕 Abre a prateleira (bottom sheet com os livros)
+  abrirPrateleira(prateleira: Prateleira): void {
+    this.prateleiraSelecionada = prateleira;
+    this.livrosDaPrateleira = this.livros.filter(l => l.idColecao === prateleira.id);
+    this.bottomSheetPrateleiraAberto = true;
+    this.cdr.markForCheck();
+  }
+
+  fecharBottomSheetPrateleira(): void {
+    this.bottomSheetPrateleiraAberto = false;
+    this.prateleiraSelecionada = null;
+    this.livrosDaPrateleira = [];
+    this.cdr.markForCheck();
+  }
+
+  // 🆕 Quando clica num livro dentro da prateleira
+  abrirLivroDaPrateleira(livro: LivroDoUsuario): void {
+    // Fecha a prateleira e abre o bottom sheet de detalhes do livro
+    this.fecharBottomSheetPrateleira();
+    setTimeout(() => {
+      this.abrirBottomSheetLivro(livro);
+    }, 150); // pequeno delay pra animação
+  }
+
+  // 🆕 Exclui prateleira direto (só se estiver vazia)
+  excluirPrateleira(): void {
+    if (!this.prateleiraSelecionada || this.excluindoPrateleira) return;
+
+    // 🔒 Trava de segurança: não deixa excluir se tiver livros
+    if (this.livrosDaPrateleira.length > 0) {
+      this.alertService.warning('Remova os livros antes de excluir a prateleira');
+      return;
+    }
+
+    this.excluindoPrateleira = true;
+    const id = this.prateleiraSelecionada.id;
+    const nome = this.prateleiraSelecionada.nome;
+
+    this.estanteService.deletarPrateleira(id).subscribe({
+      next: () => {
+        this.excluindoPrateleira = false;
+        this.fecharBottomSheetPrateleira();
+        this.alertService.success(`Prateleira "${nome}" excluída!`);
+        this.carregarPrateleiras();
+      },
+      error: (err) => {
+        this.excluindoPrateleira = false;
+        const msg = err?.error?.mensagem || 'Erro ao excluir prateleira';
+        this.alertService.error(msg);
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
 }
