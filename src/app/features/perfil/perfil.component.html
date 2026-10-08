@@ -44,7 +44,7 @@
             </svg>
           </button>
 
-          <ng-container *ngIf="!modoVisualizacao">
+          <!-- <ng-container *ngIf="!modoVisualizacao">
             <button class="btn-config" (click)="toggleMenuConfig()" [class.active]="menuConfigAberto">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="12" cy="12" r="3"/>
@@ -104,7 +104,7 @@
                 Sair
               </button>
             </div>
-          </ng-container>
+          </ng-container> -->
         </div>
       </div>
     </div>
@@ -130,6 +130,19 @@
             <input type="file" #fileInput hidden (change)="onAvatarSelected($event)" accept="image/*">
           </div>
           <p class="upload-erro" *ngIf="uploadErro">{{ uploadErro }}</p>
+
+          <!-- 🆕 Miniaturas de avatares -->
+          <div class="avatares-lista">
+            <button
+              type="button"
+              class="avatar-mini"
+              *ngFor="let avatar of avataresDisponiveis"
+              (click)="selecionarAvatar(avatar)"
+              [class.selecionado]="usuarioEdit.avatar === avatar"
+              [title]="'Escolher este avatar'">
+              <img [src]="avatar" alt="Avatar" loading="lazy" decoding="async" />
+            </button>
+          </div>
         </div>
       </div>
 
@@ -221,21 +234,6 @@
     </div>
   </ng-container>
 
-  <!-- Modal de Confirmação Exclusão Conta -->
-  <div class="confirm-overlay" *ngIf="confirmarExclusaoConta" (click)="fecharConfirmacaoExclusaoConta()">
-    <div class="confirm-modal" (click)="$event.stopPropagation()">
-      <div class="confirm-icon">⚠️</div>
-      <p class="confirm-message">Tem certeza que deseja desativar sua conta?</p>
-      <p class="confirm-submessage">
-        Sua conta será desativada e você perderá o acesso imediatamente.<br/>
-        Seus dados ficarão preservados por 30 dias. Para reativar ou solicitar a exclusão definitiva, entre em contato pelo email: <strong>g.britoalves888&#64;gmail.com</strong>
-      </p>
-      <div class="confirm-actions">
-        <button class="confirm-btn cancel" (click)="fecharConfirmacaoExclusaoConta()">Cancelar</button>
-        <button class="confirm-btn delete" (click)="excluirConta()">Desativar Conta</button>
-      </div>
-    </div>
-  </div>
 
 
   <!-- 🆕 OVERLAY DE ONBOARDING -->
@@ -290,7 +288,7 @@
 
 
 <!-- 🆕 MODAL DE ZOOM DO AVATAR -->
-<!-- <div class="avatar-zoom-overlay" *ngIf="zoomAvatarAberto" (click)="fecharZoomAvatar()">
+<div class="avatar-zoom-overlay" *ngIf="zoomAvatarAberto" (click)="fecharZoomAvatar()">
   <div class="avatar-zoom-modal" (click)="$event.stopPropagation()">
     <img [src]="getAvatar(usuario)" [alt]="usuario?.nome" loading="lazy"
      decoding="async" />
@@ -300,5 +298,5 @@
       </svg>
     </button>
   </div>
-</div> -->
+</div>
 </app-pull-to-refresh>

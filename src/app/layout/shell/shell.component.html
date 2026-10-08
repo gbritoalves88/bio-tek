@@ -106,6 +106,24 @@
         </div>
       </div>
     </div>
+
+
+      <!-- Modal de Confirmação Exclusão Conta -->
+   <div class="confirm-overlay" *ngIf="confirmarExclusaoConta" (click)="fecharConfirmacaoExclusaoConta()">
+    <div class="confirm-modal" (click)="$event.stopPropagation()">
+      <div class="confirm-icon">⚠️</div>
+      <p class="confirm-message">Tem certeza que deseja desativar sua conta?</p>
+      <p class="confirm-submessage">
+        Sua conta será desativada e você perderá o acesso imediatamente.<br/>
+        Seus dados ficarão preservados por 30 dias. Para reativar ou solicitar a exclusão definitiva, entre em contato pelo email: <strong>g.britoalves888&#64;gmail.com</strong>
+      </p>
+      <div class="confirm-actions">
+        <button class="confirm-btn cancel" (click)="fecharConfirmacaoExclusaoConta()">Cancelar</button>
+        <button class="confirm-btn delete" (click)="excluirConta()">Desativar Conta</button>
+      </div>
+    </div>
+  </div>
+
   </header>
 
   <div class="main-layout">

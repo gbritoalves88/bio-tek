@@ -5,6 +5,8 @@ import { NotificationBellComponent } from '../../shared/notification-bell/notifi
 import { ThemeStatusBarService } from '../../shared/services/theme-status-bar.service';
 import { getAvatarUrl } from '../../shared/utils/avatar-helper';
 import { LeitorComponent } from '../../shared/leitor/leitor.component';
+import { ShellService } from './shell.service';
+import { AlertService } from '../../shared/services/alert.service';
 
 @Component({
   selector: 'app-shell',
@@ -31,11 +33,14 @@ export class ShellComponent implements OnInit {
   avatarUrl = '';
   nomeUsuario = '';
   menuAvatarAberto = false;
+  confirmarExclusaoConta = false;
 
   constructor(
     @Inject(PLATFORM_ID) private platformId: Object,
-    private router: Router,
-    private themeStatusBar: ThemeStatusBarService
+   private router: Router,
+  private themeStatusBar: ThemeStatusBarService,
+  private shellService: ShellService,
+  private alertService: AlertService
   ) {}
 
   ngOnInit() {
@@ -105,14 +110,32 @@ export class ShellComponent implements OnInit {
 
   private copiarLink(texto: string): void {
     navigator.clipboard.writeText(texto)
-      .then(() => alert('Link copiado!'))
-      .catch(() => alert('Compartilhe: ' + texto));
+    .then(() => alert('Link copiado!'))
+    .catch(() => alert('Compartilhe: ' + texto));
   }
 
   confirmarExcluirConta(): void {
     this.menuAvatarAberto = false;
-    // Por enquanto, navega pro Perfil (onde a lógica de modal já existe)
-    this.router.navigate(['/inicio/perfil']);
+    this.confirmarExclusaoConta = true;
+  }
+
+  fecharConfirmacaoExclusaoConta(): void {
+    this.confirmarExclusaoConta = false;
+  }
+
+  excluirConta(): void {
+    this.shellService.desativarConta().subscribe({
+      next: () => {
+        this.confirmarExclusaoConta = false;
+        this.alertService.success('Conta desativada com sucesso');
+        this.shellService.limparSessao();
+        this.router.navigate(['/']);
+      },
+      error: (err) => {
+        console.error('Erro ao desativar conta:', err);
+        this.alertService.error('Erro ao desativar conta. Tente novamente.');
+      }
+    });
   }
 
   // 🆕 Toggle de tema (trazido de volta)
@@ -148,6 +171,8 @@ export class ShellComponent implements OnInit {
     localStorage.removeItem('token');
     localStorage.removeItem('refreshToken');
     localStorage.removeItem('usuario');
+    this.shellService.limparSessao();
     this.router.navigate(['/']);
   }
+
 }
