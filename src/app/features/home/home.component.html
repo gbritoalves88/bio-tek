@@ -366,9 +366,7 @@
 
         <!-- Atualizar progresso -->
         <button
-          class="bs-btn"
-          [class.bs-btn-primary]="!livroAtual.arquivoLeitura"
-          [class.bs-btn-outline]="livroAtual.arquivoLeitura"
+          class="bs-btn bs-btn-outline"
           (click)="atualizarProgresso()"
           [disabled]="
             (livroAtual.tipo === 'audiobook'
@@ -382,7 +380,6 @@
         <!-- Ler agora -->
         <button
           class="bs-btn bs-btn-primary"
-          *ngIf="livroAtual.arquivoLeitura"
           (click)="lerLivroAtual()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>

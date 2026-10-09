@@ -635,10 +635,15 @@ export class HomeComponent implements OnInit {
   }
 
   async lerLivroAtual(): Promise<void> {
-    if (!this.livroAtual?.arquivoLeitura) return;
+    if (!this.livroAtual) return;
 
     // 📱 Capacitor: abre direto
     if (Capacitor.isNativePlatform()) {
+      if (!this.livroAtual.arquivoLeitura) {
+        this.alertService.warning('Vincule um arquivo a este livro primeiro.');
+        return;
+      }
+
       try {
         await FileOpener.openFile({
           path: this.livroAtual.arquivoLeitura,
@@ -651,7 +656,7 @@ export class HomeComponent implements OnInit {
       return;
     }
 
-    // 🌐 TWA/PWA: picker + modal
+    // 🌐 TWA/PWA: picker
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = '.pdf,.epub,application/pdf,application/epub+zip';

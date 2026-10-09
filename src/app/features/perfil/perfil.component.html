@@ -150,7 +150,8 @@
       <ng-container *ngIf="abaAtiva === 'biblioteca'">
         <app-estante
           [usuarioId]="modoVisualizacao ? (usuarioIdVisualizado || '') : (usuario?.id || '')"
-          [modoVisualizacao]="modoVisualizacao">
+            [modoVisualizacao]="modoVisualizacao"
+            [colecoesPerfil]="usuario?.colecoes || []">
         </app-estante>
       </ng-container>
 

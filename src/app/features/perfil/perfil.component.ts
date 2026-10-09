@@ -101,10 +101,10 @@ export class PerfilComponent implements OnInit {
             this.usuarioIdVisualizado = null;
             this.carregarMeuPerfil(forcarEdicao);
 
-            if (aba === 'biblioteca') {
+            if (aba === 'biblioteca' || aba === 'atividades' || aba === 'progresso') {
               setTimeout(() => {
-                this.abaAtiva = 'biblioteca';
-              }, 800);
+                this.abaAtiva = aba;
+              }, 10);
             }
           }
         });

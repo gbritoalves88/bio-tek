@@ -31,4 +31,10 @@ export class EstanteService {
   deletarPrateleira(id: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
+
+  // 🆕 Lista as prateleiras de um usuário específico (perfil visitado)
+  getPrateleirasDoUsuario(usuarioId: string): Observable<Prateleira[]> {
+    return this.http.get<Prateleira[]>(`${this.apiUrl}/usuario/${usuarioId}`);
+  }
+
 }

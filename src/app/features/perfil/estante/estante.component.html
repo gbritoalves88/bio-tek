@@ -16,11 +16,12 @@
 <!-- 2. FILTROS                                                   -->
 <!-- ============================================================ -->
 <div class="filtros">
-  <button class="filtro-btn" [class.active]="filtroStatus === null" (click)="filtroStatus = null">Todos</button>
-  <button class="filtro-btn" [class.active]="filtroStatus === 1" (click)="filtroStatus = 1">📕 {{ modoVisualizacao ? 'Quer ler' : 'Quero ler' }}</button>
-  <button class="filtro-btn" [class.active]="filtroStatus === 2" (click)="filtroStatus = 2">📖 Lendo</button>
-  <button class="filtro-btn" [class.active]="filtroStatus === 3" (click)="filtroStatus = 3">✅ {{ modoVisualizacao ? 'Leu' : 'Lidos' }}</button>
-  <button class="filtro-btn" [class.active]="filtroAvaliado" (click)="filtroAvaliado = !filtroAvaliado">⭐ Avaliados</button>
+  <button class="filtro-btn" [class.active]="filtroStatus === null && !filtroPrateleira" (click)="selecionarStatus(null)">Todos</button>
+  <button class="filtro-btn" [class.active]="filtroStatus === 1" (click)="selecionarStatus(1)">📕 {{ modoVisualizacao ? 'Quer ler' : 'Quero ler' }}</button>
+  <button class="filtro-btn" [class.active]="filtroStatus === 2" (click)="selecionarStatus(2)">📖 Lendo</button>
+  <button class="filtro-btn" [class.active]="filtroStatus === 3" (click)="selecionarStatus(3)">✅ {{ modoVisualizacao ? 'Leu' : 'Lidos' }}</button>
+  <button class="filtro-btn" [class.active]="filtroAvaliado" (click)="selecionarAvaliados()">⭐ Avaliados</button>
+  <button class="filtro-btn" [class.active]="filtroPrateleira" (click)="selecionarPrateleiras()">📚 Prateleiras</button>
 </div>
 
 <!-- ============================================================ -->
@@ -30,7 +31,7 @@
 
   <!-- Prateleiras -->
   <div class="prateleira-card"
-       *ngFor="let p of prateleiras"
+       *ngFor="let p of prateleirasVisiveis"
        (click)="abrirPrateleira(p)">
     <div class="prateleira-capas">
       <img *ngIf="p.capas?.[0]" [src]="p.capas![0]" alt="Capa" class="capa capa-1" loading="lazy" decoding="async" />
@@ -44,8 +45,10 @@
     </div>
   </div>
 
-  <!-- Livros -->
-  <div class="book-item" *ngFor="let livro of livrosFiltrados" (click)="abrirBottomSheetLivro(livro)">
+  <!-- Livros (paginados) -->
+  <div class="book-item"
+       *ngFor="let livro of livrosPaginados"
+       (click)="abrirBottomSheetLivro(livro)">
     <div class="book-cover-wrapper">
       <img [src]="livro.imagem || 'assets/capas/perfilSemFoto.png'"
            [alt]="livro.titulo"
@@ -59,7 +62,17 @@
     </div>
   </div>
 
-  <p class="empty" *ngIf="livros.length === 0 && prateleiras.length === 0">Nenhum livro na biblioteca.</p>
+  <!-- 🆕 Carregar mais -->
+  <button class="btn-carregar-mais"
+          *ngIf="temMaisLivros"
+          (click)="carregarMais()">
+    Carregar mais ({{ livrosFiltrados.length - livrosPaginados.length }} restantes)
+  </button>
+
+  <p class="empty"
+     *ngIf="livrosFiltrados.length === 0 && prateleirasVisiveis.length === 0">
+    {{ filtroPrateleira ? 'Nenhuma prateleira criada.' : 'Nenhum livro na biblioteca.' }}
+  </p>
 </div>
 
 <!-- ============================================================ -->
@@ -225,7 +238,11 @@
 
     <div class="bs-actions">
       <button class="btn-cancelar" (click)="fecharEdicaoLivro()">Cancelar</button>
-      <button class="btn-salvar" (click)="salvarEdicaoLivro()">Salvar alterações</button>
+      <button class="btn-salvar"
+              (click)="salvarEdicaoLivro()"
+              [disabled]="enviandoEdicao">
+        {{ enviandoEdicao ? 'Salvando...' : 'Salvar alterações' }}
+      </button>
     </div>
   </ng-container>
 </app-bottom-sheet>
@@ -327,7 +344,6 @@
 <!-- 9. MODAL: PRATELEIRA (livros) — ÚLTIMO ELEMENTO!             -->
 <!--    Fora de qualquer container animado, garante position:fixed -->
 <!-- ============================================================ -->
-<!-- ========== MODAL: PRATELEIRA (livros) ========== -->
 <div class="modal-prateleira-overlay"
      *ngIf="bottomSheetPrateleiraAberto && prateleiraSelecionada"
      (click)="fecharBottomSheetPrateleira()">
@@ -389,5 +405,3 @@
     </div>
   </div>
 </div>
-
-

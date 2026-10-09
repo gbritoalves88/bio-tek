@@ -1,4 +1,5 @@
 // src/app/features/perfil/perfil.model.ts
+import { Prateleira } from './estante/estante.model';
 
 export interface Avaliacao {
   id: string;
@@ -60,6 +61,7 @@ export interface Usuario {
   dataCriacao?: string;
   dataAtualizacao?: string;
   livros?: LivroDoUsuario[];
+  colecoes?: Prateleira[];
 }
 
 export interface AtividadeLeitura {
