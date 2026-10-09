@@ -1,0 +1,110 @@
+<div class="leitor-overlay" *ngIf="aberto">
+
+  <!-- ========== HEADER ========== -->
+  <div class="leitor-header">
+    <button class="leitor-close" (click)="fechar()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </button>
+    <h2>{{ titulo }}</h2>
+
+    <!-- Zoom (PDF + EPUB) -->
+    <div class="leitor-header-actions">
+      <button class="leitor-nav" (click)="zoomOut()" title="Diminuir zoom" [disabled]="zoom <= zoomMin">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+      </button>
+      <button class="leitor-nav" (click)="zoomReset()" title="Restaurar zoom">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
+        </svg>
+      </button>
+      <button class="leitor-nav" (click)="zoomIn()" title="Aumentar zoom" [disabled]="zoom >= zoomMax">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+      </button>
+
+      <!-- EPUB: navegação anterior/próxima -->
+      <ng-container *ngIf="tipo === 'epub'">
+        <button class="leitor-nav" (click)="anterior()" title="Anterior">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+        </button>
+        <button class="leitor-nav" (click)="proxima()" title="Próxima">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+        </button>
+      </ng-container>
+    </div>
+  </div>
+
+  <!-- ========== ÁREA EPUB ========== -->
+  <div class="leitor-area" #leitorArea *ngIf="tipo === 'epub'"></div>
+
+  <!-- ========== ÁREA PDF ========== -->
+  <div class="leitor-area-pdf" *ngIf="tipo === 'pdf'">
+    <canvas #canvasPdf></canvas>
+  </div>
+
+  <!-- ========== CONTROLES PDF ========== -->
+  <div class="pdf-controles" *ngIf="tipo === 'pdf'">
+    <button class="pdf-nav" (click)="pdfAnterior()" [disabled]="pdfPaginaAtual <= 1">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="15 18 9 12 15 6"/>
+      </svg>
+    </button>
+
+    <div class="pdf-pagina-input">
+      <input
+        type="number"
+        min="1"
+        [max]="pdfTotalPaginas"
+        [(ngModel)]="paginaInput"
+        (keyup.enter)="irParaPagina()"
+        (blur)="irParaPagina()"
+        placeholder="Pág."
+      />
+      <span>/ {{ pdfTotalPaginas }}</span>
+    </div>
+
+    <button class="pdf-nav" (click)="pdfProxima()" [disabled]="pdfPaginaAtual >= pdfTotalPaginas">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="9 18 15 12 9 6"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- ========== FOOTER EPUB ========== -->
+  <div class="leitor-footer" *ngIf="tipo === 'epub'">
+    <button class="pdf-nav" (click)="pularPercent(-5)" title="Voltar 5%">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="15 18 9 12 15 6"/>
+      </svg>
+    </button>
+
+    <div class="pdf-pagina-input">
+      <input
+        type="number"
+        min="0"
+        max="100"
+        [(ngModel)]="percentInput"
+        (keyup.enter)="irParaPercent()"
+        (blur)="irParaPercent()"
+        placeholder="%"
+      />
+      <span>%</span>
+    </div>
+
+    <button class="pdf-nav" (click)="pularPercent(5)" title="Avançar 5%">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="9 18 15 12 9 6"/>
+      </svg>
+    </button>
+  </div>
+
+</div>

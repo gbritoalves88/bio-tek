@@ -4,8 +4,16 @@
 .filtros {
   display: flex;
   gap: 6px;
-  flex-wrap: wrap;
   margin-bottom: 16px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  flex-wrap: nowrap;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 .filtro-btn {
@@ -17,9 +25,36 @@
   font-size: 10px;
   cursor: pointer;
   transition: all 0.2s;
+  flex-shrink: 0;
+  white-space: nowrap;
 
   &:hover, &.active { border-color: var(--accent); color: var(--accent); }
   &:active { transform: scale(0.95); }
+}
+
+.btn-carregar-mais {
+  grid-column: 1 / -1;   // ou flex: 0 0 100%
+  flex: 0 0 100%;
+  width: 100%;
+  padding: 12px;
+  margin-top: 8px;
+  border: 1px dashed var(--border-color);
+  border-radius: 12px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
 }
 
 // ============================================================

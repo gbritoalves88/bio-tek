@@ -156,14 +156,50 @@
 
 // ===== FOOTER =====
 .leitor-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
   padding: 8px 16px;
   background: var(--bg-card);
   border-top: 1px solid var(--border-color);
-  text-align: center;
   font-size: 12px;
   color: var(--text-secondary);
   flex-shrink: 0;
-  min-height: 36px;
+  min-height: 48px;
+}
+
+.pdf-pagina-input {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-secondary);
+
+  input {
+    width: 56px;
+    padding: 6px 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-size: 13px;
+    text-align: center;
+    outline: none;
+    font-family: inherit;
+
+    &:focus {
+      border-color: var(--accent);
+    }
+
+    // Remove as setinhas do number
+    &::-webkit-outer-spin-button,
+    &::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    -moz-appearance: textfield;
+  }
 }
 
 @keyframes fadeIn {

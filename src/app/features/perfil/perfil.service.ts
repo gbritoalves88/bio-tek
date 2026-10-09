@@ -56,6 +56,14 @@ export class PerfilService {
         dataAceiteTermos: data.dataAceiteTermos,
         dataCriacao: data.dataCriacao,
         dataAtualizacao: data.dataAtualizacao,
+        colecoes: (data.colecoes || []).map((c: any) => ({
+          id: c.id,
+          nome: c.nome,
+          descricao: c.descricao,
+          totalLivros: c.totalLivros,
+          capas: c.capas || [],
+          dataCriacao: c.dataCriacao
+        })),
         livros: (data.livros || []).map((l: any) => ({
           ...l,
           tipo: l.tipo || 'livro',
