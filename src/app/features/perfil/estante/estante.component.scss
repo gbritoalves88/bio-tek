@@ -58,6 +58,96 @@
 }
 
 // ============================================================
+// ===== MODAL PRATELEIRA: AÇÕES (EDITAR / SALVAR / X) ========
+// ============================================================
+.modal-prateleira-actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.modal-prateleira-edit,
+.modal-prateleira-save {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 4px;
+  flex-shrink: 0;
+  border-radius: 6px;
+  transition: all 0.2s;
+
+  svg { width: 20px; height: 20px; }
+
+  &:hover {
+    color: var(--accent);
+    background: rgba(219, 124, 0, 0.1);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.modal-prateleira-save {
+  &:hover { color: #4caf50; background: rgba(76, 175, 80, 0.1); }
+}
+
+// ============================================================
+// ===== MODAL PRATELEIRA: INPUT DE TÍTULO (MODO EDIÇÃO) ======
+// ============================================================
+.modal-prateleira-input-titulo {
+  flex: 1;
+  min-width: 0;
+  margin-right: 8px;
+  padding: 6px 10px;
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 15px;
+  font-weight: 600;
+  font-family: inherit;
+  outline: none;
+
+  &:focus {
+    box-shadow: 0 0 0 2px rgba(219, 124, 0, 0.2);
+  }
+
+  &::placeholder {
+    color: var(--text-secondary);
+    font-weight: 400;
+  }
+}
+
+// ============================================================
+// ===== MODAL PRATELEIRA: TEXTAREA DE DESCRIÇÃO (EDIÇÃO) =====
+// ============================================================
+.modal-prateleira-textarea-descricao {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 13px;
+  font-family: inherit;
+  resize: vertical;
+  outline: none;
+  box-sizing: border-box;
+  margin-bottom: 12px;
+
+  &:focus {
+    border-color: var(--accent);
+  }
+
+  &::placeholder {
+    color: var(--text-secondary);
+  }
+}
+
+// ============================================================
 // ===== BOOK LIST ============================================
 // ============================================================
 .book-list {

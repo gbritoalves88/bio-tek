@@ -340,29 +340,91 @@
   </div>
 </div>
 
-<!-- ============================================================ -->
-<!-- 9. MODAL: PRATELEIRA (livros) — ÚLTIMO ELEMENTO!             -->
-<!--    Fora de qualquer container animado, garante position:fixed -->
-<!-- ============================================================ -->
-<div class="modal-prateleira-overlay"
-     *ngIf="bottomSheetPrateleiraAberto && prateleiraSelecionada"
-     (click)="fecharBottomSheetPrateleira()">
-  <div class="modal-prateleira-content" (click)="$event.stopPropagation()">
+  <!-- ============================================================ -->
+  <!-- 9. MODAL: PRATELEIRA (livros) — ÚLTIMO ELEMENTO!             -->
+  <!--    Fora de qualquer container animado, garante position:fixed -->
+  <!-- ============================================================ -->
+  <div class="modal-prateleira-overlay"
+      *ngIf="bottomSheetPrateleiraAberto && prateleiraSelecionada"
+      (click)="fecharBottomSheetPrateleira()">
+    <div class="modal-prateleira-content" (click)="$event.stopPropagation()">
 
-    <div class="modal-prateleira-header">
+      <div class="modal-prateleira-header">
+
+    <!-- ===== MODO VISUALIZAÇÃO ===== -->
+    <ng-container *ngIf="!editandoPrateleira">
       <h3>📚 {{ prateleiraSelecionada.nome }}</h3>
-      <button class="modal-prateleira-close" (click)="fecharBottomSheetPrateleira()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-        </svg>
-      </button>
-    </div>
+
+      <div class="modal-prateleira-actions">
+        <button class="modal-prateleira-edit"
+                *ngIf="!modoVisualizacao"
+                (click)="abrirEdicaoPrateleira()"
+                title="Editar prateleira">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+          </svg>
+        </button>
+
+        <button class="modal-prateleira-close" (click)="fecharBottomSheetPrateleira()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+    </ng-container>
+
+    <!-- ===== MODO EDIÇÃO ===== -->
+    <ng-container *ngIf="editandoPrateleira">
+      <input
+        type="text"
+        [(ngModel)]="prateleiraEditandoNome"
+        (keyup.enter)="salvarEdicaoPrateleira()"
+        (keyup.escape)="cancelarEdicaoPrateleira()"
+        placeholder="Nome da prateleira"
+        maxlength="50"
+        class="modal-prateleira-input-titulo"
+      />
+
+      <div class="modal-prateleira-actions">
+        <button class="modal-prateleira-save"
+                (click)="salvarEdicaoPrateleira()"
+                [disabled]="salvandoEdicaoPrateleira"
+                title="Salvar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+        </button>
+
+        <button class="modal-prateleira-close"
+                (click)="cancelarEdicaoPrateleira()"
+                title="Cancelar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+    </ng-container>
+
+  </div>
 
     <div class="modal-prateleira-body">
 
-      <p class="prateleira-descricao" *ngIf="prateleiraSelecionada.descricao">
+      <!-- ===== DESCRIÇÃO: VISUALIZAÇÃO ===== -->
+      <p class="prateleira-descricao"
+        *ngIf="!editandoPrateleira && prateleiraSelecionada.descricao">
         {{ prateleiraSelecionada.descricao }}
       </p>
+
+      <!-- ===== DESCRIÇÃO: EDIÇÃO ===== -->
+      <textarea
+        *ngIf="editandoPrateleira"
+        [(ngModel)]="prateleiraEditandoDescricao"
+        placeholder="Uma breve descrição (opcional)"
+        rows="2"
+        maxlength="200"
+        class="modal-prateleira-textarea-descricao"
+      ></textarea>
 
       <div class="prateleira-livros-lista" *ngIf="livrosDaPrateleira.length > 0">
         <div class="prateleira-livro-item"
