@@ -9,7 +9,7 @@
     </button>
   </div>
 
-  <!-- 🆕 STREAK (substitui a frase do autor) -->
+  <!-- STREAK -->
   <div class="streak-card ativo" *ngIf="streak && streak.sequenciaAtual > 0"
     (click)="abrirStreak()">
     <div class="streak-icon">🔥</div>
@@ -66,7 +66,7 @@
         <span class="badge-pausado" *ngIf="livroAtual.pausado">⏸️ Pausado</span>
       </h2>
       <div class="book-info">
-        <img [src]="livroAtual.imagem || 'assets/capas/perfilSemFoto.png'" [alt]="livroAtual.titulo" class="book-cover"  loading="lazy" decoding="async" />
+        <img [src]="livroAtual.imagem || 'assets/capas/perfilSemFoto.png'" [alt]="livroAtual.titulo" class="book-cover" loading="lazy" decoding="async" />
         <div class="book-details">
           <h3>{{ livroAtual.titulo }}</h3>
           <p>{{ livroAtual.autor }}</p>
@@ -78,13 +78,17 @@
               </div>
             </div>
 
-            <span class="progress-texto" *ngIf="!livroAtual.tipo || livroAtual.tipo === 'livro'">
+            <!-- 🆕 Modo páginas -->
+            <span class="progress-texto"
+                  *ngIf="(!livroAtual.tipo || livroAtual.tipo === 'livro') && modoProgressoAtual === 'paginas'">
               {{ livroAtual.paginaAtual || 0 }}/{{ livroAtual.totalPaginas || '?' }} pág • {{ livroAtual.progresso }}% concluído
               <span *ngIf="livroAtual.progresso === 100">, Parabéns!</span>
             </span>
 
-            <span class="progress-texto" *ngIf="livroAtual.tipo === 'audiobook'">
-              {{ formatarHHMM(livroAtual.totalMinutos) }} • {{ livroAtual.progresso || 0 }}% concluído
+            <!-- 🆕 Modo % -->
+            <span class="progress-texto"
+                  *ngIf="(!livroAtual.tipo || livroAtual.tipo === 'livro') && modoProgressoAtual === 'percentual'">
+              {{ livroAtual.progresso || 0 }}% de 100%
               <span *ngIf="livroAtual.progresso === 100">, Parabéns!</span>
             </span>
 
@@ -173,7 +177,6 @@
       </h2>
       <div class="scroll-horizontal">
         <div class="scroll-track">
-
 
           <div class="livro-card" *ngFor="let livro of listaLeitura" (click)="abrirDetalhesLivro(livro, true)">
             <img [src]="livro.imagem || 'assets/capas/perfilSemFoto.png'"
@@ -266,14 +269,48 @@
 
       <!-- LIVRO -->
       <div class="bs-pagina" *ngIf="!livroAtual.tipo || livroAtual.tipo === 'livro'">
-        <label class="bs-label">📄 Página atual</label>
-        <div class="bs-pagina-inputs">
-          <input type="number" [(ngModel)]="paginaAtual" placeholder="Página" min="0" class="bs-input-pagina" />
-          <span class="bs-de">de</span>
-          <input type="number" [(ngModel)]="totalPaginas" placeholder="Total" min="0" class="bs-input-pagina" />
+
+        <!-- 🆕 Toggle: Páginas ↔ Porcentagem -->
+        <div class="bs-modo-progresso">
+          <span class="bs-modo-label"
+                [class.ativo]="modoProgresso === 'paginas'"
+                (click)="setModoProgresso('paginas')">
+            📄 Páginas
+          </span>
+
+          <span class="toggle-switch"
+                [class.on]="modoProgresso === 'percentual'"
+                (click)="alternarModoProgresso()">
+            <span class="toggle-knob"></span>
+          </span>
+
+          <span class="bs-modo-label"
+                [class.ativo]="modoProgresso === 'percentual'"
+                (click)="setModoProgresso('percentual')">
+            📊 Porcentagem
+          </span>
         </div>
 
-        <!-- 🆕 CAMPO DE FRASE OPCIONAL -->
+        <!-- Modo PÁGINAS -->
+        <ng-container *ngIf="modoProgresso === 'paginas'">
+          <label class="bs-label">📄 Página atual</label>
+          <div class="bs-pagina-inputs">
+            <input type="number" [(ngModel)]="paginaAtual" placeholder="Página" min="0" class="bs-input-pagina" />
+            <span class="bs-de">de</span>
+            <input type="number" [(ngModel)]="totalPaginas" placeholder="Total" min="0" class="bs-input-pagina" />
+          </div>
+        </ng-container>
+
+        <!-- Modo % -->
+        <ng-container *ngIf="modoProgresso === 'percentual'">
+          <label class="bs-label">📊 Progresso de leitura (%)</label>
+          <div class="bs-pagina-inputs">
+            <input type="number" [(ngModel)]="progressoInput" placeholder="%" min="0" max="100" class="bs-input-pagina" />
+            <span class="bs-de">%</span>
+          </div>
+        </ng-container>
+
+        <!-- Frase -->
         <label class="bs-label">💬 Compartilhar frase (opcional)</label>
         <textarea
           [(ngModel)]="fraseAtividade"
@@ -310,7 +347,6 @@
           />
         </div>
 
-        <!-- 🆕 Linha com progresso e restante -->
         <div class="bs-progresso-info" *ngIf="progressoAudiobook > 0">
           <span class="bs-progresso-percent">{{ progressoAudiobook }}% concluído</span>
           <span class="bs-progresso-restante" *ngIf="restanteAudiobook">
@@ -318,7 +354,6 @@
           </span>
         </div>
 
-        <!-- 🆕 Campo de frase (mantém) -->
         <label class="bs-label">💬 Compartilhar frase (opcional)</label>
         <textarea
           [(ngModel)]="fraseAtividade"
@@ -330,10 +365,10 @@
         <span class="bs-contador">{{ fraseAtividade.length }}/200</span>
       </div>
 
-      <!-- 🆕 Ações (Atualizar progresso / Parar / Ler / Compartilhar) -->
+      <!-- Ações -->
       <div class="bs-acoes">
 
-         <!-- Compartilhar -->
+        <!-- Compartilhar -->
         <button class="bs-btn bs-btn-outline" (click)="compartilharLeitura()" [disabled]="compartilhando">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="18" cy="5" r="3"/>
@@ -344,7 +379,6 @@
           </svg>
           {{ compartilhando ? 'Gerando...' : 'Compartilhar leitura' }}
         </button>
-
 
         <!-- Parar / Continuar -->
         <button class="bs-btn bs-btn-outline" (click)="togglePausar()">
@@ -373,7 +407,6 @@
           Ler arquivo
         </button>
 
-
         <!-- Atualizar progresso -->
         <button
           class="bs-btn bs-btn-primary"
@@ -381,7 +414,9 @@
           [disabled]="
             (livroAtual.tipo === 'audiobook'
               ? (!posicaoAtualInput && !duracaoTotalInput)
-              : (!paginaAtual && !totalPaginas))
+              : modoProgresso === 'paginas'
+                ? (!paginaAtual && !totalPaginas)
+                : (progressoInput === null || progressoInput === undefined))
           "
         >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -390,10 +425,9 @@
           Atualizar progresso
         </button>
 
-
       </div>
 
-      <!-- 🆕 Continuar lendo -->
+      <!-- Continuar lendo -->
       <div class="bs-outros-pausados" *ngIf="outrosEmAndamento.length > 0">
         <h4>📚 Continuar lendo</h4>
         <div class="bs-pausados-lista">

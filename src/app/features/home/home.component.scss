@@ -617,6 +617,60 @@
   width: 100%;
 }
 
+// ===== TOGGLE DE MODO DE PROGRESSO =====
+.bs-modo-progresso {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 12px 0 16px;
+  margin-bottom: 4px;
+}
+
+.bs-modo-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: color 0.2s;
+  user-select: none;
+
+  &.ativo {
+    color: var(--accent);
+  }
+}
+
+.toggle-switch {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  background: var(--border-color);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background 0.25s ease;
+  flex-shrink: 0;
+
+  .toggle-knob {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 18px;
+    height: 18px;
+    background: white;
+    border-radius: 50%;
+    transition: transform 0.25s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  }
+
+  &.on {
+    background: var(--accent);
+
+    .toggle-knob {
+      transform: translateX(20px);
+    }
+  }
+}
+
 // 🆕 Bloco do botão Atualizar progresso
 .bs-atualizar {
   padding-top: 12px;

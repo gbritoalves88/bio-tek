@@ -48,6 +48,9 @@ export class HomeComponent implements OnInit {
   streak: StreakData | null = null;
   outrosEmAndamento: any[] = [];
 
+  modoProgresso: 'paginas' | 'percentual' = 'paginas';
+  progressoInput: number | null = null;
+
   citacao = {
     texto: 'Um leitor vive mil vidas antes de morrer. O homem que nunca lê vive apenas uma.',
     autor: 'George R. R. Martin'
@@ -182,6 +185,7 @@ export class HomeComponent implements OnInit {
     this.lendoAgoraAberto = false;
     this.previewImagem = '';
     this.fraseAtividade = '';
+    this.progressoInput = null;
     this.cdr.markForCheck();
   }
 
@@ -211,6 +215,40 @@ export class HomeComponent implements OnInit {
     return horas > 0 ? `${horas}h ${mins}min` : `${mins}min`;
   }
 
+  // ============ MODO DE PROGRESSO ============
+
+  private get chaveModoProgresso(): string {
+    const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+    const usuarioId = usuario.id || 'anon';
+    const livroId = this.livroAtual?.id || 'sem-livro';
+    return `modoProgresso:${usuarioId}:${livroId}`;
+  }
+
+  private carregarModoProgresso(): 'paginas' | 'percentual' {
+    // 1. Tenta localStorage
+    const salvo = localStorage.getItem(this.chaveModoProgresso) as 'paginas' | 'percentual' | null;
+    if (salvo === 'paginas' || salvo === 'percentual') return salvo;
+
+    // 2. Tem paginaAtual no livro? → páginas
+    if (this.livroAtual?.paginaAtual) return 'paginas';
+
+    // 3. Padrão → percentual
+    return 'percentual';
+  }
+
+  alternarModoProgresso(): void {
+    this.modoProgresso = this.modoProgresso === 'paginas' ? 'percentual' : 'paginas';
+    localStorage.setItem(this.chaveModoProgresso, this.modoProgresso);
+    this.cdr.markForCheck();
+  }
+
+  setModoProgresso(modo: 'paginas' | 'percentual'): void {
+    if (this.modoProgresso === modo) return;
+    this.modoProgresso = modo;
+    localStorage.setItem(this.chaveModoProgresso, modo);
+    this.cdr.markForCheck();
+  }
+
   abrirLendoAgora(): void {
     this.lendoAgoraAberto = true;
     this.previewImagem = '';
@@ -218,14 +256,20 @@ export class HomeComponent implements OnInit {
     const tipo = this.livroAtual?.tipo || 'livro';
 
     if (tipo === 'audiobook') {
-      // 🆕 Preenche HH:MM a partir dos minutos salvos
       this.posicaoAtualInput = this.formatarHHMM(this.livroAtual?.minutoAtual);
       this.duracaoTotalInput = this.formatarHHMM(this.livroAtual?.totalMinutos);
       this.paginaAtual = null;
       this.totalPaginas = null;
+      this.progressoInput = null;
     } else {
+      // 🆕 Carrega modo
+      this.modoProgresso = this.carregarModoProgresso();
+
+      // Preenche ambos (o toggle decide qual mostra)
       this.paginaAtual = this.livroAtual?.paginaAtual || null;
       this.totalPaginas = this.livroAtual?.totalPaginas || null;
+      this.progressoInput = this.livroAtual?.progresso || null;
+
       this.posicaoAtualInput = '';
       this.duracaoTotalInput = '';
     }
@@ -244,7 +288,6 @@ export class HomeComponent implements OnInit {
       const minAtual = this.parseHHMM(this.posicaoAtualInput);
       const minTotal = this.parseHHMM(this.duracaoTotalInput);
 
-      // 🆕 Validação
       if (minAtual === null && this.posicaoAtualInput) {
         this.alertService.warning('Posição atual inválida');
         return;
@@ -264,12 +307,21 @@ export class HomeComponent implements OnInit {
 
       if (minAtual !== null && minAtual > 0) dados.minutoAtual = minAtual;
       if (minTotal !== null && minTotal > 0) dados.totalMinutos = minTotal;
-    } else {
+    } else if (this.modoProgresso === 'paginas') {
+      // 🆕 Modo páginas
       progresso = this.totalPaginas && this.paginaAtual
         ? Math.round((this.paginaAtual / this.totalPaginas) * 100)
         : undefined;
       if (this.paginaAtual) dados.paginaAtual = this.paginaAtual;
       if (this.totalPaginas) dados.totalPaginas = this.totalPaginas;
+    } else {
+      // 🆕 Modo percentual
+      if (this.progressoInput !== null && this.progressoInput !== undefined) {
+        const valor = Math.max(0, Math.min(100, Math.floor(Number(this.progressoInput))));
+        if (!isNaN(valor)) {
+          progresso = valor;
+        }
+      }
     }
 
     if (progresso !== undefined) dados.progresso = progresso;
@@ -287,7 +339,6 @@ export class HomeComponent implements OnInit {
         this.alertService.success('Progresso atualizado!');
         this.analyticsService.logUpdateProgress(progresso || 0);
 
-        // 🆕 Se tem comentário, vai para atividades
         if (temComentario) {
           this.fecharLendoAgora();
           this.router.navigate(['/inicio/perfil'], {
@@ -704,5 +755,21 @@ export class HomeComponent implements OnInit {
   private abrirArquivo(file: File, livroId: string): void {
     // 🆕 PDF e EPUB → abrem no modal
     this.leitorService.setArquivo(file, livroId);
+  }
+
+  // 🆕 Modo do livro atual (pro card da Home)
+  private get chaveModoProgressoAtual(): string {
+    const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+    const usuarioId = usuario.id || 'anon';
+    const livroId = this.livroAtual?.id || 'sem-livro';
+    return `modoProgresso:${usuarioId}:${livroId}`;
+  }
+
+  get modoProgressoAtual(): 'paginas' | 'percentual' {
+    const salvo = localStorage.getItem(this.chaveModoProgressoAtual) as 'paginas' | 'percentual' | null;
+    if (salvo === 'paginas' || salvo === 'percentual') return salvo;
+
+    // Sem preferência salva: se tem paginaAtual → páginas, senão → %
+    return this.livroAtual?.paginaAtual ? 'paginas' : 'percentual';
   }
 }

@@ -75,6 +75,10 @@ export class EstanteComponent implements OnInit {
   enviandoEdicao = false;
   itensPorPagina = 12;
   paginaAtual = 1;
+  editandoPrateleira = false;
+  prateleiraEditandoNome = '';
+  prateleiraEditandoDescricao = '';
+  salvandoEdicaoPrateleira = false;
 
   private readonly TAMANHO_MAXIMO = 10 * 1024 * 1024;
 
@@ -588,6 +592,9 @@ export class EstanteComponent implements OnInit {
     this.bottomSheetPrateleiraAberto = false;
     this.prateleiraSelecionada = null;
     this.livrosDaPrateleira = [];
+    this.editandoPrateleira = false;
+    this.prateleiraEditandoNome = '';
+    this.prateleiraEditandoDescricao = '';
     this.cdr.markForCheck();
   }
 
@@ -602,7 +609,7 @@ export class EstanteComponent implements OnInit {
 
   // 🆕 Exclui prateleira direto (só se estiver vazia)
   excluirPrateleira(): void {
-    if (!this.prateleiraSelecionada || this.excluindoPrateleira) return;
+    if (!this.prateleiraSelecionada || this.excluindoPrateleira || this.editandoPrateleira) return;
 
     // 🔒 Trava de segurança: não deixa excluir se tiver livros
     if (this.livrosDaPrateleira.length > 0) {
@@ -697,6 +704,85 @@ export class EstanteComponent implements OnInit {
       this.filtroAvaliado = false;
     }
     this.paginaAtual = 1;   // 🆕
+  }
+
+  // ============ EDIÇÃO DE PRATELEIRA ============
+
+  abrirEdicaoPrateleira(): void {
+    if (!this.prateleiraSelecionada) return;
+
+    this.prateleiraEditandoNome = this.prateleiraSelecionada.nome;
+    this.prateleiraEditandoDescricao = this.prateleiraSelecionada.descricao || '';
+    this.editandoPrateleira = true;
+
+    // Foca no input depois do render
+    setTimeout(() => {
+      const input = document.querySelector('.modal-prateleira-input-titulo') as HTMLInputElement;
+      input?.focus();
+      input?.select();
+    });
+
+    this.cdr.markForCheck();
+  }
+
+  cancelarEdicaoPrateleira(): void {
+    this.editandoPrateleira = false;
+    this.prateleiraEditandoNome = '';
+    this.prateleiraEditandoDescricao = '';
+    this.cdr.markForCheck();
+  }
+
+  salvarEdicaoPrateleira(): void {
+    if (!this.prateleiraSelecionada || this.salvandoEdicaoPrateleira) return;
+
+    const nome = this.prateleiraEditandoNome?.trim();
+    const descricao = this.prateleiraEditandoDescricao?.trim() || null;
+
+    if (!nome) {
+      this.alertService.warning('Nome da prateleira é obrigatório');
+      return;
+    }
+
+    if (nome.length > 50) {
+      this.alertService.warning('Nome deve ter no máximo 50 caracteres');
+      return;
+    }
+
+    this.salvandoEdicaoPrateleira = true;
+
+    this.estanteService.atualizarPrateleira(this.prateleiraSelecionada.id, { nome, descricao })
+      .subscribe({
+        next: (atualizada) => {
+          this.salvandoEdicaoPrateleira = false;
+          this.editandoPrateleira = false;
+
+          // Atualiza objeto selecionado
+          this.prateleiraSelecionada = {
+            ...this.prateleiraSelecionada!,
+            nome: atualizada.nome,
+            descricao: atualizada.descricao
+          };
+
+          // Atualiza no array local
+          this.prateleiras = this.prateleiras
+            .map(p => p.id === atualizada.id
+              ? { ...p, nome: atualizada.nome, descricao: atualizada.descricao }
+              : p)
+            .sort((a, b) => a.nome.localeCompare(b.nome));
+
+          // Limpa cache do perfil (que tem as coleções também)
+          this.perfilService.limparCache();
+
+          this.alertService.success('Prateleira atualizada!');
+          this.cdr.markForCheck();
+        },
+        error: (err) => {
+          this.salvandoEdicaoPrateleira = false;
+          const msg = err?.error?.mensagem || 'Erro ao atualizar prateleira';
+          this.alertService.error(msg);
+          this.cdr.markForCheck();
+        }
+      });
   }
 
 }
