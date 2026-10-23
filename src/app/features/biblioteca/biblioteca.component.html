@@ -1,6 +1,7 @@
-<!-- src/app/features/biblioteca/biblioteca.component.html -->
-<app-pull-to-refresh [carregando]="carregando" (refresh)="carregarTudo()">
+<app-pull-to-refresh [carregando]="carregando" (refresh)="carregarPagina(1)">
 <section class="catalogo">
+
+  <!-- ========== HEADER FIXO ========== -->
   <div class="header-section">
     <div class="header-top">
       <h1>Biblioteca</h1>
@@ -8,6 +9,7 @@
         <span class="btn-label">Cadastrar Livro</span>
       </button>
     </div>
+
     <div class="search-box">
       <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <circle cx="11" cy="11" r="8"/>
@@ -28,97 +30,139 @@
     </div>
   </div>
 
-  <!-- Skeleton Loading -->
-  <div class="skeleton-container" *ngIf="carregando">
-    <div class="skeleton-search"></div>
-    <div class="skeleton-autores"></div>
-    <div class="skeleton-section"></div>
-    <div class="skeleton-cards">
-      <div class="skeleton-card" *ngFor="let i of [1,2,3,4]"></div>
-    </div>
-  </div>
+  <!-- ========== ÁREA COM SCROLL INFINITO ========== -->
+  <div class="catalogo-list" (scroll)="onScroll($event)">
 
-  <!-- Conteúdo carregado -->
-  <ng-container *ngIf="!carregando">
-
-    <!-- Autores famosos -->
-    <div class="secao-biblioteca" *ngIf="!termoBusca && !generoSelecionado">
-      <h2 class="secao-titulo">Autores famosos</h2>
-      <div class="scroll-horizontal">
-        <div class="autor-item" *ngFor="let autor of autoresFamosos" (click)="filtrarPorAutor(autor.termo)">
-          <img [src]="autor.foto" [alt]="autor.nome" class="autor-foto" loading="lazy" decoding="async" />
-          <span class="autor-nome">{{ autor.nome }}</span>
-        </div>
+    <!-- Skeleton da primeira carga -->
+    <div class="skeleton-container" *ngIf="carregando && livros.length === 0">
+      <div class="skeleton-search"></div>
+      <div class="skeleton-autores"></div>
+      <div class="skeleton-section"></div>
+      <div class="skeleton-cards">
+        <div class="skeleton-card" *ngFor="let i of [1,2,3,4]"></div>
       </div>
     </div>
 
-    <!-- Categorias -->
-    <div class="secao-biblioteca" *ngIf="!termoBusca && !generoSelecionado">
-      <h2 class="secao-titulo">Categorias</h2>
-      <div class="categorias-scroll">
-        <div class="categoria-chip"
-             *ngFor="let genero of todasCategoriasVisiveis"
-             (click)="filtrarPorGenero(genero)">
-          <span class="categoria-texto">{{ genero }}</span>
+    <!-- Conteúdo carregado -->
+    <ng-container *ngIf="!carregando || livros.length > 0">
+
+      <!-- Autores famosos (só sem filtro) -->
+      <div class="secao-biblioteca" *ngIf="!termoBusca && !generoSelecionado">
+        <h2 class="secao-titulo">Autores famosos</h2>
+        <div class="scroll-horizontal">
+          <div class="autor-item" *ngFor="let autor of autoresFamosos" (click)="filtrarPorAutor(autor.termo)">
+            <img [src]="autor.foto" [alt]="autor.nome" class="autor-foto" loading="lazy" decoding="async" />
+            <span class="autor-nome">{{ autor.nome }}</span>
+          </div>
         </div>
       </div>
-      <!-- <button class="ver-mais" (click)="toggleTodasCategorias()">
-        {{ mostrarTodasCategorias ? 'Ver menos' : 'Ver mais' }}
-      </button> -->
-    </div>
 
-    <!-- Mais Adicionados -->
-    <div class="secao-biblioteca" *ngIf="!termoBusca && !generoSelecionado && maisAdicionados.length > 0">
-      <h2 class="secao-titulo">Mais adicionados</h2>
-      <div class="scroll-horizontal">
-        <div class="livro-card"
-             *ngFor="let livro of maisAdicionados"
-             (click)="abrirDetalhesLivro(livro)">
+      <!-- Categorias (só sem filtro) -->
+      <div class="secao-biblioteca" *ngIf="!termoBusca && !generoSelecionado">
+        <h2 class="secao-titulo">Categorias</h2>
+        <div class="categorias-scroll">
+          <div class="categoria-chip"
+               *ngFor="let genero of todasCategoriasVisiveis"
+               (click)="filtrarPorGenero(genero)">
+            <span class="categoria-texto">{{ genero }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mais adicionados (só sem filtro) -->
+      <div class="secao-biblioteca" *ngIf="!termoBusca && !generoSelecionado && maisAdicionados.length > 0">
+        <h2 class="secao-titulo">Mais adicionados</h2>
+        <div class="scroll-horizontal">
+          <div class="livro-card"
+               *ngFor="let livro of maisAdicionados"
+               (click)="abrirDetalhesLivro(livro)">
+            <img [src]="livro.imagem || 'assets/capas/perfilSemFoto.png'"
+                 [alt]="livro.titulo"
+                 class="livro-capa"
+                 loading="lazy"
+                 decoding="async" />
+            <span class="livro-titulo">{{ livro.titulo || 'Sem título' }}</span>
+            <span class="livro-autor">{{ livro.autor || 'Autor desconhecido' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recomendados (só sem filtro) -->
+      <div class="secao-biblioteca" *ngIf="!termoBusca && !generoSelecionado && recomendados.length > 0">
+        <h2 class="secao-titulo">Recomendados para você</h2>
+        <div class="scroll-horizontal">
+          <div class="livro-card"
+               *ngFor="let livro of recomendados"
+               (click)="abrirDetalhesLivro(livro)">
+            <img [src]="livro.imagem || 'assets/capas/perfilSemFoto.png'"
+                 [alt]="livro.titulo"
+                 class="livro-capa"
+                 loading="lazy"
+                 decoding="async" />
+            <span class="livro-titulo">{{ livro.titulo || 'Sem título' }}</span>
+            <span class="livro-autor">{{ livro.autor || 'Autor desconhecido' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chip do filtro ativo -->
+      <div class="filtro-ativo" *ngIf="generoSelecionado">
+        <span>{{ generoSelecionado }}</span>
+        <button (click)="limparFiltroGenero()">✕</button>
+      </div>
+
+      <!-- Título da seção de livros -->
+      <h2 class="secao-titulo secao-livros" *ngIf="livros.length > 0">
+        <ng-container *ngIf="termoBusca">
+          Resultados para "{{ termoBusca }}"
+        </ng-container>
+        <ng-container *ngIf="!termoBusca && generoSelecionado">
+          {{ generoSelecionado }}
+        </ng-container>
+        <ng-container *ngIf="!termoBusca && !generoSelecionado">
+          Todos os livros
+        </ng-container>
+      </h2>
+
+      <!-- Grid de livros (sempre visível, paginado) -->
+      <div class="book-grid" *ngIf="livros.length > 0">
+        <div class="book-card" *ngFor="let livro of livros" (click)="abrirDetalhesLivro(livro)">
           <img [src]="livro.imagem || 'assets/capas/perfilSemFoto.png'"
                [alt]="livro.titulo"
-               class="livro-capa"
+               class="book-cover"
                loading="lazy"
                decoding="async" />
-          <span class="livro-titulo">{{ livro.titulo || 'Sem título' }}</span>
-          <span class="livro-autor">{{ livro.autor || 'Autor desconhecido' }}</span>
+          <div class="book-info">
+            <h3 class="book-title">{{ livro.titulo || 'Sem título' }}</h3>
+            <p class="book-author">{{ livro.autor || 'Autor desconhecido' }}</p>
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- Título do filtro ativo -->
-    <div class="filtro-ativo" *ngIf="generoSelecionado">
-      <span>{{ generoSelecionado }}</span>
-      <button (click)="limparFiltroGenero()">✕</button>
-    </div>
-
-    <!-- Grid de livros - 3 colunas (quando busca ou filtro ativo) -->
-    <div class="book-grid" *ngIf="livrosFiltrados.length > 0 && (generoSelecionado || termoBusca)">
-      <div class="book-card" *ngFor="let livro of livrosFiltrados" (click)="abrirDetalhesLivro(livro)">
-        <img [src]="livro.imagem || 'assets/capas/perfilSemFoto.png'"
-             [alt]="livro.titulo"
-             class="book-cover"
-             loading="lazy"
-             decoding="async" />
-        <div class="book-info">
-          <h3 class="book-title">{{ livro.titulo || 'Sem título' }}</h3>
-          <p class="book-author">{{ livro.autor || 'Autor desconhecido' }}</p>
-        </div>
+      <!-- Infinite Scroll: spinner -->
+      <div class="carregando-mais" *ngIf="carregandoMais">
+        Carregando mais livros...
       </div>
-    </div>
 
-    <!-- Empty states -->
-    <div class="empty" *ngIf="livros.length === 0 && !carregando">
-      <p>Nenhum livro no catálogo</p>
-      <p class="empty-hint">Clique no botão + para adicionar livros</p>
-    </div>
+      <!-- Empty state: nenhum livro no catálogo -->
+      <div class="empty" *ngIf="livros.length === 0 && !carregando">
+        <p>Nenhum livro no catálogo</p>
+        <p class="empty-hint">Clique no botão + para adicionar livros</p>
+      </div>
 
-    <div class="empty" *ngIf="livros.length > 0 && livrosFiltrados.length === 0">
-      <p>Nenhum livro encontrado</p>
-      <p class="empty-hint">Tente outro termo de busca</p>
-    </div>
-  </ng-container>
+      <!-- Empty state: filtro sem resultado -->
+      <div class="empty" *ngIf="livros.length === 0 && (termoBusca || generoSelecionado) && !carregando">
+        <p>Nenhum livro encontrado</p>
+        <p class="empty-hint">Tente outro termo ou categoria</p>
+      </div>
 
-  <!-- 🆕 Modal de Preferências de Gêneros -->
+    </ng-container>
+
+  </div>
+
+</section>
+
+ <!-- 🆕 Modal de Preferências de Gêneros -->
   <div class="modal-overlay" *ngIf="mostrarModalPreferencias" (click)="pularPreferencias()">
     <div class="modal-preferencias" (click)="$event.stopPropagation()">
       <div class="modal-header">
@@ -157,25 +201,6 @@
       </div>
     </div>
   </div>
-
-  <!-- Recomendados para você -->
-  <div class="secao-biblioteca" *ngIf="!termoBusca && !generoSelecionado && recomendados.length > 0">
-    <h2 class="secao-titulo">Recomendados para você</h2>
-    <div class="scroll-horizontal">
-      <div class="livro-card"
-          *ngFor="let livro of recomendados"
-          (click)="abrirDetalhesLivro(livro)">
-        <img [src]="livro.imagem || 'assets/capas/perfilSemFoto.png'"
-            [alt]="livro.titulo"
-            class="livro-capa"
-            loading="lazy"
-            decoding="async" />
-        <span class="livro-titulo">{{ livro.titulo || 'Sem título' }}</span>
-        <span class="livro-autor">{{ livro.autor || 'Autor desconhecido' }}</span>
-      </div>
-    </div>
-  </div>
-</section>
 
 <!-- Modal de Adicionar Livro -->
 <app-add-book-modal

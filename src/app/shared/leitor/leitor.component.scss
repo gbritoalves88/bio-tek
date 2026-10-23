@@ -89,12 +89,23 @@
   justify-content: center;
   align-items: flex-start;
   padding: 12px;
+  box-sizing: border-box;
 
   canvas {
+    display: block;
+    flex-shrink: 0;
     max-width: 100%;
     height: auto;
+    background: #fff;
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
     border-radius: 4px;
+
+    // 🆕 Modo escuro: inverte cores com compensação de matiz
+    &.modo-escuro {
+      filter: invert(1) hue-rotate(180deg);
+      background: #000;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.6);
+    }
   }
 }
 

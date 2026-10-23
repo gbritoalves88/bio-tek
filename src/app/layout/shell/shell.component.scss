@@ -461,6 +461,15 @@ $max-content-width: 900px;
   }
 }
 
+.avatar-menu-item.admin {
+  color: var(--accent);
+
+  &:hover {
+    background: rgba(219, 124, 0, 0.1);
+    color: var(--accent);
+  }
+}
+
 @keyframes fadeInScale {
   from { opacity: 0; transform: scale(0.95); }
   to { opacity: 1; transform: scale(1); }

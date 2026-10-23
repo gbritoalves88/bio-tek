@@ -13,7 +13,7 @@ import { BookScannerComponent } from '../book-scanner/book-scanner.component';
 import { BookInfo } from '../book-scanner/book-scanner.model';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { Capacitor } from '@capacitor/core';
-import { FilePicker } from '@capawesome/capacitor-file-picker';
+import { FilePicker } from '@hotend/capacitor-file-picker';
 
 @Component({
   selector: 'app-add-book-modal',

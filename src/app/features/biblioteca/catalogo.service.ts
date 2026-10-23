@@ -82,4 +82,13 @@ export class CatalogoService {
       tap(() => this.limparCacheBiblioteca()) // 🆕 Limpa cache ao salvar preferências
     );
   }
+
+  getPaginado(pagina: number = 1, tamanhoPagina: number = 20, busca: string = '', genero: string = ''): Observable<any> {
+    let url = `${this.apiUrl}/paginado?pagina=${pagina}&tamanhoPagina=${tamanhoPagina}`;
+
+    if (busca) url += `&busca=${encodeURIComponent(busca)}`;
+    if (genero) url += `&genero=${encodeURIComponent(genero)}`;
+
+    return this.http.get<any>(url);
+  }
 }

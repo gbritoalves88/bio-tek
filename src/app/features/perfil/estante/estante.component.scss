@@ -1,20 +1,31 @@
 // ============================================================
 // ===== FILTROS ==============================================
 // ============================================================
+.filtros-wrapper {
+  position: relative;
+  width: 100%;
+  margin-bottom: 16px;
+  padding: 0 24px; // 🆕 Reserva 24px de cada lado para as setas
+  box-sizing: border-box;
+}
+
 .filtros {
   display: flex;
   gap: 6px;
-  margin-bottom: 16px;
   overflow-x: auto;
   overflow-y: hidden;
   flex-wrap: nowrap;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
 
+  // 🆕 O padding interno garante que o primeiro/último botão não fique colado na borda
+  padding: 4px 0;
+
   &::-webkit-scrollbar {
     display: none;
   }
 }
+
 
 .filtro-btn {
   padding: 4px 10px;
@@ -32,29 +43,48 @@
   &:active { transform: scale(0.95); }
 }
 
-.btn-carregar-mais {
-  grid-column: 1 / -1;   // ou flex: 0 0 100%
-  flex: 0 0 100%;
-  width: 100%;
-  padding: 12px;
-  margin-top: 8px;
-  border: 1px dashed var(--border-color);
-  border-radius: 12px;
-  background: transparent;
-  color: var(--text-secondary);
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
+// 🆕 Setas indicadoras
+.filtros-seta {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 10;
+  background: var(--bg-primary); // 🆕 Fundo para cobrir o botão que está passando por baixo
+  border-radius: 50%; // 🆕 Deixa a seta com um fundo circular bonito
 
-  &:hover {
-    border-color: var(--accent);
+  svg {
+    width: 16px;
+    height: 16px;
     color: var(--accent);
+    stroke: var(--accent);
   }
 
-  &:active {
-    transform: scale(0.98);
+  &.esquerda {
+    left: 0;
+    svg { animation: pulseLeft 1.5s infinite; }
   }
+
+  &.direita {
+    right: 0;
+    svg { animation: pulseRight 1.5s infinite; }
+  }
+}
+
+// 🆕 Animações das setas
+@keyframes pulseLeft {
+  0%, 100% { transform: translateX(0); opacity: 0.7; }
+  50% { transform: translateX(-4px); opacity: 1; }
+}
+
+@keyframes pulseRight {
+  0%, 100% { transform: translateX(0); opacity: 0.7; }
+  50% { transform: translateX(4px); opacity: 1; }
 }
 
 // ============================================================

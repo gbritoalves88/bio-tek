@@ -13,6 +13,7 @@ import { getAvatarUrl, getAvatarPadrao } from '../../shared/utils/avatar-helper'
 import { EstanteComponent } from './estante/estante.component';
 import { AtividadesComponent } from './atividade/atividade.component';
 import { ProgressoComponent } from './progresso/progresso.component';
+import { ShellService } from '../../layout/shell/shell.service';
 
 @Component({
   selector: 'app-perfil',
@@ -72,7 +73,8 @@ export class PerfilComponent implements OnInit {
     private route: ActivatedRoute,
     private location: Location,
     @Inject(PLATFORM_ID) private platformId: Object,
-    public cdr: ChangeDetectorRef
+    public cdr: ChangeDetectorRef,
+    private shellService: ShellService
   ) {}
 
   get nicknameEditavel(): boolean {
@@ -322,7 +324,7 @@ export class PerfilComponent implements OnInit {
         usuarioStorage.nickname = dados.nickname || usuarioStorage.nickname;
         usuarioStorage.avatar = dados.avatar || usuarioStorage.avatar;
         usuarioStorage.tema = dados.tema || usuarioStorage.tema;
-        localStorage.setItem('usuario', JSON.stringify(usuarioStorage));
+        this.shellService.atualizarUsuarioLocal(usuarioStorage);
 
         // 🆕 ATUALIZA O OBJETO this.usuario
         this.usuario = {
@@ -364,7 +366,8 @@ export class PerfilComponent implements OnInit {
       email: data.email, avatar: data.avatar, tema: data.tema,
       adm: data.adm, ativo: data.ativo
     };
-    localStorage.setItem('usuario', JSON.stringify(usuarioStorage));
+    // 🆕 Troque o localStorage.setItem por:
+    this.shellService.atualizarUsuarioLocal(usuarioStorage);
   }
 
   limparArroba(): void {

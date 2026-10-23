@@ -15,13 +15,44 @@
 <!-- ============================================================ -->
 <!-- 2. FILTROS                                                   -->
 <!-- ============================================================ -->
-<div class="filtros">
-  <button class="filtro-btn" [class.active]="filtroStatus === null && !filtroPrateleira" (click)="selecionarStatus(null)">Todos</button>
-  <button class="filtro-btn" [class.active]="filtroStatus === 1" (click)="selecionarStatus(1)">📕 {{ modoVisualizacao ? 'Quer ler' : 'Quero ler' }}</button>
-  <button class="filtro-btn" [class.active]="filtroStatus === 2" (click)="selecionarStatus(2)">📖 Lendo</button>
-  <button class="filtro-btn" [class.active]="filtroStatus === 3" (click)="selecionarStatus(3)">✅ {{ modoVisualizacao ? 'Leu' : 'Lidos' }}</button>
-  <button class="filtro-btn" [class.active]="filtroAvaliado" (click)="selecionarAvaliados()">⭐ Avaliados</button>
-  <button class="filtro-btn" [class.active]="filtroPrateleira" (click)="selecionarPrateleiras()">📚 Prateleiras</button>
+<div class="filtros-wrapper">
+
+  <!-- 🆕 Seta Esquerda -->
+  <div class="filtros-seta esquerda" *ngIf="mostrarSetaEsquerda">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <polyline points="15 18 9 12 15 6"/>
+    </svg>
+  </div>
+
+  <!-- Lista de Filtros -->
+  <div class="filtros" (scroll)="onScrollFiltros($event)">
+    <button class="filtro-btn" [class.active]="filtroStatus === null && !filtroAvaliado && !filtroPrateleira" (click)="selecionarStatus(null)">
+      Todos
+    </button>
+    <button class="filtro-btn" [class.active]="filtroStatus === 1" (click)="selecionarStatus(1)">
+      📕 {{ modoVisualizacao ? 'Quer ler' : 'Quero ler' }}
+    </button>
+    <button class="filtro-btn" [class.active]="filtroStatus === 2" (click)="selecionarStatus(2)">
+      📖 Lendo
+    </button>
+    <button class="filtro-btn" [class.active]="filtroStatus === 3" (click)="selecionarStatus(3)">
+      ✅ {{ modoVisualizacao ? 'Leu' : 'Lidos' }}
+    </button>
+    <button class="filtro-btn" [class.active]="filtroAvaliado" (click)="selecionarAvaliados()">
+      ⭐ Avaliados
+    </button>
+    <button class="filtro-btn" [class.active]="filtroPrateleira" (click)="selecionarPrateleiras()">
+      📚 Prateleiras
+    </button>
+  </div>
+
+  <!-- 🆕 Seta Direita -->
+  <div class="filtros-seta direita" *ngIf="mostrarSetaDireita">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <polyline points="9 18 15 12 9 6"/>
+    </svg>
+  </div>
+
 </div>
 
 <!-- ============================================================ -->
@@ -31,8 +62,8 @@
 
   <!-- Prateleiras -->
   <div class="prateleira-card"
-       *ngFor="let p of prateleirasVisiveis"
-       (click)="abrirPrateleira(p)">
+     *ngFor="let p of prateleirasVisiveis; trackBy: trackByPrateleira"
+     (click)="abrirPrateleira(p)">
     <div class="prateleira-capas">
       <img *ngIf="p.capas?.[0]" [src]="p.capas![0]" alt="Capa" class="capa capa-1" loading="lazy" decoding="async" />
       <img *ngIf="p.capas?.[1]" [src]="p.capas![1]" alt="Capa" class="capa capa-2" loading="lazy" decoding="async" />
@@ -47,8 +78,8 @@
 
   <!-- Livros (paginados) -->
   <div class="book-item"
-       *ngFor="let livro of livrosPaginados"
-       (click)="abrirBottomSheetLivro(livro)">
+     *ngFor="let livro of livrosPaginados; trackBy: trackByLivro"
+     (click)="abrirBottomSheetLivro(livro)">
     <div class="book-cover-wrapper">
       <img [src]="livro.imagem || 'assets/capas/perfilSemFoto.png'"
            [alt]="livro.titulo"
@@ -427,22 +458,27 @@
       ></textarea>
 
       <div class="prateleira-livros-lista" *ngIf="livrosDaPrateleira.length > 0">
-        <div class="prateleira-livro-item"
-             *ngFor="let livro of livrosDaPrateleira"
-             (click)="abrirLivroDaPrateleira(livro)">
-          <img [src]="livro.imagem || 'assets/capas/perfilSemFoto.png'"
-               [alt]="livro.titulo"
-               class="prateleira-livro-capa"
-               loading="lazy"
-               decoding="async" />
-          <div class="prateleira-livro-info">
-            <strong>{{ livro.titulo || 'Sem título' }}</strong>
-            <span>{{ livro.autor || 'Autor desconhecido' }}</span>
-            <span class="prateleira-livro-status" [class]="getStatusClass(livro.status)">
-              {{ getStatusTexto(livro.status) }}
-            </span>
+        <ng-container *ngFor="let livro of livrosDaPrateleira trackBy: trackByLivro">
+          <div class="prateleira-livro-item"
+              *ngIf="
+                (filtroStatus === null || livro.status === filtroStatus) &&
+                (!filtroAvaliado || livro.avaliacao !== null)
+              "
+              (click)="abrirLivroDaPrateleira(livro)">
+            <img [src]="livro.imagem || 'assets/capas/perfilSemFoto.png'"
+                [alt]="livro.titulo"
+                class="prateleira-livro-capa"
+                loading="lazy"
+                decoding="async" />
+            <div class="prateleira-livro-info">
+              <strong>{{ livro.titulo || 'Sem título' }}</strong>
+              <span>{{ livro.autor || 'Autor desconhecido' }}</span>
+              <span class="prateleira-livro-status" [class]="getStatusClass(livro.status)">
+                {{ getStatusTexto(livro.status) }}
+              </span>
+            </div>
           </div>
-        </div>
+        </ng-container>
       </div>
 
       <div class="empty" *ngIf="livrosDaPrateleira.length === 0">

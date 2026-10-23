@@ -1,14 +1,29 @@
+// ===== ESTRUTURA PRINCIPAL (Para Scroll Infinito) =====
 .catalogo {
-  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  height: 100vh; // Ocupa a tela toda
+  max-height: 100vh;
   background: var(--bg-primary);
   color: var(--text-primary);
-  min-height: 100%;
   box-sizing: border-box;
 }
 
 .header-section {
-  margin-bottom: 20px;
+  flex-shrink: 0; // Header não encolhe e não rola
+  padding: 24px 16px 10px;
+  background: var(--bg-primary); // Fundo para cobrir o scroll
+  z-index: 10;
   animation: fadeInUp 0.4s ease both;
+}
+
+// 🆕 A div que recebe o (scroll) e rola o conteúdo
+.catalogo-list {
+  flex: 1; // Ocupa todo o espaço restante
+  overflow-y: auto; // Habilita o scroll
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding: 0 16px 100px; // Padding apenas nas laterais e no final
 }
 
 .header-top {
@@ -67,6 +82,17 @@
   font-weight: 600;
   color: var(--text-primary);
   margin: 0 0 12px;
+}
+
+// Título que separa o grid de livros das outras seções
+.secao-livros {
+  margin-top: 32px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid var(--border-color);
+  padding-top: 24px;
 }
 
 // ===== SCROLL HORIZONTAL =====
@@ -158,7 +184,7 @@
   }
 }
 
-// ===== MAIS ADICIONADOS =====
+// ===== MAIS ADICIONADOS / RECOMENDADOS =====
 .livro-card {
   width: 110px;
   flex-shrink: 0;
@@ -243,7 +269,7 @@
   border: 1px solid var(--border-color);
   border-radius: 12px;
   padding: 12px 16px;
-  margin-bottom: 24px;
+  margin-bottom: 0; // Removido o margin-bottom grande
   transition: all 0.3s;
   box-sizing: border-box;
 
@@ -358,6 +384,15 @@
       white-space: nowrap;
     }
   }
+}
+
+// ===== CARREGANDO MAIS =====
+.carregando-mais {
+  text-align: center;
+  padding: 24px 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+  animation: pulse 1.5s infinite;
 }
 
 // ===== EMPTY =====
@@ -559,8 +594,11 @@
 
 // ===== RESPONSIVO =====
 @media (max-width: 600px) {
-  .catalogo {
-    padding: 16px 12px;
+  .header-section {
+    padding: 16px 12px 10px;
+  }
+  .catalogo-list {
+    padding: 0 12px 100px;
   }
 
   .book-grid {
@@ -589,8 +627,11 @@
     }
   }
 
-  .catalogo {
-    padding: 16px 8px;
+  .header-section {
+    padding: 16px 8px 10px;
+  }
+  .catalogo-list {
+    padding: 0 8px 100px;
   }
 
   .book-grid {
@@ -616,41 +657,21 @@
 
 // ===== KEYFRAMES =====
 @keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 @keyframes scaleIn {
-  from {
-    transform: scale(0.9);
-    opacity: 0;
-  }
-  to {
-    transform: scale(1);
-    opacity: 1;
-  }
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
 }
 
 @keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.6;
-  }
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
 }

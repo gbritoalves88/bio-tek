@@ -1,5 +1,22 @@
 <div class="admin-layout">
   <main class="admin-content">
+
+    <!-- 🆕 Abas fixas -->
+    <div class="admin-tabs">
+      <button [class.active]="abaAtiva === 'dashboard'" (click)="selecionarAba('dashboard')">
+        📊 Dashboard
+      </button>
+      <button [class.active]="abaAtiva === 'comentarios'" (click)="selecionarAba('comentarios')">
+        💬 Comentários
+      </button>
+      <button [class.active]="abaAtiva === 'usuarios'" (click)="selecionarAba('usuarios')">
+        👥 Usuários
+      </button>
+      <button [class.active]="abaAtiva === 'livros'" (click)="selecionarAba('livros')">
+        📚 Livros
+      </button>
+    </div>
+
     <div class="loading" *ngIf="carregando">Carregando...</div>
 
     <!-- Dashboard -->
@@ -23,10 +40,10 @@
         <div class="card" (click)="tooltipCard = tooltipCard === 'comentarios' ? '' : 'comentarios'">{{ dashboard.totalComentarios }}<small>Comentários</small><span class="tooltip" *ngIf="tooltipCard === 'comentarios'">Total de comentários postados</span></div>
         <div class="card warning" (click)="tooltipCard = tooltipCard === 'flagged' ? '' : 'flagged'">{{ dashboard.comentariosFlagged }}<small>Flagged 🚩</small><span class="tooltip" *ngIf="tooltipCard === 'flagged'">Comentários marcados como ofensivos</span></div>
         <div class="card" (click)="tooltipCard = tooltipCard === 'livros' ? '' : 'livros'">{{ dashboard.totalLivros }}<small>Livros</small><span class="tooltip" *ngIf="tooltipCard === 'livros'">Total de livros cadastrados</span></div>
-        <div class="card" (click)="tooltipCard = tooltipCard === 'acessos' ? '' : 'acessos'">{{ dashboard.totalAcessos }}<small>Acessos</small><span class="tooltip" *ngIf="tooltipCard === 'acessos'">Total de logins realizados</span></div>
-        <div class="card" (click)="tooltipCard = tooltipCard === '7dias' ? '' : '7dias'">{{ dashboard.acessos7Dias }}<small>7 dias</small><span class="tooltip" *ngIf="tooltipCard === '7dias'">Logins nos últimos 7 dias</span></div>
-        <div class="card" (click)="tooltipCard = tooltipCard === '30dias' ? '' : '30dias'">{{ dashboard.acessos30Dias }}<small>30 dias</small><span class="tooltip" *ngIf="tooltipCard === '30dias'">Logins nos últimos 30 dias</span></div>
-        <div class="card" (click)="tooltipCard = tooltipCard === 'media' ? '' : 'media'">{{ dashboard.mediaAcessosPorUsuario }}<small>Média/Usuário</small><span class="tooltip" *ngIf="tooltipCard === 'media'">Média de logins por usuário</span></div>
+        <div class="card" (click)="tooltipCard = tooltipCard === 'acessos' ? '' : 'acessos'">{{ dashboard.totalAcessos }}<small>Acessos</small><span class="tooltip" *ngIf="tooltipCard === 'acessos'">Total de acessos (aberturas do app)</span></div>
+        <div class="card" (click)="tooltipCard = tooltipCard === '7dias' ? '' : '7dias'">{{ dashboard.acessos7Dias }}<small>7 dias</small><span class="tooltip" *ngIf="tooltipCard === '7dias'">Acessos nos últimos 7 dias</span></div>
+        <div class="card" (click)="tooltipCard = tooltipCard === '30dias' ? '' : '30dias'">{{ dashboard.acessos30Dias }}<small>30 dias</small><span class="tooltip" *ngIf="tooltipCard === '30dias'">Acessos nos últimos 30 dias</span></div>
+        <div class="card" (click)="tooltipCard = tooltipCard === 'media' ? '' : 'media'">{{ dashboard.mediaAcessosPorUsuario }}<small>Média/Usuário</small><span class="tooltip" *ngIf="tooltipCard === 'media'">Média de acessos por usuário</span></div>
         <div class="card" (click)="tooltipCard = tooltipCard === 'ativos30d' ? '' : 'ativos30d'">{{ dashboard.usuariosAtivos30Dias }}<small>Ativos 30d</small><span class="tooltip" *ngIf="tooltipCard === 'ativos30d'">Usuários que acessaram nos últimos 30 dias</span></div>
       </div>
     </ng-container>

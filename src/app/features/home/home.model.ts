@@ -87,3 +87,18 @@ export interface StreakData {
   ultimaDataAtividade: string | null;
   leuHoje: boolean;
 }
+
+// ============ OFERTAS (Amazon Afiliado) ============
+export interface BookOffer {
+  id: string;
+  title: string;
+  author: string;
+  imageUrl: string;
+  affiliateUrl: string;
+  displayOrder: number;
+}
+
+export interface BookOffersResponse {
+  offers: BookOffer[];
+  updatedAt: string;
+}

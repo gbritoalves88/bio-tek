@@ -87,7 +87,6 @@
   }
 }
 
-
 // ===== STREAK =====
 .streak-card {
   display: flex;
@@ -123,14 +122,12 @@
     }
   }
 
-  // 🆕 Quando streak está ativo (chama animada)
   &.ativo {
     .streak-icon {
       animation: chamaPulse 1.5s ease-in-out infinite;
     }
   }
 
-  // 🆕 Quando não tem streak (clicável para começar)
   &.empty {
     .streak-icon {
       font-size: 28px;
@@ -152,7 +149,6 @@
     }
   }
 }
-
 
 // ===== SEÇÃO COMUM =====
 .reading-now {
@@ -671,7 +667,6 @@
   }
 }
 
-// 🆕 Bloco do botão Atualizar progresso
 .bs-atualizar {
   padding-top: 12px;
   padding-bottom: 12px;
@@ -776,102 +771,6 @@
   margin-bottom: 0;
 }
 
-@keyframes chamaPulse {
-  0%, 100% {
-    transform: scale(1);
-    filter: drop-shadow(0 0 0 rgba(255, 100, 0, 0));
-  }
-  50% {
-    transform: scale(1.2);
-    filter: drop-shadow(0 0 15px rgba(255, 100, 0, 0.6));
-  }
-}
-
-// ===== RESPONSIVO =====
-@media (max-width: 600px) {
-  .book-info {
-    gap: 12px;
-    .book-cover { width: 160px; }
-    .book-details h3 { font-size: 16px; }
-    .book-details p { font-size: 12px; }
-  }
-  .livro-card { width: 105px; }
-  .livro-capa { width: 105px; }
-  .skeleton-card { width: 105px; }
-  .skeleton-reading { height: 160px; }
-  .bs-btn { max-width: 100%; }
-}
-
-@media (max-width: 480px) {
-  .home {
-    padding-bottom: 0px; // 🆕 Reduz espaço final
-  }
-
-  .hero {
-    gap: 8px;
-  }
-
-  .hero h1 {
-    font-size: 24px;
-  }
-
-  .saudacao-sub {
-    font-size: 14px;
-  }
-
-  .btn-circle {
-    padding: 8px 12px;
-
-    .btn-label {
-      font-size: 12px;
-    }
-  }
-
-  .reading-now {
-    margin-bottom: 16px; // 🆕 Reduz espaço entre seções
-
-    &:last-child {
-      margin-bottom: 0; // 🆕 Última seção sem margem
-    }
-  }
-
-  .book-info {
-    gap: 10px;
-
-    .book-cover {
-      width: 140px;
-    }
-
-    .book-details h3 {
-      font-size: 15px;
-    }
-
-    .book-details p {
-      font-size: 11px;
-    }
-  }
-
-  .scroll-track {
-    gap: 10px;
-  }
-
-  .livro-card {
-    width: 95px;
-  }
-
-  .livro-capa {
-    width: 95px;
-  }
-
-  .skeleton-card {
-    width: 95px;
-  }
-
-  .skeleton-reading {
-    height: 150px;
-  }
-}
-
 .bs-input-tempo {
   width: 100px;
   padding: 8px 10px;
@@ -908,7 +807,6 @@
   }
 }
 
-// 🆕 Linha de "Faltam X" no card da Home
 .progress-restante {
   display: block;
   font-size: 11px;
@@ -932,12 +830,11 @@
 }
 
 // ===== OUTROS PAUSADOS (bottom sheet) =====
-// ===== OUTROS PAUSADOS (bottom sheet) =====
 .bs-outros-pausados {
   margin-top: 16px;
-  margin-bottom: 24px;       // 🆕 espaço antes dos botões
+  margin-bottom: 24px;
   padding-top: 16px;
-  padding-bottom: 20px;      // 🆕 espaço interno
+  padding-bottom: 20px;
   border-top: 1px solid var(--border-color);
 
   h4 {
@@ -953,14 +850,14 @@
 .bs-pausados-lista {
   display: flex;
   flex-direction: column;
-  gap: 10px;                 // 🆕 mais respiro entre itens
+  gap: 10px;
 }
 
 .bs-pausado-item {
   display: flex;
   gap: 10px;
   align-items: center;
-  padding: 10px 12px;        // 🆕 padding maior
+  padding: 10px 12px;
   border-radius: 10px;
   background: var(--bg-primary);
   cursor: pointer;
@@ -1040,7 +937,6 @@
   }
 }
 
-// 🆕 Botão de play
 .bs-pausado-play {
   flex-shrink: 0;
   width: 36px;
@@ -1060,7 +956,7 @@
     height: 16px;
     stroke: #fff;
     fill: #fff;
-    margin-left: 2px;        // 🆕 centraliza visualmente o triangle
+    margin-left: 2px;
   }
 
   &:hover {
@@ -1070,6 +966,116 @@
 
   &:active {
     transform: scale(0.95);
+  }
+}
+
+// ==========================================
+// ===== OFERTAS (Livros em Destaque) =======
+// ==========================================
+
+.oferta-card {
+  width: 250px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 10px;
+  box-sizing: border-box;
+  align-items: center;
+  animation: fadeInUp 0.3s ease both;
+}
+
+.oferta-capa-wrapper {
+  position: relative;
+  width: 100px;
+  flex-shrink: 0;
+  aspect-ratio: 2 / 3;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1.5px solid rgba(var(--accent-rgb), 0.4);
+  box-sizing: border-box;
+}
+
+.oferta-capa {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.oferta-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  align-items: center; /* 🆕 Centraliza os textos e o botão */
+  text-align: center;  /* 🆕 Centraliza o texto */
+}
+
+.oferta-titulo {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin-bottom: 4px;
+}
+
+.oferta-autor {
+  font-size: 11px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 8px; /* Dá um respiro antes do botão */
+}
+
+.oferta-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+
+  /* 🆕 Deixando o botão mais fino */
+  padding: 0px 12px;      /* Remove o padding de cima e de baixo */
+  height: 22px;           /* Força uma altura fixa e baixinha */
+  line-height: 1;         /* Evita que o texto empurre a altura */
+  border-radius: 12px;    /* Deixa as pontas arredondadas */
+  /* ---------------------- */
+
+  background: #FF9900;
+  color: #232F3E;
+  font-size: 10px;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+  border: 1.5px solid var(--accent);
+  transition: all 0.2s ease;
+
+  width: fit-content;
+  margin: 0 auto;
+
+  svg {
+    flex-shrink: 0;
+    width: 10px;  /* 🆕 Diminuímos o ícone para acompanhar */
+    height: 10px;
+  }
+
+  &:hover {
+    background: #FFA500;
+  }
+
+  &.disabled {
+    background: rgba(255, 153, 0, 0.6);
+    color: rgba(35, 47, 62, 0.85);
+    cursor: not-allowed;
+    pointer-events: none;
   }
 }
 
@@ -1093,4 +1099,109 @@
 @keyframes pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.6; }
+}
+
+@keyframes chamaPulse {
+  0%, 100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 0 rgba(255, 100, 0, 0));
+  }
+  50% {
+    transform: scale(1.2);
+    filter: drop-shadow(0 0 15px rgba(255, 100, 0, 0.6));
+  }
+}
+
+// ===== RESPONSIVO =====
+@media (max-width: 600px) {
+  .book-info {
+    gap: 12px;
+    .book-cover { width: 160px; }
+    .book-details h3 { font-size: 16px; }
+    .book-details p { font-size: 12px; }
+  }
+  .livro-card { width: 105px; }
+  .livro-capa { width: 105px; }
+  .skeleton-card { width: 105px; }
+  .skeleton-reading { height: 160px; }
+  .bs-btn { max-width: 100%; }
+}
+
+@media (max-width: 480px) {
+  .home {
+    padding-bottom: 0px;
+  }
+
+  .hero {
+    gap: 8px;
+  }
+
+  .hero h1 {
+    font-size: 24px;
+  }
+
+  .saudacao-sub {
+    font-size: 14px;
+  }
+
+  .btn-circle {
+    padding: 8px 12px;
+
+    .btn-label {
+      font-size: 12px;
+    }
+  }
+
+  .reading-now {
+    margin-bottom: 16px;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  .book-info {
+    gap: 10px;
+
+    .book-cover {
+      width: 140px;
+    }
+
+    .book-details h3 {
+      font-size: 15px;
+    }
+
+    .book-details p {
+      font-size: 11px;
+    }
+  }
+
+  .scroll-track {
+    gap: 10px;
+  }
+
+  .livro-card {
+    width: 95px;
+  }
+
+  .livro-capa {
+    width: 95px;
+  }
+
+  .skeleton-card {
+    width: 95px;
+  }
+
+  .skeleton-reading {
+    height: 150px;
+  }
+
+  // Ajuste responsivo das ofertas
+  .oferta-card {
+    width: 220px;
+    padding: 8px;
+  }
+  .oferta-capa-wrapper {
+    width: 85px;
+  }
 }
