@@ -8,10 +8,9 @@ import { UploadService } from '../../../shared/services/upload.service';
 import { AlertService } from '../../../shared/services/alert.service';
 import { BottomSheetComponent } from '../../../shared/bottom-sheet/bottom-sheet.component';
 import { Capacitor } from '@capacitor/core';
-import { FilePicker } from '@capawesome/capacitor-file-picker';
 import { EstanteService } from './estante.service';
 import { Prateleira } from './estante.model';
-
+import { FilePicker } from '@hotend/capacitor-file-picker';
 
 @Component({
   selector: 'app-estante',
@@ -46,6 +45,7 @@ export class EstanteComponent implements OnInit {
   livroComentarioProntos: any[] | null = null;
   novoComentarioPerfil = '';
   meuId = '';
+
   // 🆕 Prateleiras
   prateleiras: Prateleira[] = [];
   carregandoPrateleiras = true;
@@ -80,6 +80,10 @@ export class EstanteComponent implements OnInit {
   prateleiraEditandoDescricao = '';
   salvandoEdicaoPrateleira = false;
 
+    // 🆕 Controle de setas dos filtros
+  mostrarSetaEsquerda = false;
+  mostrarSetaDireita = true;
+
   private readonly TAMANHO_MAXIMO = 10 * 1024 * 1024;
 
   @ViewChild('fileInputEdicaoLivro') fileInputEdicaoLivro!: ElementRef;
@@ -112,7 +116,7 @@ export class EstanteComponent implements OnInit {
       next: (data) => {
         this.livros = data.livros || [];
         this.carregando = false;
-        this.paginaAtual = 1;   // 🆕
+        this.paginaAtual = 1;
         this.cdr.markForCheck();
       },
       error: () => {
@@ -121,8 +125,6 @@ export class EstanteComponent implements OnInit {
       }
     });
   }
-
-
 
   getStatusTexto(status: number): string {
     switch (status) {
@@ -301,7 +303,7 @@ export class EstanteComponent implements OnInit {
 
         this.perfilService.limparCache();
         this.carregarLivros();
-        this.carregarPrateleiras();   // 🆕 agora funciona
+        this.carregarPrateleiras();
       },
       error: () => {
         this.enviandoEdicao = false;
@@ -407,7 +409,7 @@ export class EstanteComponent implements OnInit {
           this.alertService.success('Livro removido!');
           this.perfilService.limparCache();
           this.carregarLivros();
-          this.carregarPrateleiras();   // 🆕
+          this.carregarPrateleiras();
           this.fecharConfirmacaoExclusao();
         },
         error: () => this.alertService.error('Erro ao remover livro')
@@ -429,38 +431,15 @@ export class EstanteComponent implements OnInit {
     });
   }
 
-
-   // 🆕 Vincular arquivo na edição do livro
+  // 🆕 Vincular arquivo na edição do livro (Capacitor)
   async vincularArquivoEdicao(): Promise<void> {
     if (!this.livroEditando) return;
 
-    // 🌐 TWA/PWA: usa input file
-    if (!Capacitor.isNativePlatform()) {
-      const input = document.createElement('input');
-      input.type = 'file';
-      input.accept = '.pdf,.epub,application/pdf,application/epub+zip';
-      input.onchange = (event: any) => {
-        const file = event.target.files?.[0];
-        if (!file || !this.livroEditando) return;
-
-        const nome = file.name;
-        const tamanho = file.size;
-        const modificado = file.lastModified;
-
-        this.livroEditando.arquivoLeitura = `pwa://${nome}|${tamanho}|${modificado}`;
-
-        this.alertService.success(`Arquivo vinculado: ${nome}`);
-        this.cdr.markForCheck();
-      };
-      input.click();
-      return;
-    }
-
-    // 📱 Capacitor: FilePicker
     try {
       const result = await FilePicker.pickFiles({
         types: ['application/pdf', 'application/epub+zip'],
-        readData: false
+        readData: false,
+        persistContentUri: true
       });
 
       if (!result.files || result.files.length === 0) return;
@@ -473,7 +452,11 @@ export class EstanteComponent implements OnInit {
         return;
       }
 
-      this.livroEditando.arquivoLeitura = uri;
+      // 🆕 Detecta tipo e prefixa o path
+      const mime = (file as any).mimeType || '';
+      const tipo = mime.includes('epub') || uri.toLowerCase().endsWith('.epub') ? 'epub' : 'pdf';
+      this.livroEditando.arquivoLeitura = `${tipo}://${uri}`;
+
       this.alertService.success(`Arquivo vinculado: ${file.name}`);
       this.cdr.markForCheck();
 
@@ -484,17 +467,19 @@ export class EstanteComponent implements OnInit {
     }
   }
 
-  // 🆕 Extrai o nome do arquivo (funciona com pwa:// e content://)
+  // 🆕 Extrai o nome do arquivo (funciona com pdf://, epub://, pwa:// e content://)
   getNomeArquivoEdicao(uri: string | null | undefined): string {
     if (!uri) return '';
 
-    if (uri.startsWith('pwa://')) {
-      const semPrefixo = uri.replace('pwa://', '');
-      const partes = semPrefixo.split('|');
+    // Remove prefixo pdf:// ou epub://
+    const semPrefixo = uri.replace(/^(pdf|epub):\/\//, '');
+
+    if (semPrefixo.startsWith('pwa://')) {
+      const partes = semPrefixo.replace('pwa://', '').split('|');
       return decodeURIComponent(partes[0] || '');
     }
 
-    const partes = uri.split('/');
+    const partes = semPrefixo.split('/');
     return decodeURIComponent(partes[partes.length - 1] || '');
   }
 
@@ -502,7 +487,6 @@ export class EstanteComponent implements OnInit {
   carregarPrateleiras(): void {
     this.carregandoPrateleiras = true;
 
-    // 🆕 Sempre busca do backend (o service já tem cache próprio)
     const request$ = this.modoVisualizacao
       ? this.estanteService.getPrateleirasDoUsuario(this.usuarioId)
       : this.estanteService.getMinhasPrateleiras();
@@ -555,12 +539,10 @@ export class EstanteComponent implements OnInit {
         this.alertService.success(`Prateleira "${nova.nome}" criada!`);
         this.fecharModalPrateleira();
 
-        // 🆕 Adiciona na lista local em vez de recarregar
         this.prateleiras = [...this.prateleiras, nova].sort((a, b) =>
           a.nome.localeCompare(b.nome)
         );
 
-        // 🆕 Avisa o pai pra atualizar o cache dele (perfil)
         this.perfilService.limparCache();
         this.cdr.markForCheck();
       },
@@ -573,14 +555,12 @@ export class EstanteComponent implements OnInit {
     });
   }
 
-  // 🆕 Nome da prateleira pelo ID
   getNomePrateleira(idColecao: string | null | undefined): string {
     if (!idColecao) return '';
     const prateleira = this.prateleiras.find(p => p.id === idColecao);
     return prateleira?.nome || '';
   }
 
-    // 🆕 Abre a prateleira (bottom sheet com os livros)
   abrirPrateleira(prateleira: Prateleira): void {
     this.prateleiraSelecionada = prateleira;
     this.livrosDaPrateleira = this.livros.filter(l => l.idColecao === prateleira.id);
@@ -598,20 +578,16 @@ export class EstanteComponent implements OnInit {
     this.cdr.markForCheck();
   }
 
-  // 🆕 Quando clica num livro dentro da prateleira
   abrirLivroDaPrateleira(livro: LivroDoUsuario): void {
-    // Fecha a prateleira e abre o bottom sheet de detalhes do livro
     this.fecharBottomSheetPrateleira();
     setTimeout(() => {
       this.abrirBottomSheetLivro(livro);
-    }, 150); // pequeno delay pra animação
+    }, 150);
   }
 
-  // 🆕 Exclui prateleira direto (só se estiver vazia)
   excluirPrateleira(): void {
     if (!this.prateleiraSelecionada || this.excluindoPrateleira || this.editandoPrateleira) return;
 
-    // 🔒 Trava de segurança: não deixa excluir se tiver livros
     if (this.livrosDaPrateleira.length > 0) {
       this.alertService.warning('Remova os livros antes de excluir a prateleira');
       return;
@@ -627,10 +603,8 @@ export class EstanteComponent implements OnInit {
         this.fecharBottomSheetPrateleira();
         this.alertService.success(`Prateleira "${nome}" excluída!`);
 
-        // 🆕 Remove da lista local em vez de recarregar
         this.prateleiras = this.prateleiras.filter(p => p.id !== id);
 
-        // 🆕 Avisa o pai pra atualizar o cache dele (perfil)
         this.perfilService.limparCache();
         this.cdr.markForCheck();
       },
@@ -643,32 +617,107 @@ export class EstanteComponent implements OnInit {
     });
   }
 
-  // 🆕 Só mostra prateleiras quando o filtro estiver ativo
-  get prateleirasVisiveis(): Prateleira[] {
-    // 🆕 Se estiver em algum filtro de status/avaliados → esconde prateleiras
-    // Se for "Todos" (nenhum filtro) → mostra prateleiras
-    if (this.filtroStatus !== null || this.filtroAvaliado) {
-      return [];
-    }
-    return this.prateleiras;
+  // ============ FILTROS E PAGINAÇÃO ============
+
+  // 🆕 REGRA: Filtros são mutuamente exclusivos
+  selecionarStatus(status: number | null): void {
+    this.filtroStatus = status;
+    this.filtroAvaliado = false;
+    this.filtroPrateleira = false;
+    this.paginaAtual = 1;
   }
 
-  // 🆕 Esconde livros quando filtro prateleira está ativo
-  get livrosFiltrados(): LivroDoUsuario[] {
+  selecionarAvaliados(): void {
+    this.filtroAvaliado = !this.filtroAvaliado;
+    this.filtroStatus = null;
+    this.filtroPrateleira = false;
+    this.paginaAtual = 1;
+  }
+
+  selecionarPrateleiras(): void {
+    this.filtroPrateleira = !this.filtroPrateleira;
+    if (this.filtroPrateleira) {
+      this.filtroStatus = null;
+      this.filtroAvaliado = false;
+    }
+    this.paginaAtual = 1;
+  }
+
+  // 🆕 As prateleiras (cards) só aparecem se nenhum filtro de status/avaliado estiver ativo
+  get prateleirasVisiveis(): Prateleira[] {
+    // Se for modo "Prateleiras", mostra todas
+    if (this.filtroPrateleira) {
+      return this.prateleiras;
+    }
+
+    // Verifica se há algum filtro ativo (status ou avaliado)
+    const temFiltro = this.filtroStatus !== null || this.filtroAvaliado;
+
+    if (!temFiltro) {
+      // Modo "Todos": mostra todas as prateleiras
+      return this.prateleiras;
+    }
+
+    // Se houver filtro, filtra apenas prateleiras que têm pelo menos um livro que bate com o filtro
+    return this.prateleiras
+      .map(p => {
+        // Pega os livros dessa prateleira que batem com o filtro atual
+        const livrosFiltrados = this.livros.filter(l => {
+          if (l.idColecao !== p.id) return false;
+
+          // Verifica status
+          if (this.filtroStatus !== null && l.status !== this.filtroStatus) return false;
+
+          // Verifica avaliado
+          if (this.filtroAvaliado && l.avaliacao === null) return false;
+
+          return true;
+        });
+
+        // Se não tem nenhum livro que bate com o filtro, retorna null (vai ser filtrado depois)
+        if (livrosFiltrados.length === 0) return null;
+
+        // Retorna a prateleira com as capas atualizadas e o total correto
+        return {
+          ...p,
+          capas: livrosFiltrados.slice(0, 3).map(l => l.imagem || 'assets/capas/perfilSemFoto.png'),
+          totalLivros: livrosFiltrados.length
+        } as Prateleira;
+      })
+      .filter((p): p is Prateleira => p !== null); // Remove os nulls
+  }
+
+
+  // 🆕 Livros filtrados: Agora mostra TODOS os livros que batem com o filtro, incluindo os que estão em prateleiras (Opção B)
+   get livrosFiltrados(): LivroDoUsuario[] {
+    // Se o modo "Prateleiras" estiver ativo, não mostra livros (só prateleiras)
     if (this.filtroPrateleira) return [];
 
     let resultado = [...this.livros];
-    resultado = resultado.filter(l => !l.idColecao);
 
-    if (this.filtroStatus !== null) {
-      resultado = resultado.filter(l => l.status === this.filtroStatus);
+    // 🆕 REGRA DO "TODOS": Mostra apenas livros SOLTOS
+    if (this.filtroStatus === null && !this.filtroAvaliado) {
+      resultado = resultado.filter(l => !l.idColecao);
     }
-    if (this.filtroAvaliado) {
-      resultado = resultado.filter(l => l.avaliacao !== null);
+    // 🆕 REGRA DOS FILTROS: Mostra apenas livros SOLTOS que batem com o filtro
+    // (Os livros que estão em prateleiras serão mostrados quando o usuário abrir a prateleira)
+    else {
+      // Garante que estamos pegando apenas livros soltos
+      resultado = resultado.filter(l => !l.idColecao);
+
+      if (this.filtroStatus !== null) {
+        resultado = resultado.filter(l => l.status === this.filtroStatus);
+      }
+      if (this.filtroAvaliado) {
+        resultado = resultado.filter(l => l.avaliacao !== null);
+      }
     }
+
+    // Ordena por data de criação (mais recentes primeiro)
     resultado.sort((a, b) =>
       new Date(b.dataCriacao).getTime() - new Date(a.dataCriacao).getTime()
     );
+
     return resultado;
   }
 
@@ -685,29 +734,7 @@ export class EstanteComponent implements OnInit {
     this.cdr.markForCheck();
   }
 
-  selecionarStatus(status: number | null): void {
-    this.filtroStatus = status;
-    this.filtroPrateleira = false;
-    this.paginaAtual = 1;   // 🆕
-  }
-
-  selecionarAvaliados(): void {
-    this.filtroAvaliado = !this.filtroAvaliado;
-    this.filtroPrateleira = false;
-    this.paginaAtual = 1;   // 🆕
-  }
-
-  selecionarPrateleiras(): void {
-    this.filtroPrateleira = !this.filtroPrateleira;
-    if (this.filtroPrateleira) {
-      this.filtroStatus = null;
-      this.filtroAvaliado = false;
-    }
-    this.paginaAtual = 1;   // 🆕
-  }
-
   // ============ EDIÇÃO DE PRATELEIRA ============
-
   abrirEdicaoPrateleira(): void {
     if (!this.prateleiraSelecionada) return;
 
@@ -715,7 +742,6 @@ export class EstanteComponent implements OnInit {
     this.prateleiraEditandoDescricao = this.prateleiraSelecionada.descricao || '';
     this.editandoPrateleira = true;
 
-    // Foca no input depois do render
     setTimeout(() => {
       const input = document.querySelector('.modal-prateleira-input-titulo') as HTMLInputElement;
       input?.focus();
@@ -756,21 +782,18 @@ export class EstanteComponent implements OnInit {
           this.salvandoEdicaoPrateleira = false;
           this.editandoPrateleira = false;
 
-          // Atualiza objeto selecionado
           this.prateleiraSelecionada = {
             ...this.prateleiraSelecionada!,
             nome: atualizada.nome,
             descricao: atualizada.descricao
           };
 
-          // Atualiza no array local
           this.prateleiras = this.prateleiras
             .map(p => p.id === atualizada.id
               ? { ...p, nome: atualizada.nome, descricao: atualizada.descricao }
               : p)
             .sort((a, b) => a.nome.localeCompare(b.nome));
 
-          // Limpa cache do perfil (que tem as coleções também)
           this.perfilService.limparCache();
 
           this.alertService.success('Prateleira atualizada!');
@@ -785,4 +808,28 @@ export class EstanteComponent implements OnInit {
       });
   }
 
+  // 🆕 Método para monitorar o scroll dos filtros
+  onScrollFiltros(event: any): void {
+    const el = event.target as HTMLElement;
+
+    // Verifica se está no início
+    this.mostrarSetaEsquerda = el.scrollLeft > 10;
+
+    // Verifica se está no final (com uma margem de 10px de tolerância)
+    const chegouNoFim = el.scrollLeft + el.clientWidth >= el.scrollWidth - 10;
+    this.mostrarSetaDireita = !chegouNoFim;
+
+    this.cdr.markForCheck();
+  }
+
+
+    // 🆕 Rastreia as prateleiras pelo ID para evitar que o DOM seja recriado e as imagens pisquem
+  trackByPrateleira(index: number, prateleira: Prateleira): string {
+    return prateleira.id;
+  }
+
+  // 🆕 Rastreia os livros pelo ID (evita que as capas pisquem ao filtrar)
+  trackByLivro(index: number, livro: LivroDoUsuario): string {
+    return livro.id;
+  }
 }

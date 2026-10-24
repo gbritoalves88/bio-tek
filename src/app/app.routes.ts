@@ -9,15 +9,15 @@ export const routes: Routes = [
   // ============ RAIZ → SPLASH ============
   {
     path: '',
-    redirectTo: 'splash',
+    redirectTo: 'login',
     pathMatch: 'full'
   },
 
   // ============ SPLASH ============
-  {
-    path: 'splash',
-    loadComponent: () => import('./features/splash/splash.component').then(m => m.SplashComponent)
-  },
+  //{
+    //path: 'splash',
+    //loadComponent: () => import('./features/splash/splash.component').then(m => m.SplashComponent)
+  //},
 
   // ============ ROTAS PÚBLICAS ============
   {

@@ -1,6 +1,6 @@
 import { Component, OnInit, Inject, PLATFORM_ID, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { Livro, LivroLeitura, LivroTop, DashboardData, StreakData } from './home.model';
+import { Livro, LivroLeitura, LivroTop, DashboardData, StreakData, BookOffer } from './home.model';
 import { HomeService } from './home.service';
 import { AddBookModalComponent } from '../../shared/add-book-modal/add-book-modal.component';
 import { AlertService } from '../../shared/services/alert.service';
@@ -16,8 +16,9 @@ import { PullToRefreshComponent } from '../../shared/pull-to-refresh/pull-to-ref
 import { Capacitor } from '@capacitor/core';
 import { Share } from '@capacitor/share';
 import { Filesystem, Directory } from '@capacitor/filesystem';
-import { FileOpener } from '@capawesome-team/capacitor-file-opener';
 import { LeitorService } from '../../shared/leitor/leitor.service';
+import { PerfilService } from '../perfil/perfil.service';
+import { FilePicker } from '@hotend/capacitor-file-picker';
 
 @Component({
   selector: 'app-home',
@@ -39,9 +40,9 @@ export class HomeComponent implements OnInit {
   paginaAtual: number | null = null;
   totalPaginas: number | null = null;
 
-  // 🆕 Audiobook — input em HH:MM (string com máscara)
-  posicaoAtualInput = '';    // "00:39"
-  duracaoTotalInput = '';    // "06:40"
+  // Audiobook — input em HH:MM (string com máscara)
+  posicaoAtualInput = '';
+  duracaoTotalInput = '';
   compartilhando = false;
   previewImagem = '';
   fraseAtividade = '';
@@ -50,6 +51,11 @@ export class HomeComponent implements OnInit {
 
   modoProgresso: 'paginas' | 'percentual' = 'paginas';
   progressoInput: number | null = null;
+
+  // 🆕 Arquivo inacessível
+  arquivoInacessivel = false;
+
+  ofertas: BookOffer[] = [];
 
   citacao = {
     texto: 'Um leitor vive mil vidas antes de morrer. O homem que nunca lê vive apenas uma.',
@@ -66,12 +72,12 @@ export class HomeComponent implements OnInit {
     private notificationService: NotificationService,
     private streakService: StreakService,
     private router: Router,
-    private leitorService: LeitorService
+    private leitorService: LeitorService,
+    private perfilService: PerfilService
   ) {}
 
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
-      // 🆕 Verifica token antes de qualquer coisa
       const token = localStorage.getItem('token');
       if (!token || token === 'undefined' || token === 'null' || token.length < 10) {
         this.router.navigate(['/']);
@@ -81,7 +87,29 @@ export class HomeComponent implements OnInit {
       this.homeService.limparCache();
       this.carregarDashboard();
       this.carregarStreak();
+      this.carregarOfertas();
       this.verificarNotificacoes();
+
+      // 🆕 Escuta progresso ao fechar o leitor
+      this.leitorService.progresso$.subscribe((p) => {
+        if (p) {
+          // Só preenche os campos se o leitor foi aberto pra esse livro
+          this.paginaAtual = p.paginaAtual ?? this.paginaAtual;
+          this.totalPaginas = p.totalPaginas ?? this.totalPaginas;
+          this.progressoInput = p.progresso ?? this.progressoInput;
+          this.cdr.markForCheck();
+        }
+      });
+
+      // 🆕 Escuta arquivo inacessível
+      this.leitorService.arquivoInacessivel$.subscribe((inacessivel) => {
+        if (inacessivel) {
+          this.arquivoInacessivel = true;
+          this.alertService.error('O arquivo não está mais acessível. Vincule novamente.');
+          this.leitorService.limparArquivoInacessivel();
+          this.cdr.markForCheck();
+        }
+      });
     }
   }
 
@@ -100,12 +128,13 @@ export class HomeComponent implements OnInit {
         this.topAvaliados = data.topAvaliados || [];
         this.streak = data.streak || null;
 
-        // 🆕 Pré-carregar capa do livro atual (mais importante)
+        // Reset flag ao recarregar
+        this.arquivoInacessivel = false;
+
         if (this.livroAtual?.imagem) {
           this.preloadImagem(this.livroAtual.imagem);
         }
 
-        // 🆕 Pré-carregar primeiras 3 capas de recomendados
         this.topAvaliados.slice(0, 3).forEach(livro => {
           if (livro.imagem) {
             this.preloadImagem(livro.imagem);
@@ -118,12 +147,10 @@ export class HomeComponent implements OnInit {
       error: (err) => {
         console.error('Erro:', err);
         this.carregando = false;
-        //this.alertService.error('Erro ao carregar dados da home');
       }
     });
   }
 
-  // 🆕 Método de preload
   private preloadImagem(url: string): void {
     const img = new Image();
     img.src = url;
@@ -146,10 +173,7 @@ export class HomeComponent implements OnInit {
 
   abrirDetalhesLivro(livro: any, editavel: boolean = false): void {
     this.router.navigate(['/inicio/livro', livro.id], {
-      state: {
-        livro: livro,
-        editavel: editavel
-      }
+      state: { livro, editavel }
     });
   }
 
@@ -199,6 +223,7 @@ export class HomeComponent implements OnInit {
       next: () => {
         this.homeService.limparCache();
         this.carregarDashboard();
+        this.carregarStreak();
         this.alertService.success(novoEstado ? 'Leitura pausada!' : 'Leitura retomada!');
       },
       error: (err) => {
@@ -216,7 +241,6 @@ export class HomeComponent implements OnInit {
   }
 
   // ============ MODO DE PROGRESSO ============
-
   private get chaveModoProgresso(): string {
     const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
     const usuarioId = usuario.id || 'anon';
@@ -224,15 +248,36 @@ export class HomeComponent implements OnInit {
     return `modoProgresso:${usuarioId}:${livroId}`;
   }
 
+  /**
+   * Extrai o tipo do arquivo do formato "tipo://path".
+   * Retorna null se não houver arquivo ou formato inválido.
+   */
+  private extrairTipoArquivo(arquivoLeitura?: string | null): 'pdf' | 'epub' | null {
+    if (!arquivoLeitura) return null;
+
+    const match = arquivoLeitura.match(/^(pdf|epub):\/\//);
+    if (match) return match[1] as 'pdf' | 'epub';
+
+    // Compatibilidade com arquivos antigos sem prefixo
+    const lower = arquivoLeitura.toLowerCase();
+    if (lower.endsWith('.pdf')) return 'pdf';
+    if (lower.endsWith('.epub')) return 'epub';
+
+    return null;
+  }
+
   private carregarModoProgresso(): 'paginas' | 'percentual' {
-    // 1. Tenta localStorage
+    // 1️⃣ Preferência do usuário sempre vence
     const salvo = localStorage.getItem(this.chaveModoProgresso) as 'paginas' | 'percentual' | null;
     if (salvo === 'paginas' || salvo === 'percentual') return salvo;
 
-    // 2. Tem paginaAtual no livro? → páginas
-    if (this.livroAtual?.paginaAtual) return 'paginas';
+    // 2️⃣ Se tem arquivo vinculado, o TIPO do arquivo define
+    const tipoArquivo = this.extrairTipoArquivo(this.livroAtual?.arquivoLeitura);
+    if (tipoArquivo === 'pdf') return 'paginas';
+    if (tipoArquivo === 'epub') return 'percentual';
 
-    // 3. Padrão → percentual
+    // 3️⃣ Sem arquivo: comportamento antigo (livro físico)
+    if (this.livroAtual?.paginaAtual) return 'paginas';
     return 'percentual';
   }
 
@@ -262,14 +307,10 @@ export class HomeComponent implements OnInit {
       this.totalPaginas = null;
       this.progressoInput = null;
     } else {
-      // 🆕 Carrega modo
       this.modoProgresso = this.carregarModoProgresso();
-
-      // Preenche ambos (o toggle decide qual mostra)
       this.paginaAtual = this.livroAtual?.paginaAtual || null;
       this.totalPaginas = this.livroAtual?.totalPaginas || null;
       this.progressoInput = this.livroAtual?.progresso || null;
-
       this.posicaoAtualInput = '';
       this.duracaoTotalInput = '';
     }
@@ -308,42 +349,35 @@ export class HomeComponent implements OnInit {
       if (minAtual !== null && minAtual > 0) dados.minutoAtual = minAtual;
       if (minTotal !== null && minTotal > 0) dados.totalMinutos = minTotal;
     } else if (this.modoProgresso === 'paginas') {
-      // 🆕 Modo páginas
       progresso = this.totalPaginas && this.paginaAtual
         ? Math.round((this.paginaAtual / this.totalPaginas) * 100)
         : undefined;
       if (this.paginaAtual) dados.paginaAtual = this.paginaAtual;
       if (this.totalPaginas) dados.totalPaginas = this.totalPaginas;
     } else {
-      // 🆕 Modo percentual
       if (this.progressoInput !== null && this.progressoInput !== undefined) {
         const valor = Math.max(0, Math.min(100, Math.floor(Number(this.progressoInput))));
-        if (!isNaN(valor)) {
-          progresso = valor;
-        }
+        if (!isNaN(valor)) progresso = valor;
       }
     }
 
     if (progresso !== undefined) dados.progresso = progresso;
 
     const temComentario = this.fraseAtividade && this.fraseAtividade.trim();
-    if (temComentario) {
-      dados.frase = this.fraseAtividade.trim();
-    }
+    if (temComentario) dados.frase = this.fraseAtividade.trim();
 
     this.homeService.atualizarProgresso(this.livroAtual.id, dados).subscribe({
       next: () => {
         this.homeService.limparCache();
         this.carregarDashboard();
+        this.carregarStreak();
         this.fraseAtividade = '';
         this.alertService.success('Progresso atualizado!');
         this.analyticsService.logUpdateProgress(progresso || 0);
 
         if (temComentario) {
           this.fecharLendoAgora();
-          this.router.navigate(['/inicio/perfil'], {
-            queryParams: { aba: 'atividades' }
-          });
+          this.router.navigate(['/inicio/perfil'], { queryParams: { aba: 'atividades' } });
         } else {
           this.fecharLendoAgora();
         }
@@ -352,13 +386,11 @@ export class HomeComponent implements OnInit {
     });
   }
 
-  // 🆕 GERAR PREVIEW
+  // ============ COMPARTILHAMENTO ============
   async gerarPreviewImagem(): Promise<void> {
     if (!this.livroAtual || this.compartilhando) return;
-
     this.compartilhando = true;
     this.cdr.markForCheck();
-
     try {
       this.previewImagem = await this.gerarImagemCompartilhamento();
       this.cdr.markForCheck();
@@ -371,10 +403,8 @@ export class HomeComponent implements OnInit {
     }
   }
 
-  // 🆕 COMPARTILHAR IMAGEM GERADA
   async compartilharLeitura(): Promise<void> {
     if (!this.livroAtual || this.compartilhando) return;
-
     this.compartilhando = true;
     this.cdr.markForCheck();
 
@@ -382,11 +412,9 @@ export class HomeComponent implements OnInit {
       const imagemBase64 = await this.gerarImagemCompartilhamento();
 
       if (Capacitor.isNativePlatform()) {
-        // 📱 Nativo
         const base64Limpo = imagemBase64.split(',')[1];
         const filename = `bliteca-${Date.now()}.png`;
 
-        // Salva em cache
         await Filesystem.writeFile({
           path: filename,
           data: base64Limpo,
@@ -405,7 +433,6 @@ export class HomeComponent implements OnInit {
           dialogTitle: 'Compartilhar leitura'
         });
       } else {
-        // 🌐 Web
         const blob = await fetch(imagemBase64).then(r => r.blob());
         const file = new File([blob], 'bliteca-leitura.png', { type: 'image/png' });
 
@@ -442,7 +469,6 @@ export class HomeComponent implements OnInit {
       const fundo = new Image();
       fundo.src = 'assets/compartilhamento-fundo.png';
       fundo.onload = async () => {
-        // Mantém proporção
         const proporcao = Math.max(canvas.width / fundo.width, canvas.height / fundo.height);
         const fw = fundo.width * proporcao;
         const fh = fundo.height * proporcao;
@@ -455,7 +481,7 @@ export class HomeComponent implements OnInit {
         capa.crossOrigin = 'anonymous';
         const capaBase64 = await this.baixarImagemComoBase64(
           this.livroAtual!.imagem || 'assets/capas/perfilSemFoto.png'
-          );
+        );
 
         capa.src = capaBase64;
 
@@ -505,18 +531,12 @@ export class HomeComponent implements OnInit {
   trocarLivroAtual(livro: any): void {
     if (!livro?.id) return;
 
-    // 1) Despausa o livro selecionado
     this.homeService.atualizarProgresso(livro.id, { pausado: false }).subscribe({
       next: () => {
-        // 2) Limpa cache (Home + Streak se quiser)
         this.homeService.limparCache();
-
-        // 3) Recarrega o dashboard
         this.carregarDashboard();
-
-        // 4) Fecha o bottom sheet (o dashboard vai reabrir o estado correto)
+        this.carregarStreak();
         this.fecharLendoAgora();
-
         this.alertService.success(`"${livro.titulo}" retomado!`);
         this.cdr.markForCheck();
       },
@@ -531,10 +551,10 @@ export class HomeComponent implements OnInit {
     if (event) event.stopPropagation();
     if (!this.livroAtual) return;
 
-
     this.homeService.finalizarLeitura(this.livroAtual.id).subscribe({
       next: () => {
         this.carregarDashboard();
+        this.carregarStreak();
         this.alertService.success('🎉 Livro finalizado!');
         this.analyticsService.logUpdateProgress(100);
       },
@@ -542,10 +562,8 @@ export class HomeComponent implements OnInit {
     });
   }
 
-
   async baixarImagemTeste(): Promise<void> {
     if (!this.livroAtual) return;
-
     try {
       const imagemFinal = await this.gerarImagemCompartilhamento();
       const a = document.createElement('a');
@@ -561,14 +579,9 @@ export class HomeComponent implements OnInit {
 
   private verificarNotificacoes(): void {
     if (!isPlatformBrowser(this.platformId)) return;
-
     const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
     if (!usuario?.id) return;
-
-    // 🆕 Verifica se a API existe (Capacitor não tem)
-    if (typeof Notification === 'undefined') {
-      return;
-    }
+    if (typeof Notification === 'undefined') return;
 
     if (Notification.permission === 'default') {
       this.notificationService.requestPermission(usuario.id)
@@ -590,14 +603,10 @@ export class HomeComponent implements OnInit {
   }
 
   comecarJornada(): void {
-    // Verifica se tem livros cadastrados
     const temLivros = this.listaLeitura.length > 0 || this.livroAtual != null;
-
     if (temLivros) {
-      // Vai para o perfil (Minha Biblioteca)
       this.router.navigate(['/inicio/perfil']);
     } else {
-      // Vai para a biblioteca (Catálogo)
       this.router.navigate(['/inicio/biblioteca']);
     }
   }
@@ -609,8 +618,6 @@ export class HomeComponent implements OnInit {
   }
 
   // ============ HELPERS DE TEMPO (AUDIOBOOK) ============
-
-  /** "06:40" → 400 minutos. Retorna null se inválido. */
   private parseHHMM(texto: string): number | null {
     if (!texto) return null;
     const match = texto.match(/^(\d{1,3}):(\d{2})$/);
@@ -621,7 +628,6 @@ export class HomeComponent implements OnInit {
     return (h * 60) + m;
   }
 
-  /** 400 minutos → "06:40" */
   formatarHHMM(minutos: number | null | undefined): string {
     if (!minutos || minutos < 0) return '00:00';
     const h = Math.floor(minutos / 60);
@@ -629,7 +635,6 @@ export class HomeComponent implements OnInit {
     return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
   }
 
-  /** 361 minutos → "6h 01min" */
   formatarRestante(minutos: number | null | undefined): string {
     if (!minutos || minutos <= 0) return '';
     const h = Math.floor(minutos / 60);
@@ -639,16 +644,11 @@ export class HomeComponent implements OnInit {
     return `${h}h ${String(m).padStart(2, '0')}min`;
   }
 
-  /** Máscara: usuário digita "1" → "00:01", "13" → "00:13", "130" → "01:30" */
   formatarEntradaHHMM(event: Event): void {
     const input = event.target as HTMLInputElement;
-    // Remove tudo que não é dígito
     let digits = input.value.replace(/\D/g, '');
-
-    // Limita a 5 dígitos (até 999h 59min)
     if (digits.length > 5) digits = digits.slice(0, 5);
 
-    // Monta HH:MM
     if (digits.length <= 2) {
       input.value = digits;
       return;
@@ -656,8 +656,6 @@ export class HomeComponent implements OnInit {
 
     const minutos = digits.slice(-2);
     const horas = digits.slice(0, -2);
-
-    // Se minutos > 59, empurra pro lado
     const m = parseInt(minutos, 10);
     let hFinal = parseInt(horas, 10);
     let mFinal = m;
@@ -670,7 +668,6 @@ export class HomeComponent implements OnInit {
     input.value = `${String(hFinal).padStart(2, '0')}:${String(mFinal).padStart(2, '0')}`;
   }
 
-  // 🆕 Exibição formatada do audiobook no bottom sheet
   get restanteAudiobook(): string {
     const atual = this.parseHHMM(this.posicaoAtualInput);
     const total = this.parseHHMM(this.duracaoTotalInput);
@@ -685,76 +682,99 @@ export class HomeComponent implements OnInit {
     return Math.min(100, Math.round((atual / total) * 100));
   }
 
-  async lerLivroAtual(): Promise<void> {
+  // ============ LER ARQUIVO (via path) ============
+  lerLivroAtual(): void {
     if (!this.livroAtual) return;
 
-    // 📱 Capacitor: abre direto
-    if (Capacitor.isNativePlatform()) {
-      if (!this.livroAtual.arquivoLeitura) {
-        this.alertService.warning('Vincule um arquivo a este livro primeiro.');
+    if (!this.livroAtual.arquivoLeitura) {
+      this.vincularArquivoNovamente();
+      return;
+    }
+
+    if (this.arquivoInacessivel) {
+      this.vincularArquivoNovamente();
+      return;
+    }
+
+    const valor = this.livroAtual.arquivoLeitura;
+
+    // 🆕 Posições salvas no banco
+    const progressoInicial = this.livroAtual.progresso ?? 0;
+    const paginaInicial = this.livroAtual.paginaAtual ?? 1;
+
+    // Compatibilidade com arquivos antigos (sem prefixo)
+    const match = valor.match(/^(pdf|epub):\/\/(.+)$/);
+    if (!match) {
+      const tipo: 'pdf' | 'epub' = valor.toLowerCase().endsWith('.epub') ? 'epub' : 'pdf';
+      this.leitorService.setArquivo(
+        valor,
+        this.livroAtual.id,
+        tipo,
+        progressoInicial,
+        paginaInicial
+      );
+      return;
+    }
+
+    const tipo = match[1] as 'pdf' | 'epub';
+    const path = match[2];
+
+    this.leitorService.setArquivo(
+      path,
+      this.livroAtual.id,
+      tipo,
+      progressoInicial,
+      paginaInicial
+    );
+  }
+
+  // 🆕 Vincular/re-vincular arquivo
+  async vincularArquivoNovamente(): Promise<void> {
+    if (!this.livroAtual) return;
+
+    try {
+      const result = await FilePicker.pickFiles({
+        types: ['application/pdf', 'application/epub+zip'],
+        readData: false,
+        persistContentUri: true
+      });
+
+      if (!result.files || result.files.length === 0) return;
+
+      const file = result.files[0];
+      const uri = file.path || '';
+
+      if (!uri) {
+        this.alertService.error('Não foi possível obter o caminho do arquivo.');
         return;
       }
 
-      try {
-        await FileOpener.openFile({
-          path: this.livroAtual.arquivoLeitura,
-          mimeType: 'application/pdf'
-        });
-      } catch (err) {
-        console.error('Erro ao abrir arquivo:', err);
-        this.alertService.error('Não foi possível abrir o arquivo.');
-      }
-      return;
+      // 🆕 Detecta tipo pelo mimeType do FilePicker
+      const mime = (file as any).mimeType || '';
+      const tipo = mime.includes('epub') || uri.toLowerCase().includes('.epub') ? 'epub' : 'pdf';
+      const valorSalvar = `${tipo}://${uri}`;
+
+      // 🆕 Reset da preferência de modo (o tipo do arquivo define o novo default)
+      localStorage.removeItem(this.chaveModoProgresso);
+
+      this.perfilService.atualizarLivro(this.livroAtual.id, {
+        arquivoLeitura: valorSalvar
+      }).subscribe({
+        next: () => {
+          this.livroAtual!.arquivoLeitura = valorSalvar;
+          this.arquivoInacessivel = false;
+          this.homeService.limparCache();
+          this.alertService.success('Arquivo vinculado!');
+          this.cdr.markForCheck();
+        },
+        error: () => this.alertService.error('Erro ao salvar arquivo')
+      });
+
+    } catch (error: any) {
+      if (error?.message?.includes('cancel')) return;
+      console.error('Erro ao vincular arquivo:', error);
+      this.alertService.error('Erro ao selecionar arquivo.');
     }
-
-    // 🌐 TWA/PWA: picker
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.pdf,.epub,application/pdf,application/epub+zip';
-    input.onchange = (event: any) => {
-      const file = event.target.files?.[0];
-      if (!file) return;
-
-      this.abrirArquivo(file, this.livroAtual!.id);
-    };
-    input.click();
-  }
-
-  async lerLivro(livro: any, event?: Event): Promise<void> {
-    if (event) event.stopPropagation();
-
-    if (!livro?.arquivoLeitura) return;
-
-    // 📱 Capacitor: abre direto
-    if (Capacitor.isNativePlatform()) {
-      try {
-        await FileOpener.openFile({
-          path: livro.arquivoLeitura,
-          mimeType: 'application/pdf'
-        });
-      } catch (err) {
-        console.error('Erro ao abrir arquivo:', err);
-        this.alertService.error('Não foi possível abrir o arquivo.');
-      }
-      return;
-    }
-
-    // 🌐 TWA/PWA: picker
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.pdf,.epub,application/pdf,application/epub+zip';
-    input.onchange = (event: any) => {
-      const file = event.target.files?.[0];
-      if (!file) return;
-
-      this.abrirArquivo(file, livro.id);
-    };
-    input.click();
-  }
-
-  private abrirArquivo(file: File, livroId: string): void {
-    // 🆕 PDF e EPUB → abrem no modal
-    this.leitorService.setArquivo(file, livroId);
   }
 
   // 🆕 Modo do livro atual (pro card da Home)
@@ -769,7 +789,41 @@ export class HomeComponent implements OnInit {
     const salvo = localStorage.getItem(this.chaveModoProgressoAtual) as 'paginas' | 'percentual' | null;
     if (salvo === 'paginas' || salvo === 'percentual') return salvo;
 
-    // Sem preferência salva: se tem paginaAtual → páginas, senão → %
+    // 🆕 Tipo do arquivo define o default
+    const tipoArquivo = this.extrairTipoArquivo(this.livroAtual?.arquivoLeitura);
+    if (tipoArquivo === 'pdf') return 'paginas';
+    if (tipoArquivo === 'epub') return 'percentual';
+
+    // Sem arquivo: comportamento antigo (livro físico)
     return this.livroAtual?.paginaAtual ? 'paginas' : 'percentual';
+  }
+
+  // ============ OFERTAS (Amazon Afiliado) ============
+  private carregarOfertas(): void {
+    console.log('🔍 [OFERTAS] Iniciando carregamento...');
+
+    this.homeService.getBookOffers(3).subscribe({
+      next: (res) => {
+        console.log('🔍 [OFERTAS] Resposta:', res);
+        console.log('🔍 [OFERTAS] Total de ofertas:', res.offers?.length);
+        this.ofertas = res.offers || [];
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        console.error('❌ [OFERTAS] Erro:', err);
+        console.error('❌ [OFERTAS] Status:', err.status);
+        console.error('❌ [OFERTAS] Message:', err.message);
+        console.error('❌ [OFERTAS] URL:', err.url);
+        this.ofertas = [];
+      }
+    });
+  }
+
+  registrarCliqueOferta(oferta: BookOffer): void {
+    console.log('Clique oferta:', {
+      id: oferta.id,
+      title: oferta.title
+    });
+    // Futuro: this.analyticsService.logEvent('offer_click', { id: oferta.id });
   }
 }

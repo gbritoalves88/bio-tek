@@ -1,4 +1,4 @@
-import { Component, Inject, OnInit, PLATFORM_ID } from '@angular/core';
+import { Component, Inject, OnInit, PLATFORM_ID, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { NotificationBellComponent } from '../../shared/notification-bell/notification-bell.component';
@@ -7,6 +7,7 @@ import { getAvatarUrl } from '../../shared/utils/avatar-helper';
 import { LeitorComponent } from '../../shared/leitor/leitor.component';
 import { ShellService } from './shell.service';
 import { AlertService } from '../../shared/services/alert.service';
+import { SettingsLauncher } from '@capawesome/capacitor-settings-launcher';
 
 @Component({
   selector: 'app-shell',
@@ -27,7 +28,6 @@ export class ShellComponent implements OnInit {
   isDarkMode = true;
   menuOpen = false;
   isAdmin = false;
-  adminExpandido = false;
 
   // 🆕 Avatar + menu
   avatarUrl = '';
@@ -37,35 +37,36 @@ export class ShellComponent implements OnInit {
 
   constructor(
     @Inject(PLATFORM_ID) private platformId: Object,
-   private router: Router,
-  private themeStatusBar: ThemeStatusBarService,
-  private shellService: ShellService,
-  private alertService: AlertService
+    private router: Router,
+    private themeStatusBar: ThemeStatusBarService,
+    private shellService: ShellService,
+    private alertService: AlertService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
-    const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
-    this.isAdmin = usuario?.adm === true;
+    // 🆕 Escuta as mudanças do usuário vindas do ShellService
+    this.shellService.usuarioAtual$.subscribe(usuario => {
+      if (!usuario || !usuario.id) return;
 
-    if (isPlatformBrowser(this.platformId)) {
-      const usuarioStorage = JSON.parse(localStorage.getItem('usuario') || '{}');
+      this.isAdmin = usuario.adm === true;
+      this.isDarkMode = usuario.tema !== 2;
+      this.avatarUrl = getAvatarUrl(usuario);
+      this.nomeUsuario = usuario.nome || 'Usuário';
 
-      this.isDarkMode = usuarioStorage.tema !== 2;
-
-      // 🆕 Avatar + nome
-      this.avatarUrl = getAvatarUrl(usuarioStorage);
-      this.nomeUsuario = usuarioStorage?.nome || 'Usuário';
-
-      if (this.isDarkMode) {
-        document.body.classList.add('dark-theme');
-        document.body.classList.remove('light-theme');
-      } else {
-        document.body.classList.add('light-theme');
-        document.body.classList.remove('dark-theme');
+      if (isPlatformBrowser(this.platformId)) {
+        if (this.isDarkMode) {
+          document.body.classList.add('dark-theme');
+          document.body.classList.remove('light-theme');
+        } else {
+          document.body.classList.add('light-theme');
+          document.body.classList.remove('dark-theme');
+        }
+        this.themeStatusBar.aplicarTema(this.isDarkMode ? 1 : 2);
       }
 
-      this.themeStatusBar.aplicarTema(this.isDarkMode ? 1 : 2);
-    }
+      this.cdr.markForCheck();
+    });
   }
 
   // 🆕 Toggle do menu do avatar
@@ -138,7 +139,7 @@ export class ShellComponent implements OnInit {
     });
   }
 
-  // 🆕 Toggle de tema (trazido de volta)
+  // 🆕 Toggle de tema atualizado para usar o ShellService
   toggleTheme(): void {
     if (!isPlatformBrowser(this.platformId)) return;
 
@@ -152,9 +153,7 @@ export class ShellComponent implements OnInit {
       document.body.classList.remove('dark-theme');
     }
 
-    const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
-    usuario.tema = this.isDarkMode ? 1 : 2;
-    localStorage.setItem('usuario', JSON.stringify(usuario));
+    this.shellService.atualizarUsuarioLocal({ tema: this.isDarkMode ? 1 : 2 });
 
     this.themeStatusBar.aplicarTema(this.isDarkMode ? 1 : 2);
   }
@@ -167,12 +166,21 @@ export class ShellComponent implements OnInit {
     this.menuOpen = false;
   }
 
+  abrirAdmin(): void {
+    this.menuAvatarAberto = false;
+    this.router.navigate(['/inicio/admin']);
+  }
+
   sair() {
-    localStorage.removeItem('token');
-    localStorage.removeItem('refreshToken');
-    localStorage.removeItem('usuario');
     this.shellService.limparSessao();
     this.router.navigate(['/']);
   }
 
+  async abrirConfiguracaoNotificacao() {
+    try {
+      await SettingsLauncher.openNotificationSettings();
+    } catch (error) {
+      console.error('Erro ao abrir configurações de notificação:', error);
+    }
+  }
 }

@@ -3,7 +3,7 @@ export const environment = {
   apiUrl: 'https://biotek-api.onrender.com/api',
   appVersion: '9.0.0',
   google: {
-    clientId: '3559837920-73a93ipuafg6ngsbhaqe8cuh1vhqqbql.apps.googleusercontent.com',
+    clientId: '672632714788-spt5ovft059gmdqvbng9b27j3pbupodu.apps.googleusercontent.com',
     redirectUri: 'https://www.bliteca.com.br'
   }
 };

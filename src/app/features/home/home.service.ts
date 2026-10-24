@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, shareReplay, tap } from 'rxjs';
-import { DashboardData } from './home.model';
+import { DashboardData, BookOffersResponse } from './home.model';
 import { environment } from '../../../environments/environment';
 
 @Injectable({
@@ -10,6 +10,7 @@ import { environment } from '../../../environments/environment';
 export class HomeService {
   private homeApiUrl = `${environment.apiUrl}/Home`;
   private livroApiUrl = `${environment.apiUrl}/Livro`;
+  private offersApiUrl = `${environment.apiUrl}/Offers`;
 
   // 🆕 Cache do dashboard com timestamp
   private dashboardCache$: Observable<DashboardData> | null = null;
@@ -82,6 +83,13 @@ export class HomeService {
       status: 3   // Lido
     }).pipe(
       tap(() => this.limparCache())
+    );
+  }
+
+  // ============ OFERTAS (Amazon Afiliado) ============
+  getBookOffers(limit: number = 3): Observable<BookOffersResponse> {
+    return this.http.get<BookOffersResponse>(
+      `${this.offersApiUrl}/books?limit=${limit}`
     );
   }
 }

@@ -4,6 +4,7 @@ import { Observable, shareReplay, tap } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { Usuario, LivroDoUsuario, AtividadeLeitura } from './perfil.model';
 import { environment } from '../../../environments/environment';
+import { BehaviorSubject } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -17,6 +18,9 @@ export class PerfilService {
   private perfilCacheTimestamp: number = 0;
   private perfilCacheUsuarioId: string = '';
   private readonly CACHE_DURATION = 3 * 60 * 1000; // 3 minutos
+
+    private usuarioAtualSubject = new BehaviorSubject<any>(this.getUsuarioLocalStorage());
+  public usuarioAtual$ = this.usuarioAtualSubject.asObservable();
 
   constructor(private http: HttpClient) {}
 
@@ -180,4 +184,22 @@ export class PerfilService {
 
     return this.atividadesCache$;
   }
+
+    atualizarUsuarioLocal(dados: Partial<any>): void {
+    const usuarioAtual = this.getUsuarioLocalStorage();
+    const usuarioAtualizado = { ...usuarioAtual, ...dados };
+    localStorage.setItem('usuario', JSON.stringify(usuarioAtualizado));
+    this.usuarioAtualSubject.next(usuarioAtualizado);
+  }
+
+  // 🆕 Método auxiliar para ler o localStorage
+  private getUsuarioLocalStorage(): any {
+    try {
+      return JSON.parse(localStorage.getItem('usuario') || '{}');
+    } catch {
+      return {};
+    }
+  }
+
+
 }

@@ -9,12 +9,16 @@ import { CommonModule } from '@angular/common';
     <div
       class="bottom-sheet-overlay"
       [class.active]="aberto"
-      (click)="fechar.emit()">
+      (click)="fechar.emit()"
+      (touchstart)="$event.stopPropagation()"
+      (touchmove)="$event.stopPropagation()">
 
       <div
         class="bottom-sheet"
         [class.active]="aberto"
-        (click)="$event.stopPropagation()">
+        (click)="$event.stopPropagation()"
+        (touchstart)="$event.stopPropagation()"
+        (touchmove)="$event.stopPropagation()">
 
         <!-- Barra de arrastar (visual) -->
         <div class="drag-handle"></div>
