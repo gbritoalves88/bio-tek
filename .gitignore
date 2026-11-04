@@ -45,7 +45,6 @@ Thumbs.db
 .vercel
 
 # Bubblewrap / Android
-/android/
 *.keystore
 *.apk
 *.aab
@@ -64,3 +63,23 @@ store_icon.png
 /gradlew
 /gradlew.bat
 /settings.gradle
+
+*.bat
+
+# Environment files reais
+src/environments/environment.ts
+src/environments/environment.prod.ts
+
+
+# Credenciais Firebase
+*service-account*.json
+*firebase-adminsdk*.json
+
+
+# Keystore files
+*.jks
+*.p12
+*.pfx
+
+# Google Services
+google-services.json
