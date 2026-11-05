@@ -4,6 +4,7 @@ Aplicação frontend do **BliTeca**, uma plataforma de leitura e organização d
 
 Desenvolvida com Angular e TypeScript, a aplicação pode ser executada no navegador e empacotada como aplicativo Android utilizando Capacitor.
 
+App: https://play.google.com/store/apps/details?id=com.bliteca.app
 Repositório: https://github.com/gbritoalves88/bio-tek
 
 ## Visão geral
