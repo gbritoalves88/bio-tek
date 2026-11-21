@@ -357,6 +357,15 @@
         <span *ngIf="temArquivoVinculado" class="arquivo-nome">📄 {{ nomeArquivoVinculado }}</span>
       </button>
 
+      <!--
+      <label class="check-privacidade">
+        <input type="checkbox" [(ngModel)]="novoLivro.publico" />
+        <div>
+          <strong>Livro público </strong>
+          <span>Outros usuários podem ver e comentar</span>
+        </div>
+      </label>-->
+
       <button class="btn-submit" (click)="adicionarLivroEncontrado()" [disabled]="!novoLivro.titulo?.trim() || !novoLivro.autor?.trim()">Concluir cadastro</button>
     </div>
   </div>

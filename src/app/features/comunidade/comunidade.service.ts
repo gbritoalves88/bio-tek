@@ -85,4 +85,26 @@ export class ComunidadeService {
   adicionarLivro(livro: { titulo: string; autor: string; imagem?: string | null }): Observable<any> {
     return this.http.post(`${environment.apiUrl}/Livro`, livro);
   }
+
+
+  deletarComentarioAtividade(id: string): Observable<any> {
+    return this.http.delete(`${environment.apiUrl}/ComentarioAtividade/${id}`);
+  }
+
+  // 🆕 Comentários de atividade
+  getComentariosAtividade(idAtividade: string): Observable<any[]> {
+    return this.http.get<any[]>(
+      `${environment.apiUrl}/ComentarioLivro/atividade/${encodeURIComponent(idAtividade)}`
+    );
+  }
+
+  enviarComentarioAtividade(idLivro: string, idAtividade: string, comentario: string, origem: string): Observable<any> {
+    return this.http.post(`${environment.apiUrl}/ComentarioLivro`, {
+      idLivro,
+      idAtividade,
+      comentario,
+      origem
+    });
+  }
+
 }

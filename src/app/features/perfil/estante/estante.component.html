@@ -86,11 +86,20 @@
            class="book-cover"
            loading="lazy"
            decoding="async" />
+
+        <div class="book-cover-wrapper">
+        <img [src]="livro.imagem || 'assets/capas/perfilSemFoto.png'" ... />
+
+      </div>
     </div>
     <div class="book-info">
       <span class="book-title" [title]="livro.titulo">{{ livro.titulo || 'Sem título' }}</span>
       <span class="book-status" [class]="getStatusClass(livro.status)">{{ getStatusTexto(livro.status) }}</span>
     </div>
+
+
+      <span class="badge-privado" *ngIf="livro.publico === false" title="Livro privado">🔒</span>
+
   </div>
 
   <!-- 🆕 Carregar mais -->
@@ -104,6 +113,8 @@
      *ngIf="livrosFiltrados.length === 0 && prateleirasVisiveis.length === 0">
     {{ filtroPrateleira ? 'Nenhuma prateleira criada.' : 'Nenhum livro na biblioteca.' }}
   </p>
+
+
 </div>
 
 <!-- ============================================================ -->
@@ -132,11 +143,14 @@
         <strong class="bs-titulo">{{ livroSelecionado.titulo || 'Sem título' }}</strong>
         <span class="bs-autor">{{ livroSelecionado.autor || 'Autor desconhecido' }}</span>
         <span class="bs-status" [class]="getStatusClass(livroSelecionado.status)">{{ getStatusTexto(livroSelecionado.status) }}</span>
+
       </div>
     </div>
 
     <div class="bs-acoes">
-      <button class="bs-btn bs-btn-outline" *ngIf="livroSelecionado.avaliacao" (click)="abrirComentarios(livroSelecionado); fecharBottomSheetLivro()">
+      <button class="bs-btn bs-btn-outline"
+              *ngIf="livroSelecionado.publico !== false"
+              (click)="abrirComentarios(livroSelecionado); fecharBottomSheetLivro()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
         </svg>
@@ -267,6 +281,14 @@
       </select>
     </div>
 
+    <label class="check-privacidade">
+      <input type="checkbox" [(ngModel)]="livroEditando.publico" />
+      <div>
+        <strong>Livro público</strong>
+        <span>Outros usuários podem ver e comentar</span>
+      </div>
+    </label>
+
     <div class="bs-actions">
       <button class="btn-cancelar" (click)="fecharEdicaoLivro()">Cancelar</button>
       <button class="btn-salvar"
@@ -275,45 +297,108 @@
         {{ enviandoEdicao ? 'Salvando...' : 'Salvar alterações' }}
       </button>
     </div>
+
+
   </ng-container>
 </app-bottom-sheet>
 
 <!-- ============================================================ -->
 <!-- 6. BOTTOM SHEET: COMENTÁRIOS                                 -->
 <!-- ============================================================ -->
-<app-bottom-sheet [aberto]="comentariosAberto" (fechar)="comentariosAberto = false">
-  <div class="bottom-sheet-header">
-    <h3>💬 {{ livroComentarioTitulo || 'Livro' }}</h3>
-    <button class="bottom-sheet-close" (click)="comentariosAberto = false">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-      </svg>
-    </button>
-  </div>
-
-  <div class="comentario-item" *ngFor="let c of livroComentarioProntos">
-    <div class="comentario-topo">
-      <span class="comentario-autor">{{ c.usuarioNickname || '@user' }}</span>
-      <button class="btn-deletar-comentario" *ngIf="c.idUsuario === meuId" (click)="deletarComentario(c.id)" title="Excluir comentário">
+<app-bottom-sheet [aberto]="comentariosAberto" (fechar)="fecharComentarios()">
+  <ng-container *ngIf="etapaComentarios === 'lista'">
+    <!-- ========== TELA 1: LISTA DE AÇÕES ========== -->
+    <div class="bottom-sheet-header">
+      <h3>💬 {{ livroComentarioTitulo || 'Livro' }}</h3>
+      <button class="bottom-sheet-close" (click)="fecharComentarios()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <polyline points="3 6 5 6 21 6"/>
-          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
         </svg>
       </button>
     </div>
-    <p>{{ c.comentario }}</p>
-    <span class="data">{{ c.dataCriacao | date:'dd/MM/yyyy HH:mm' }}</span>
-  </div>
 
-  <div class="empty" *ngIf="!livroComentarioProntos?.length">Nenhum comentário ainda. Seja o primeiro!</div>
-
-  <div class="novo-comentario">
-    <textarea [(ngModel)]="novoComentarioPerfil" placeholder="Escreva um comentário..." rows="2" maxlength="200" (input)="cdr.markForCheck()"></textarea>
-    <div class="comentario-actions">
-      <span class="contador">{{ novoComentarioPerfil.length }}/200</span>
-      <button [disabled]="!novoComentarioPerfil.trim()" (click)="enviarComentario()">Enviar</button>
+    <div class="grupos-lista" *ngIf="livroComentarioProntos?.length">
+      <button class="grupo-item"
+              *ngFor="let grupo of livroComentarioProntos"
+              (click)="abrirGrupo(grupo)">
+        <span class="grupo-icone">{{ grupo.icone }}</span>
+        <div class="grupo-info">
+          <span class="grupo-titulo">{{ grupo.titulo }}</span>
+          <span class="grupo-total">{{ grupo.total }} comentário(s)</span>
+        </div>
+        <svg class="grupo-seta" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="9 18 15 12 9 6"/>
+        </svg>
+      </button>
     </div>
-  </div>
+
+    <div class="empty" *ngIf="!livroComentarioProntos?.length">
+      Nenhum comentário ainda. Seja o primeiro no feed!
+    </div>
+  </ng-container>
+
+  <ng-container *ngIf="etapaComentarios === 'grupo' && grupoSelecionado">
+    <!-- ========== TELA 2: COMENTÁRIOS DA AÇÃO ========== -->
+    <div class="bottom-sheet-header">
+      <button class="bottom-sheet-voltar" (click)="voltarParaLista()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+      </button>
+      <h3>{{ grupoSelecionado.icone }} {{ grupoSelecionado.titulo }}</h3>
+      <button class="bottom-sheet-close" (click)="fecharComentarios()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="comentario-item" *ngFor="let c of grupoSelecionado.comentarios">
+      <div class="comentario-topo">
+            <div class="comentario-autor-info"
+              (click)="irParaPerfil(c.idUsuario, $event)"
+              style="cursor: pointer;">
+                <img [src]="c.usuarioAvatar || 'assets/capas/perfilSemFoto.png'"
+                class="avatar-mini-comentario"
+                [alt]="c.usuarioNickname" />
+            <span class="comentario-autor">{{ limparNick(c.usuarioNickname) }}</span>
+          </div>
+        <button class="btn-deletar-comentario"
+                *ngIf="c.idUsuario === meuId"
+                (click)="deletarComentario(c.id)"
+                title="Excluir comentário">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+          </svg>
+        </button>
+      </div>
+      <p>{{ c.comentario }}</p>
+      <span class="data">{{ c.dataCriacao | date:'dd/MM/yyyy HH:mm' }}</span>
+    </div>
+
+    <div class="empty" *ngIf="!grupoSelecionado.comentarios?.length">
+      Nenhum comentário ainda. Seja o primeiro!
+    </div>
+
+    <!-- Input de comentário -->
+    <div class="novo-comentario">
+      <textarea
+        [(ngModel)]="grupoSelecionado.novoComentario"
+        placeholder="Comentar esta ação..."
+        rows="2"
+        maxlength="200">
+      </textarea>
+      <div class="comentario-actions">
+        <span class="contador">{{ (grupoSelecionado.novoComentario || '').length }}/200</span>
+        <button
+          [disabled]="!grupoSelecionado.novoComentario?.trim()"
+          (click)="enviarComentarioNoGrupo()">
+          Enviar
+        </button>
+      </div>
+    </div>
+  </ng-container>
 </app-bottom-sheet>
 
 <!-- ============================================================ -->

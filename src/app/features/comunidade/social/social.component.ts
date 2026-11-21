@@ -59,14 +59,37 @@ export class SocialComponent implements OnInit {
     });
   }
 
-  seguirUsuario(id: string): void {
+  seguirUsuario(id: string, usuarioObj?: UsuarioSocial): void {
+    // 1. OPTIMISTIC UI: Se tiver o objeto do usuário, adiciona na lista na hora!
+    if (usuarioObj) {
+      this.seguindo = [...this.seguindo, usuarioObj];
+      this.usuariosFiltrados = [...this.seguindo];
+
+      // Remove da lista de busca externa (se estiver buscando)
+      this.buscarUsuariosExternos = this.buscarUsuariosExternos.filter(u => u.id !== id);
+      this.cdr.detectChanges(); // Renderiza na hora
+    }
+
+    // 2. Faz a chamada HTTP em background
     this.socialService.seguir(id).subscribe({
       next: () => {
         this.alertService.success('Agora você segue este usuário!');
-        this.carregarUsuarios();
+        // Limpa o cache para a próxima vez que o app for aberto
+        this.socialService.limparCacheSeguindo();
+
+        // NÃO chama this.carregarUsuarios() aqui! A tela já foi atualizada.
       },
       error: (err) => {
+        // 3. Se der erro, desfaz a atualização
         this.alertService.error('Erro ao seguir usuário');
+        if (usuarioObj) {
+          this.seguindo = this.seguindo.filter(u => u.id !== id);
+          this.usuariosFiltrados = [...this.seguindo];
+          this.buscarUsuariosExternos = [...this.buscarUsuariosExternos, usuarioObj];
+        } else {
+          this.carregarUsuarios(); // Se não tinha o obj, puxa do banco de novo
+        }
+        this.cdr.markForCheck();
       }
     });
   }
@@ -127,21 +150,38 @@ export class SocialComponent implements OnInit {
     this.nomeUsuarioParaDeixarSeguir = '';
   }
 
-  confirmarDeixarSeguir(): void {
-    if (this.usuarioParaDeixarSeguir) {
-      this.socialService.deixarDeSeguir(this.usuarioParaDeixarSeguir).subscribe({
-        next: () => {
-          this.socialService.limparCacheSeguindo();
+   confirmarDeixarSeguir(): void {
+    if (!this.usuarioParaDeixarSeguir) return;
+
+    const id = this.usuarioParaDeixarSeguir;
+    const nome = this.nomeUsuarioParaDeixarSeguir;
+
+    // 1. Guarda o usuário que vai sair da lista
+    const usuarioRemovido = this.seguindo.find(u => u.id === id);
+
+    // 2. OPTIMISTIC UI: Remove da tela na hora!
+    this.seguindo = this.seguindo.filter(u => u.id !== id);
+    this.usuariosFiltrados = this.usuariosFiltrados.filter(u => u.id !== id);
+    this.fecharConfirmacao();
+    this.cdr.detectChanges();
+
+    // 3. Chama a API em background
+    this.socialService.deixarDeSeguir(id).subscribe({
+      next: () => {
+        this.alertService.success(`Você deixou de seguir ${nome}`);
+        this.socialService.limparCacheSeguindo();
+      },
+      error: (err) => {
+        // 4. Se der erro, devolve o usuário para a lista
+        this.alertService.error('Erro ao deixar de seguir');
+        if (usuarioRemovido) {
+          this.seguindo = [...this.seguindo, usuarioRemovido];
+          this.usuariosFiltrados = [...this.seguindo];
+        } else {
           this.carregarUsuarios();
-          this.alertService.success(`Você deixou de seguir ${this.nomeUsuarioParaDeixarSeguir}`);
-          this.fecharConfirmacao();
-        },
-        error: (err) => {
-          console.error('Erro:', err);
-          this.alertService.error('Erro ao deixar de seguir');
-          this.fecharConfirmacao();
         }
-      });
-    }
+        this.cdr.markForCheck();
+      }
+    });
   }
 }

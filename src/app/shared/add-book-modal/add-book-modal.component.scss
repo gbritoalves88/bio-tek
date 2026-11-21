@@ -336,6 +336,32 @@
   }
 }
 
+.check-privacidade {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  background: var(--bg-primary);
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  margin-bottom: 12px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text-primary);
+
+  input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--accent);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  span {
+    line-height: 1.4;
+  }
+}
+
 // ===== INPUT NUMBER (Ano) =====
 input[type="number"] {
   width: 100%;

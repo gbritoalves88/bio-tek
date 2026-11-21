@@ -732,7 +732,7 @@
   color: var(--text-secondary);
   margin-bottom: 8px;
   display: block;
-  text-align: center;
+  //text-align: center;
 }
 
 .bs-pagina-inputs {
@@ -1077,6 +1077,760 @@
     cursor: not-allowed;
     pointer-events: none;
   }
+}
+
+// ===== BOTTOM SHEET (Estilos globais para conteúdo projetado) =====
+:host ::ng-deep {
+  // Header do Bottom Sheet
+  .bottom-sheet-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border-color);
+
+    h3 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+  }
+
+  .bottom-sheet-close {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 4px;
+
+    svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    &:hover {
+      color: var(--accent);
+    }
+  }
+
+  // Formulário
+  .bs-form {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 4px;
+      margin-top: 8px;
+    }
+  }
+
+  .bs-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+    margin-top: 8px;
+  }
+
+  .bs-input-pagina {
+    &:disabled {
+      background-color: rgba(128, 128, 128, 0.1);
+      color: var(--text-secondary);
+      cursor: not-allowed;
+      opacity: 0.7;
+    }
+  }
+  // Inputs e Selects (estilo do perfil)
+  .bs-input,
+  .bs-select {
+    width: 100%;
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-card);
+    color: var(--text-primary);
+    font-size: 14px;
+    outline: none;
+    font-family: inherit;
+    box-sizing: border-box;
+    margin-bottom: 12px;
+    transition: all 0.2s;
+
+    &:focus {
+      border-color: var(--accent);
+    }
+
+    &::placeholder {
+      color: var(--text-secondary);
+    }
+  }
+
+  textarea.bs-input {
+    resize: vertical;
+    min-height: 80px;
+  }
+
+  .bs-select {
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+  }
+
+  .bs-acao-principal {
+    width: 100%;
+    margin-bottom: 20px;
+    padding-bottom: 16px; /* Espaço antes da linha */
+    border-bottom: 1px solid var(--border-color); /* 🆕 A linha vai para cá */
+
+    .bs-btn {
+      width: 100%;
+      border-radius: 12px;
+      padding: 14px 16px;
+      font-size: 15px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+    }
+  }
+
+  // Destaque do Livro no Bottom Sheet
+ .bs-livro-destaque {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    margin-bottom: 16px; /* Espaço entre a capa e o botão */
+    padding-bottom: 0;   /* Sem padding extra */
+    border-bottom: none; /* Remove a linha daqui */
+  }
+
+  .bs-capa {
+    width: 80px;
+    aspect-ratio: 2/3;
+    object-fit: cover;
+    border-radius: 8px;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  }
+
+  .bs-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .bs-titulo {
+    display: block;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+    line-height: 1.3;
+  }
+
+  .bs-autor {
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+
+  // Botão Salvar
+  .bs-salvar {
+    width: 100%;
+    padding: 10px 20px;
+    margin-top: 16px;
+    border-radius: 24px;
+    border: none;
+    background: var(--accent);
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover {
+      opacity: 0.85;
+    }
+
+    &:active {
+      transform: scale(0.98);
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  }
+}
+
+/* 🆕 Estilo do Compartilhamento Premium */
+.card-compartilhar-interno {
+  border: 1px solid var(--accent);
+  border-radius: 12px;
+  background: var(--bg-card);
+  padding: 16px;
+  margin-bottom: 20px;
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    .icone {
+      width: 24px;
+      height: 24px;
+      color: var(--accent);
+      flex-shrink: 0;
+    }
+
+    .textos {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+
+      strong {
+        font-size: 14px;
+        color: var(--text-primary);
+      }
+      span {
+        font-size: 11px;
+        color: var(--text-secondary);
+      }
+    }
+
+    .seta {
+      width: 18px;
+      height: 18px;
+      color: var(--text-secondary);
+    }
+  }
+
+  .card-body {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(0,0,0,0.05);
+
+    .textarea-compartilhar {
+      width: 100%;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 10px;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      font-size: 13px;
+      resize: none;
+      font-family: inherit;
+      outline: none;
+
+      &:focus {
+        border-color: var(--accent);
+      }
+    }
+
+    .card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 8px;
+
+      .contador {
+        font-size: 11px;
+        color: var(--text-secondary);
+      }
+
+      .btn-publicar {
+        background: var(--accent);
+        color: #fff;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 12px;
+        cursor: pointer;
+
+        &:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+      }
+    }
+  }
+}
+
+.card-compartilhar-externo {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  cursor: pointer;
+  padding: 12px;
+  border-radius: 12px;
+  transition: background 0.2s;
+
+  &:hover {
+    background: rgba(0,0,0,0.03);
+  }
+
+  .preview-livro {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    padding: 8px;
+    border-radius: 10px;
+
+    .preview-capa {
+      width: 40px;
+      height: 60px;
+      object-fit: cover;
+      border-radius: 4px;
+    }
+
+    .preview-texto {
+      font-size: 12px;
+      color: var(--text-primary);
+    }
+  }
+
+  .label-externo {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+    text-align: center;
+  }
+}
+
+// ===== Importar PDF/EPUB =====
+.btn-importar-arquivo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 16px 20px;
+
+  /* Fundo laranja translúcido */
+  background: rgba(219, 124, 0, 0.15);
+
+  /* Borda laranja mais forte */
+  border: 1px solid var(--accent);
+
+  /* 🆕 Sombra colorida (glow) */
+  box-shadow:
+    0 4px 12px rgba(219, 124, 0, 0.15),   /* Sombra externa suave */
+    0 0 8px rgba(219, 124, 0, 0.2);       /* Brilho interno na borda */
+
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin: 16px 0;
+
+  .btn-conteudo {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+
+    svg {
+      width: 28px;
+      height: 28px;
+      stroke: var(--accent);
+      flex-shrink: 0;
+    }
+
+    .textos {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+
+      strong {
+        font-size: 15px;
+        font-weight: 700;
+        color: var(--text-primary);
+      }
+
+      span {
+        font-size: 12px;
+        color: var(--text-secondary);
+      }
+    }
+  }
+
+  &:hover:not(:disabled) {
+    background: rgba(219, 124, 0, 0.25);
+    border-color: var(--accent);
+
+    /* 🆕 Glow aumentado no hover */
+    box-shadow:
+      0 6px 16px rgba(219, 124, 0, 0.3),
+      0 0 12px rgba(219, 124, 0, 0.4);
+
+    transform: translateY(-1px);
+  }
+
+  &:active:not(:disabled) {
+    transform: scale(0.98);
+    box-shadow: 0 2px 8px rgba(219, 124, 0, 0.2);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    box-shadow: none;
+    border-color: var(--text-secondary);
+  }
+}
+
+// ===== BOTTOM SHEET COMPARTILHAR LEITURA (NOVO LAYOUT) =====
+
+.card-opcao {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  overflow: hidden;
+
+  // 🆕 Estado ativo (quando a caixa de texto abre)
+  &.ativo {
+    border-color: var(--accent);
+    background: rgba(219, 124, 0, 0.05); // Fundo levemente laranja
+    cursor: default;
+  }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+
+    .icone-wrapper {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: rgba(219, 124, 0, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+
+      svg {
+        width: 22px;
+        height: 22px;
+        stroke: var(--accent);
+      }
+    }
+
+    .textos {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+
+      strong {
+        font-size: 15px;
+        color: var(--text-primary);
+        font-weight: 600;
+      }
+      span {
+        font-size: 13px;
+        color: var(--text-secondary);
+      }
+    }
+
+    .seta {
+      width: 18px;
+      height: 18px;
+      stroke: var(--text-secondary);
+      transition: transform 0.2s;
+    }
+  }
+
+  &:hover:not(.ativo) {
+    border-color: var(--accent);
+    .seta { transform: translateX(3px); }
+  }
+
+  // 🆕 Conteúdo expandido (textarea)
+   .card-body-expandido {
+    padding: 0 16px 16px;
+    cursor: default;
+    /* 🆕 Garante que o padding não estoure a largura */
+    box-sizing: border-box;
+
+    .textarea-compartilhar {
+      width: 100%;
+      /* 🆕 RESOLVE O PROBLEMA DE ESCAPAR DA DIV */
+      box-sizing: border-box;
+
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      background: var(--bg-card);
+      color: var(--text-primary);
+      font-size: 14px;
+      resize: none;
+      outline: none;
+      font-family: inherit;
+      margin-bottom: 10px;
+      transition: border-color 0.2s;
+
+      &:focus {
+        border-color: var(--accent);
+      }
+    }
+
+    .card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      .contador {
+        font-size: 12px;
+        color: var(--text-secondary);
+      }
+
+      .btn-publicar {
+        padding: 8px 16px;
+        border-radius: 8px;
+        background: var(--accent);
+        color: #fff;
+        border: none;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: opacity 0.2s;
+
+        &:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+      }
+    }
+  }
+
+  // 🆕 Estilo específico para o card externo
+   &.externo {
+    .externo-conteudo {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px 12px 12px; // Ajuste de padding para alinhar a seta
+    }
+
+    .preview-livro {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex: 1; // Ocupa o espaço restante
+
+      .preview-capa {
+        width: 40px;
+        height: 55px;
+        object-fit: cover;
+        border-radius: 6px;
+        flex-shrink: 0;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      }
+
+      .preview-texto {
+        font-size: 14px;
+        color: var(--text-primary);
+        line-height: 1.3;
+      }
+    }
+
+    .seta {
+      width: 18px;
+      height: 18px;
+      stroke: var(--text-secondary);
+      transition: transform 0.2s;
+      margin-left: 8px;
+    }
+
+    .label-externo {
+      display: block;
+      padding: 0 16px 12px;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    &:hover {
+      border-color: var(--accent);
+      .seta { transform: translateX(3px); } // Efeito da seta ao passar o mouse
+    }
+  }
+}
+
+/* 🆕 Spinner para o botão de compartilhar */
+.spinner-mini {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3); /* ou var(--border-color) se for fundo claro */
+  border-top-color: var(--accent); /* Cor laranja do app */
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+/* Spinner específico para o botão outline (que tem fundo escuro) */
+.bs-btn-outline .spinner-mini {
+  border: 2px solid var(--border-color);
+  border-top-color: var(--accent);
+}
+
+.bs-btn-large {
+  width: 100%;
+  padding: 14px 20px;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 8px;
+
+  svg {
+    width: 20px;
+    height: 20px;
+    stroke: currentColor;
+  }
+}
+
+// ===== BOTÃO FINALIZAR =====
+.btn-finalizar {
+  background: var(--accent);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  transition: all 0.2s;
+
+  svg { width: 16px; height: 16px; stroke: currentColor; }
+
+  &:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: scale(0.97);
+  }
+}
+
+// ===== AVALIAÇÃO =====
+.bs-aviso {
+  font-size: 12px;
+  color: var(--accent);
+  margin-top: 6px;
+  display: block;
+  line-height: 1.4;
+}
+
+.estrelas-avaliacao {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  padding: 8px 0;
+
+  .estrela {
+    font-size: 42px;
+    color: var(--border-color);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    line-height: 1;
+    user-select: none;
+
+    &:hover {
+      transform: scale(1.15);
+      color: #ffc107;
+    }
+
+    &.ativa {
+      color: #ffc107;
+      text-shadow: 0 0 12px rgba(255, 193, 7, 0.5);
+    }
+  }
+}
+
+
+// ===== BOTÃO ATUALIZAR PROGRESSO (quando livro novo) =====
+.btn-atualizar-progresso-primario {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--accent);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 8px;
+  transition: all 0.2s ease;
+
+  &:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: scale(0.97);
+  }
+}
+
+.check-privacidade {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--bg-primary);
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  margin-bottom: 12px;
+  cursor: pointer;
+
+  input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    accent-color: var(--accent);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  span {
+    font-size: 13px;
+    color: var(--text-primary);
+    line-height: 1.4;
+  }
+}
+
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
 // ===== KEYFRAMES =====

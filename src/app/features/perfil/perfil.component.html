@@ -33,8 +33,8 @@
 
         <div class="perfil-info">
           <h2 class="nome">{{ usuario.nome }}</h2>
-          <span class="nickname">{{ usuario.nickname || '@sem-nickname' }}</span>
-          <p class="bio" *ngIf="usuario.descricao">{{ usuario.descricao }}</p>
+          <span class="nickname">{{ limparNick(usuario.nickname) }}</span>
+          <p class="bio" *ngIf="usuario.descricao">{{ usuario.descricao }} </p>
         </div>
 
         <div class="perfil-actions">
@@ -42,6 +42,14 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M19 12H5M12 19l-7-7 7-7"/>
             </svg>
+          </button>
+
+           <!-- 🆕 BOTÃO DE SEGUIR -->
+          <button class="btn-seguir-perfil"
+                  *ngIf="modoVisualizacao && usuario?.id !== meuId"
+                  [class.seguindo]="usuario?.segue"
+                  (click)="toggleSeguir()">
+            {{ usuario?.segue ? 'Seguindo' : 'Seguir' }}
           </button>
 
         </div>
@@ -178,22 +186,7 @@
 
   <!-- 🆕 OVERLAY DE ONBOARDING -->
 <div class="onboarding-mask" *ngIf="onboardingAtivo">
-  <!-- 4 divs que escurecem as áreas ao redor -->
-  <div class="mask-top" [style.height.px]="posicaoHighlight.top"></div>
-  <div class="mask-bottom"
-       [style.top.px]="posicaoHighlight.top + posicaoHighlight.height"
-       [style.height.px]="windowHeight - posicaoHighlight.top - posicaoHighlight.height"></div>
-  <div class="mask-left"
-       [style.top.px]="posicaoHighlight.top"
-       [style.height.px]="posicaoHighlight.height"
-       [style.width.px]="posicaoHighlight.left"></div>
-  <div class="mask-right"
-       [style.top.px]="posicaoHighlight.top"
-       [style.left.px]="posicaoHighlight.left + posicaoHighlight.width"
-       [style.height.px]="posicaoHighlight.height"
-       [style.width.px]="windowWidth - posicaoHighlight.left - posicaoHighlight.width"></div>
-
-  <!-- Highlight do campo (borda) -->
+  <!-- O highlight agora cria a máscara escura automaticamente via box-shadow -->
   <div
     class="onboarding-highlight"
     [style.top.px]="posicaoHighlight.top"

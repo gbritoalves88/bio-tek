@@ -16,7 +16,7 @@ android {
     minSdkVersion rootProject.ext.minSdkVersion
     targetSdkVersion rootProject.ext.targetSdkVersion
     versionCode 12
-    versionName "12.1.2"
+    versionName "12.2.3"
     testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     aaptOptions {
       ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'

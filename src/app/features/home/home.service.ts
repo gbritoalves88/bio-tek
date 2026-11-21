@@ -52,9 +52,12 @@ export class HomeService {
     descricao?: string;
     imagem?: string | null;
     codigoBarras?: string | null;
+    arquivoLeitura?: string | null;  // 🆕
+    tipo?: string;                    // 🆕
+    status?: number;                  // 🆕
   }): Observable<any> {
     return this.http.post(this.livroApiUrl, livro).pipe(
-      tap(() => this.limparCache()) // Limpa cache ao adicionar livro
+      tap(() => this.limparCache())
     );
   }
 
@@ -63,12 +66,14 @@ export class HomeService {
     paginaAtual?: number;
     totalPaginas?: number;
     progresso?: number;
+    cfi?: string;           // 🆕
     pausado?: boolean;
     minutoAtual?: number;
     totalMinutos?: number;
+    frase?: string;         // 🆕
   }): Observable<any> {
     return this.http.put(`${this.livroApiUrl}/${id}/progresso`, dados).pipe(
-      tap(() => this.limparCache()) // Limpa cache ao atualizar progresso
+      tap(() => this.limparCache())
     );
   }
 
@@ -91,5 +96,9 @@ export class HomeService {
     return this.http.get<BookOffersResponse>(
       `${this.offersApiUrl}/books?limit=${limit}`
     );
+  }
+
+  buscarPorTitulo(termo: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.livroApiUrl}/buscar-por-titulo?q=${encodeURIComponent(termo)}`);
   }
 }

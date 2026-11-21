@@ -12,12 +12,13 @@ import { BehaviorSubject } from 'rxjs';
 export class PerfilService {
   private apiUrl = `${environment.apiUrl}/Usuario`;
   private apiLivroUrl = `${environment.apiUrl}/Livro`;
+  private apiSeguidor = `${environment.apiUrl}/Seguidor`;
 
   // 🆕 Cache do perfil
   private perfilCache$: Observable<Usuario> | null = null;
   private perfilCacheTimestamp: number = 0;
   private perfilCacheUsuarioId: string = '';
-  private readonly CACHE_DURATION = 3 * 60 * 1000; // 3 minutos
+  private readonly CACHE_DURATION = 30 * 1000;
 
     private usuarioAtualSubject = new BehaviorSubject<any>(this.getUsuarioLocalStorage());
   public usuarioAtual$ = this.usuarioAtualSubject.asObservable();
@@ -29,17 +30,22 @@ export class PerfilService {
   }
 
   // 🆕 Perfil completo com cache de 3 minutos
-  getPerfilCompleto(id: string): Observable<Usuario> {
+ getPerfilCompleto(id: string, forcarAtualizacao: boolean = false): Observable<Usuario> {
     const agora = Date.now();
 
-    // Retorna cache se for o mesmo usuário e estiver válido
-    if (this.perfilCache$ &&
+    // 🆕 Se forçar, destrói o cache atual antes de criar um novo
+    if (forcarAtualizacao) {
+      this.perfilCache$ = null;
+      this.perfilCacheTimestamp = 0;
+    }
+
+    if (!forcarAtualizacao &&
+        this.perfilCache$ &&
         this.perfilCacheUsuarioId === id &&
         (agora - this.perfilCacheTimestamp) < this.CACHE_DURATION) {
       return this.perfilCache$;
     }
 
-    // Cria novo cache
     this.perfilCacheUsuarioId = id;
     this.perfilCache$ = this.http.get<any>(`${this.apiUrl}/${id}/perfil-completo`).pipe(
       map(data => ({
@@ -60,6 +66,7 @@ export class PerfilService {
         dataAceiteTermos: data.dataAceiteTermos,
         dataCriacao: data.dataCriacao,
         dataAtualizacao: data.dataAtualizacao,
+        segue: data.segue,
         colecoes: (data.colecoes || []).map((c: any) => ({
           id: c.id,
           nome: c.nome,
@@ -201,5 +208,30 @@ export class PerfilService {
     }
   }
 
+  seguir(idUsuario: string): Observable<any> {
+    return this.http.post(`${this.apiSeguidor}/seguir/${idUsuario}`, {});
+  }
+
+  deixarDeSeguir(idUsuario: string): Observable<any> {
+    return this.http.delete(`${this.apiSeguidor}/deixar-de-seguir/${idUsuario}`);
+  }
+
+  getComentariosLivro(idLivro: string): Observable<any[]> {
+    return this.http.get<any[]>(`${environment.apiUrl}/ComentarioLivro/livro/${idLivro}`);
+  }
+
+  enviarComentarioNoLivro(
+    idLivro: string,
+    comentario: string,
+    idAtividade: string | null,
+    origem: string
+  ): Observable<any> {
+    return this.http.post(`${environment.apiUrl}/ComentarioLivro`, {
+      idLivro,
+      comentario,
+      idAtividade,
+      origem
+    });
+  }
 
 }

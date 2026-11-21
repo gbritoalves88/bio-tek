@@ -40,6 +40,7 @@ export interface LivroDoUsuario {
   avaliacao?: Avaliacao | null;
   comentarios?: Comentario[];
   idColecao?: string | null;
+  publico?: boolean;
 }
 
 export interface Usuario {
@@ -62,6 +63,7 @@ export interface Usuario {
   dataAtualizacao?: string;
   livros?: LivroDoUsuario[];
   colecoes?: Prateleira[];
+  segue?: boolean;
 }
 
 export interface AtividadeLeitura {

@@ -655,6 +655,200 @@
   }
 }
 
+// ===== BOTTOM SHEET (Estilos globais para conteúdo projetado) =====
+:host ::ng-deep {
+  // Header do Bottom Sheet
+  .bottom-sheet-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border-color);
+
+    h3 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+  }
+
+  .bottom-sheet-close {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 4px;
+
+    svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    &:hover {
+      color: var(--accent);
+    }
+  }
+
+  // Formulário
+  .bs-form {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 4px;
+      margin-top: 8px;
+    }
+  }
+
+  .bs-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+    margin-top: 8px;
+  }
+
+  // Inputs e Selects (estilo do perfil)
+  .bs-input,
+  .bs-select {
+    width: 100%;
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-card);
+    color: var(--text-primary);
+    font-size: 14px;
+    outline: none;
+    font-family: inherit;
+    box-sizing: border-box;
+    margin-bottom: 12px;
+    transition: all 0.2s;
+
+    &:focus {
+      border-color: var(--accent);
+    }
+
+    &::placeholder {
+      color: var(--text-secondary);
+    }
+  }
+
+  textarea.bs-input {
+    resize: vertical;
+    min-height: 80px;
+  }
+
+  .bs-select {
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+  }
+
+  // Destaque do Livro no Bottom Sheet
+  .bs-livro-destaque {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .bs-capa {
+    width: 80px;
+    aspect-ratio: 2/3;
+    object-fit: cover;
+    border-radius: 8px;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  }
+
+  .bs-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .bs-titulo {
+    display: block;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+    line-height: 1.3;
+  }
+
+  .bs-autor {
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+
+  // Botão Salvar
+  .bs-salvar {
+    width: 100%;
+    padding: 10px 20px;
+    margin-top: 16px;
+    border-radius: 24px;
+    border: none;
+    background: var(--accent);
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover {
+      opacity: 0.85;
+    }
+
+    &:active {
+      transform: scale(0.98);
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  }
+}
+
+.check-privacidade {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--bg-primary);
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  margin-bottom: 12px;
+  cursor: pointer;
+
+  input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    accent-color: var(--accent);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  span {
+    font-size: 13px;
+    color: var(--text-primary);
+    line-height: 1.4;
+  }
+}
+
 // ===== KEYFRAMES =====
 @keyframes fadeInUp {
   from { opacity: 0; transform: translateY(12px); }

@@ -24,8 +24,11 @@ export class LivroService {
     descricao?: string;
     imagem?: string | null;
     codigoBarras?: string | null;
+    tipo?: string;       // 🆕
+    status?: number;     // 🆕
+    publico?: boolean;   // 🆕
   }): Observable<any> {
-    return this.http.post(this.apiUrl, livro);
+    return this.http.post(`${environment.apiUrl}/Livro`, livro);
   }
 
   atualizarLivro(id: string, dados: {

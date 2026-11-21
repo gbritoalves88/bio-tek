@@ -27,6 +27,9 @@ export class FeedComponent implements OnInit {
   comentarios: Comentario[] = [];
   carregandoComentarios = false;
   usuarioAtual: any = null;
+  comentariosAtividade: any[] = [];
+  carregandoComentariosAtividade = false;
+  novoComentarioAtividade = '';
 
   constructor(
     private comunidadeService: ComunidadeService,
@@ -90,9 +93,17 @@ export class FeedComponent implements OnInit {
     this.itemSelecionado = item;
     this.modalAberto = true;
     this.novoComentario = '';
+    this.novoComentarioAtividade = '';
+    this.comentariosAtividade = [];
+
     if (item.tipo === 'livro_avaliado') {
       this.comentarios = item.comentarios?.length ? item.comentarios : [];
     }
+
+    // 🆕 Carrega comentários da atividade
+    const idAtividade = this.gerarIdAtividade(item);
+    this.carregarComentariosDaAtividade(idAtividade);
+
     this.cdr.markForCheck();
   }
 
@@ -177,46 +188,83 @@ export class FeedComponent implements OnInit {
       });
   }
 
-  seguirUsuario(idUsuario: string): void {
+   seguirUsuario(idUsuario: string): void {
+    if (!idUsuario) return;
+
+    // 1. Atualiza a lista principal (feed)
+    this.atividades = this.atividades.map(a => {
+      if (a.usuario.id === idUsuario) {
+        return { ...a, usuario: { ...a.usuario, segue: true } };
+      }
+      return a;
+    });
+
+    // 2. Atualiza o item do modal (Bottom Sheet)
+    if (this.itemSelecionado && this.itemSelecionado.usuario.id === idUsuario) {
+      this.itemSelecionado.usuario.segue = true;
+      // 🆕 Força a nova referência do objeto para o Angular notar
+      this.itemSelecionado = { ...this.itemSelecionado };
+    }
+
+    this.cdr.detectChanges(); // Renderiza na hora
+
+    // 3. Chama a API
     this.comunidadeService.seguir(idUsuario).subscribe({
       next: () => {
-        this.atividades = this.atividades.map(a => {
-          if (a.usuario.id === idUsuario) {
-            return { ...a, usuario: { ...a.usuario, segue: true } };
-          }
-          return a;
-        });
-        if (this.itemSelecionado?.usuario.id === idUsuario) {
-          this.itemSelecionado = { ...this.itemSelecionado, usuario: { ...this.itemSelecionado.usuario, segue: true } };
-        }
         this.alertService.success('Agora você segue este usuário!');
-        this.cdr.markForCheck();
       },
       error: (err) => {
-        console.error('Erro:', err);
         this.alertService.error('Erro ao seguir usuário');
+        // Rollback
+        this.atividades = this.atividades.map(a => {
+          if (a.usuario.id === idUsuario) return { ...a, usuario: { ...a.usuario, segue: false } };
+          return a;
+        });
+        if (this.itemSelecionado) {
+           this.itemSelecionado.usuario.segue = false;
+           this.itemSelecionado = { ...this.itemSelecionado };
+        }
+        this.cdr.detectChanges();
       }
     });
   }
 
   deixarDeSeguirUsuario(idUsuario: string): void {
+    if (!idUsuario) return;
+
+    // 1. Atualiza a lista principal
+    this.atividades = this.atividades.map(a => {
+      if (a.usuario.id === idUsuario) {
+        return { ...a, usuario: { ...a.usuario, segue: false } };
+      }
+      return a;
+    });
+
+    // 2. Atualiza o item do modal
+    if (this.itemSelecionado && this.itemSelecionado.usuario.id === idUsuario) {
+      this.itemSelecionado.usuario.segue = false;
+      this.itemSelecionado = { ...this.itemSelecionado }; // Força referência
+    }
+
+    this.cdr.detectChanges();
+
+    // 3. Chama a API
     this.comunidadeService.deixarDeSeguir(idUsuario).subscribe({
       next: () => {
-        this.atividades = this.atividades.map(a => {
-          if (a.usuario.id === idUsuario) {
-            return { ...a, usuario: { ...a.usuario, segue: false } };
-          }
-          return a;
-        });
-        if (this.itemSelecionado?.usuario.id === idUsuario) {
-          this.itemSelecionado = { ...this.itemSelecionado, usuario: { ...this.itemSelecionado.usuario, segue: false } };
-        }
         this.alertService.info('Você deixou de seguir este usuário');
-        this.cdr.markForCheck();
       },
       error: (err) => {
-        console.error('Erro:', err);
         this.alertService.error('Erro ao deixar de seguir');
+        // Rollback
+        this.atividades = this.atividades.map(a => {
+          if (a.usuario.id === idUsuario) return { ...a, usuario: { ...a.usuario, segue: true } };
+          return a;
+        });
+        if (this.itemSelecionado) {
+           this.itemSelecionado.usuario.segue = true;
+           this.itemSelecionado = { ...this.itemSelecionado };
+        }
+        this.cdr.detectChanges();
       }
     });
   }
@@ -248,11 +296,24 @@ export class FeedComponent implements OnInit {
   }
 
   toggleCurtir(item: AtividadeComunidade): void {
-    if (item.curtiu) {
-      this.comunidadeService.descurtir(item.id).subscribe(() => {
-        item.curtiu = false;
-        item.curtidas--;
-        this.cdr.markForCheck();
+    // Guarda o estado antigo para o rollback
+    const curtiuAntigo = item.curtiu;
+    const curtidasAntigas = item.curtidas;
+
+    // 1. Atualiza a tela na hora
+    item.curtiu = !curtiuAntigo;
+    item.curtidas = curtiuAntigo ? curtidasAntigas - 1 : curtidasAntigas + 1;
+    this.cdr.detectChanges();
+
+    // 2. Chama a API
+    if (curtiuAntigo) {
+      this.comunidadeService.descurtir(item.id).subscribe({
+        error: () => {
+          // Rollback se der erro
+          item.curtiu = curtiuAntigo;
+          item.curtidas = curtidasAntigas;
+          this.cdr.markForCheck();
+        }
       });
     } else {
       const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
@@ -262,10 +323,13 @@ export class FeedComponent implements OnInit {
         idUsuarioDono: item.usuario?.id || '',
         nomeCurtidor: usuario?.nickname || usuario?.nome || 'Usuário',
         tituloLivro: item.livro?.titulo || 'Livro'
-      }).subscribe(() => {
-        item.curtiu = true;
-        item.curtidas++;
-        this.cdr.markForCheck();
+      }).subscribe({
+        error: () => {
+          // Rollback se der erro
+          item.curtiu = curtiuAntigo;
+          item.curtidas = curtidasAntigas;
+          this.cdr.markForCheck();
+        }
       });
     }
   }
@@ -283,5 +347,111 @@ export class FeedComponent implements OnInit {
       }
     });
   }
+
+  irParaPerfil(idUsuario: string | undefined, event?: Event): void {
+    if (event) {
+      event.stopPropagation();
+      event.preventDefault();
+    }
+    if (!idUsuario || idUsuario === this.meuId) return;
+    this.fecharModal();
+    this.router.navigate(['/inicio/perfil', idUsuario]);
+  }
+
+  limparNick(nick: string | null | undefined): string {
+    if (!nick) return '';
+    return nick.startsWith('@') ? nick.substring(1) : nick;
+  }
+
+  // ============ COMENTÁRIOS DE ATIVIDADE ============
+
+carregarComentariosDaAtividade(idAtividade: string): void {
+  this.carregandoComentariosAtividade = true;
+  this.comunidadeService.getComentariosAtividade(idAtividade).subscribe({
+    next: (comentarios) => {
+      this.comentariosAtividade = comentarios || [];
+      this.carregandoComentariosAtividade = false;
+      this.cdr.markForCheck();
+    },
+    error: (err) => {
+      console.error('Erro ao carregar comentários da atividade:', err);
+      this.carregandoComentariosAtividade = false;
+    }
+  });
+}
+
+enviarComentarioAtividade(): void {
+  if (!this.novoComentarioAtividade.trim() || !this.itemSelecionado) return;
+
+  const texto = this.novoComentarioAtividade.trim();
+  const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+  const idAtividade = this.gerarIdAtividade(this.itemSelecionado);
+  const idLivro = this.itemSelecionado.livro?.id || '';
+
+  // Mapeia o tipo do feed para a Origem do backend
+  const origem = this.mapearOrigem(this.itemSelecionado.tipo);
+
+  // Optimistic UI
+  const temp: any = {
+    id: 'temp-' + Date.now(),
+    idUsuario: usuario.id,
+    comentario: texto,
+    dataCriacao: new Date().toISOString(),
+    usuario: {
+      id: usuario.id,
+      nome: usuario.nome,
+      nickname: usuario.nickname,
+      avatar: usuario.avatar
+    }
+  };
+  this.comentariosAtividade = [...this.comentariosAtividade, temp];
+  this.novoComentarioAtividade = '';
+  this.cdr.markForCheck();
+
+  this.comunidadeService.enviarComentarioAtividade(idLivro, idAtividade, texto, origem).subscribe({
+    next: (criado: any) => {
+      this.comentariosAtividade = this.comentariosAtividade.map(c =>
+        c.id === temp.id ? { ...temp, id: criado.id || temp.id } : c
+      );
+      this.alertService.success('Comentário enviado!');
+      this.cdr.markForCheck();
+    },
+    error: (err) => {
+      this.comentariosAtividade = this.comentariosAtividade.filter(c => c.id !== temp.id);
+      console.error('Erro ao comentar:', err);
+      this.alertService.error(err.error?.mensagem || 'Erro ao enviar comentário');
+      this.cdr.markForCheck();
+    }
+  });
+}
+
+private mapearOrigem(tipo: string): string {
+  switch (tipo) {
+    case 'livro_novo': return 'Adicionou';
+    case 'livro_lendo': return 'ComecouLer';
+    case 'livro_lido': return 'Finalizou';
+    case 'livro_avaliado': return 'Avaliacao';
+    case 'livro_progresso': return 'Progresso';
+    default: return 'Avaliacao';
+  }
+}
+
+deletarComentarioAtividade(id: string): void {
+  this.comunidadeService.deletarComentario(id).subscribe({
+    next: () => {
+      this.comentariosAtividade = this.comentariosAtividade.filter(c => c.id !== id);
+      this.alertService.success('Comentário removido!');
+      this.cdr.markForCheck();
+    },
+    error: () => this.alertService.error('Erro ao remover comentário')
+  });
+}
+
+  private gerarIdAtividade(item: AtividadeComunidade): string {
+    // Formato: {idLivro}__{tipo}__{data}
+    return `${item.livro?.id}__${item.tipo}__${item.data}`;
+  }
+
+
 
 }

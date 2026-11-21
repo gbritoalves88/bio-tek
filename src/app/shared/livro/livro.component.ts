@@ -22,6 +22,7 @@ export class LivroComponent implements OnInit {
   editavel = false;
   carregandoDetalhes = true;
   adicionando = false;
+  publicoSelecionado = true;
   linkAmazon: string | null = null;
 
   // Bottom Sheet pós-adicionar
@@ -93,7 +94,20 @@ export class LivroComponent implements OnInit {
   }
 
   // ============ ADICIONAR À BIBLIOTECA ============
+
   adicionarABiblioteca(): void {
+    if (!this.livro) return;
+
+    // 🆕 NÃO cria o livro ainda. Só prepara o objeto pro Bottom Sheet.
+    this.livroAdicionado = { ...this.livro };
+    this.tipoSelecionado = 'livro';
+    this.statusSelecionado = 1;
+    this.publicoSelecionado = true;
+    this.modalPosAdicionar = true;
+    this.cdr.markForCheck();
+  }
+
+  adicionarABibliotecaOld(): void {
     if (!this.livro || this.adicionando) return;
 
     this.adicionando = true;
@@ -135,28 +149,26 @@ export class LivroComponent implements OnInit {
   salvarPosAdicionar(): void {
     if (!this.livroAdicionado) return;
 
-    // Usa os valores dos dropdowns
-    const dados: any = {
+    const dados = {
+      titulo: this.livroAdicionado.titulo,
+      autor: this.livroAdicionado.autor,
+      descricao: this.livroAdicionado.descricao || '',
+      imagem: this.livroAdicionado.imagem || null,
+      codigoBarras: this.livroAdicionado.codigoBarras || null,
       tipo: this.tipoSelecionado,
       status: this.statusSelecionado,
-      titulo: this.livro.titulo,
-      autor: this.livro.autor,
-      descricao: this.livro.descricao || '',
-      imagem: this.livro.imagem || null,
-      codigoBarras: this.livro.codigoBarras || null
+      publico: this.livroAdicionado.publico !== false
     };
 
-
-    // Atualiza o livro recém-criado com as configurações
-    this.livroService.atualizarLivro(this.livroAdicionado.id, dados).subscribe({
+    this.livroService.adicionarABiblioteca(dados).subscribe({
       next: () => {
         this.modalPosAdicionar = false;
         this.livroAdicionado = null;
-        this.alertService.success('Livro configurado!');
+        this.alertService.success('Livro cadastrado!');
         this.location.back();
       },
-      error: () => {
-        this.alertService.error('Erro ao salvar configurações');
+      error: (err) => {
+        this.alertService.error(err.error?.mensagem || 'Erro ao adicionar livro');
       }
     });
   }
@@ -171,9 +183,9 @@ export class LivroComponent implements OnInit {
   fecharModalPosAdicionar(): void {
     this.modalPosAdicionar = false;
     this.livroAdicionado = null;
-    // Limpa os valores
     this.tipoSelecionado = 'livro';
     this.statusSelecionado = 1;
+    this.publicoSelecionado = true;
     this.router.navigate(['/inicio']);
   }
 

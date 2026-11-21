@@ -210,3 +210,53 @@
 </app-add-book-modal>
 
 </app-pull-to-refresh>
+
+<!-- Bottom Sheet: Pós-Adicionar -->
+<app-bottom-sheet [aberto]="modalPosAdicionar" (fechar)="fecharModalPosAdicionar()">
+  <ng-container *ngIf="livroAdicionado">
+    <div class="bottom-sheet-header">
+      <h3>🎉 Livro adicionado!</h3>
+      <button class="bottom-sheet-close" (click)="fecharModalPosAdicionar()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="bs-livro-destaque">
+      <img
+        [src]="livroAdicionado.imagem || 'assets/capas/perfilSemFoto.png'"
+        [alt]="livroAdicionado.titulo"
+        class="bs-capa"
+      />
+      <div class="bs-info">
+        <strong class="bs-titulo">📖 "{{ livroAdicionado.titulo }}"</strong>
+        <span class="bs-autor">{{ livroAdicionado.autor }}</span>
+      </div>
+    </div>
+
+    <div class="bs-form">
+      <label class="bs-label">Tipo</label>
+      <select [(ngModel)]="tipoSelecionado" class="bs-select">
+        <option value="livro">📖 Livro</option>
+        <option value="audiobook">🎧 Audiobook</option>
+      </select>
+
+      <label class="bs-label">Status</label>
+      <select [(ngModel)]="statusSelecionado" class="bs-select">
+        <option [ngValue]="1">📕 Quero ler</option>
+        <option [ngValue]="2">📖 Lendo</option>
+        <option [ngValue]="3">✅ Lido</option>
+      </select>
+    </div>
+
+    <label class="check-privacidade">
+      <input type="checkbox" [(ngModel)]="livroAdicionado.publico" />
+      <span>Deixar este livro visível para outros usuários</span>
+    </label>
+
+    <button class="bs-salvar" (click)="salvarPosAdicionar()">
+      Salvar
+    </button>
+  </ng-container>
+</app-bottom-sheet>
