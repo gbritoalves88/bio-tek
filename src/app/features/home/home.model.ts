@@ -7,6 +7,7 @@ export interface Livro {
   codigoBarras?: string;
   status?: number;
   progresso?: number;
+  cfi?: string | null;
   tipo?: string;
   totalPaginas?: number;
   totalMinutos?: number;
@@ -20,6 +21,7 @@ export interface Livro {
   editora?: string;
   idioma?: string;
   arquivoLeitura?: string | null;  // 🆕
+  publico?: boolean;
 }
 
 export interface LivroLeitura {
@@ -60,6 +62,7 @@ export interface LivroTop {
   editora?: string;
   idioma?: string;
   arquivoLeitura?: string | null;  // 🆕
+  publico?: boolean;
 }
 
 export interface DashboardData {

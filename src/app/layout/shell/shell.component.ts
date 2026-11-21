@@ -8,6 +8,10 @@ import { LeitorComponent } from '../../shared/leitor/leitor.component';
 import { ShellService } from './shell.service';
 import { AlertService } from '../../shared/services/alert.service';
 import { SettingsLauncher } from '@capawesome/capacitor-settings-launcher';
+import { PushNotifications } from '@capacitor/push-notifications';
+import { Capacitor } from '@capacitor/core';
+import { NotificationService } from '../../shared/services/notification.service';
+
 
 @Component({
   selector: 'app-shell',
@@ -28,6 +32,8 @@ export class ShellComponent implements OnInit {
   isDarkMode = true;
   menuOpen = false;
   isAdmin = false;
+  mostrarNudgeNotificacao = false;
+  private readonly NUDGE_KEY = 'bliteca_nudge_notificacao_fechado';
 
   // 🆕 Avatar + menu
   avatarUrl = '';
@@ -41,14 +47,16 @@ export class ShellComponent implements OnInit {
     private themeStatusBar: ThemeStatusBarService,
     private shellService: ShellService,
     private alertService: AlertService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private notificationService: NotificationService
   ) {}
 
-  ngOnInit() {
+   ngOnInit() {
     // 🆕 Escuta as mudanças do usuário vindas do ShellService
     this.shellService.usuarioAtual$.subscribe(usuario => {
       if (!usuario || !usuario.id) return;
 
+      // Configurações de tema e avatar
       this.isAdmin = usuario.adm === true;
       this.isDarkMode = usuario.tema !== 2;
       this.avatarUrl = getAvatarUrl(usuario);
@@ -63,6 +71,13 @@ export class ShellComponent implements OnInit {
           document.body.classList.remove('dark-theme');
         }
         this.themeStatusBar.aplicarTema(this.isDarkMode ? 1 : 2);
+      }
+
+      // 🆕 Verifica o nudge (balão de notificação) de acordo com a plataforma
+      if (Capacitor.isNativePlatform()) {
+        this.verificarNudgeNotificacaoCapacitor();
+      } else {
+        this.verificarNudgeNotificacao(); // Versão de teste (navegador)
       }
 
       this.cdr.markForCheck();
@@ -183,4 +198,105 @@ export class ShellComponent implements OnInit {
       console.error('Erro ao abrir configurações de notificação:', error);
     }
   }
+
+  async verificarNudgeNotificacao(): Promise<void> {
+    if (!isPlatformBrowser(this.platformId)) return;
+
+    const fechadoEm = localStorage.getItem(this.NUDGE_KEY);
+    if (fechadoEm) {
+      const dias = (Date.now() - new Date(fechadoEm).getTime()) / (1000 * 60 * 60 * 24);
+      if (dias < 3) return;
+    }
+
+    // TEMPORÁRIO: só mostra o balão sem verificar o plugin
+    this.mostrarNudgeNotificacao = true;
+    this.cdr.detectChanges();
+  }
+
+  async verificarNudgeNotificacaoCapacitor(): Promise<void> {
+    if (!isPlatformBrowser(this.platformId)) return;
+
+    // 1. Verifica se o usuário já fechou o nudge nos últimos 3 dias
+    const fechadoEm = localStorage.getItem(this.NUDGE_KEY);
+    if (fechadoEm) {
+      const diasDesdeFechamento = (Date.now() - new Date(fechadoEm).getTime()) / (1000 * 60 * 60 * 24);
+      if (diasDesdeFechamento < 3) return;
+    }
+
+    try {
+      // 2. Verifica a permissão no sistema (APK)
+      const permissao = await PushNotifications.checkPermissions();
+
+      // Se a permissão já está concedida, NÃO mostra o balão
+      if (permissao.receive === 'granted') {
+        this.mostrarNudgeNotificacao = false;
+        this.cdr.markForCheck();
+        return;
+      }
+
+      // 3. Se a permissão foi negada, mostra o balão (para o usuário ir nas configurações)
+      // 4. Se nunca foi pedida (prompt), mostra o balão (para o usuário aceitar)
+      this.mostrarNudgeNotificacao = true;
+      this.cdr.markForCheck();
+    } catch (e) {
+      console.warn('Erro ao verificar permissão de notificação:', e);
+      // Se der erro, é melhor mostrar o balão do que esconder
+      this.mostrarNudgeNotificacao = true;
+      this.cdr.markForCheck();
+    }
+  }
+
+  async ativarNotificacoesNudge(): Promise<void> {
+    const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+    if (!usuario.id) return;
+
+    try {
+      if (Capacitor.isNativePlatform()) {
+        // 1. Pede a permissão ao sistema
+        const resultado = await PushNotifications.requestPermissions();
+
+        if (resultado.receive === 'granted') {
+          // 2. 🆕 Registra o token no banco via NotificationService
+          // (Use o mesmo serviço/método que você usa na Home)
+          this.notificationService.requestPermission(usuario.id)
+            .then(() => {
+              this.alertService.success('Lembretes ativados!');
+              this.mostrarNudgeNotificacao = false;
+              this.cdr.markForCheck();
+            })
+            .catch((err) => {
+              console.error('Erro ao registrar token:', err);
+              this.alertService.error('Erro ao ativar lembretes.');
+            });
+        } else {
+          // Usuário negou a permissão
+          this.alertService.warning('Você pode ativar depois nas configurações do celular.');
+          this.fecharNudgeNotificacao();
+        }
+      } else {
+        // Fallback para navegador (para testes)
+        if ('Notification' in window) {
+          const permission = await Notification.requestPermission();
+          if (permission === 'granted') {
+            this.alertService.success('Lembretes ativados!');
+            this.mostrarNudgeNotificacao = false;
+            this.cdr.markForCheck();
+          } else {
+            this.fecharNudgeNotificacao();
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Erro ao ativar notificações:', error);
+      this.alertService.error('Erro ao ativar lembretes');
+    }
+  }
+
+  fecharNudgeNotificacao(): void {
+    this.mostrarNudgeNotificacao = false;
+    // Salva a data que o usuário fechou, para não mostrar de novo por 3 dias
+    localStorage.setItem(this.NUDGE_KEY, new Date().toISOString());
+    this.cdr.markForCheck();
+  }
+
 }

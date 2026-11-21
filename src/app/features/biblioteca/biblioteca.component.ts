@@ -8,6 +8,7 @@ import { AlertService } from '../../shared/services/alert.service';
 import { BottomSheetComponent } from '../../shared/bottom-sheet/bottom-sheet.component';
 import { CatalogoLivro } from './biblioteca.model';
 import { PullToRefreshComponent } from '../../shared/pull-to-refresh/pull-to-refresh.component';
+import { PerfilService } from '../perfil/perfil.service';
 
 @Component({
   selector: 'app-biblioteca',
@@ -54,6 +55,11 @@ export class BibliotecaComponent implements OnInit {
   salvandoPreferencias = false;
   recomendados: any[] = [];
 
+  modalPosAdicionar = false;
+  livroAdicionado: any = null;
+  tipoSelecionado = 'livro';
+  statusSelecionado = 1;
+
   // ========== CONSTANTES ==========
   private readonly CATEGORIAS_PRINCIPAIS = [
     'Fantasia', 'Ficção', 'Romance', 'Terror',
@@ -61,16 +67,17 @@ export class BibliotecaComponent implements OnInit {
   ];
 
   autoresFamosos = [
-    { nome: 'J. K. Rowling', foto: 'https://i.ibb.co/HL9bR6FK/jk.jpg', termo: 'J. K. Rowling' },
-    { nome: 'Stephen King', foto: 'https://i.ibb.co/v6h7nfyj/king.jpg', termo: 'Stephen King' },
-    { nome: 'Machado de Assis', foto: 'https://i.ibb.co/ZzNKcHqM/machado.jpg', termo: 'Machado de Assis' },
-    { nome: 'Agatha Christie', foto: 'https://i.ibb.co/DddHJbR/agatha.jpg', termo: 'Agatha Christie' },
-    { nome: 'Tolkien', foto: 'https://i.ibb.co/5WRhM4Bk/tolkien.webp', termo: 'Tolkien' },
+    { nome: 'J. K. Rowling', foto: 'https://img.bliteca.com.br/Autores/jk.jpg', termo: 'J. K. Rowling' },
+    { nome: 'Stephen King', foto: 'https://img.bliteca.com.br/Autores/king.jpg', termo: 'Stephen King' },
+    { nome: 'Machado de Assis', foto: 'https://img.bliteca.com.br/Autores/machado.jpg', termo: 'Machado de Assis' },
+    { nome: 'Agatha Christie', foto: 'https://img.bliteca.com.br/Autores/agatha.jpg', termo: 'Agatha Christie' },
+    { nome: 'Tolkien', foto: 'https://img.bliteca.com.br/Autores/tolkien.webp', termo: 'Tolkien' },
   ];
 
   constructor(
     private catalogoService: CatalogoService,
     private alertService: AlertService,
+    private perfilService: PerfilService,
     private router: Router,
     @Inject(PLATFORM_ID) private platformId: Object,
     private cdr: ChangeDetectorRef
@@ -275,10 +282,17 @@ export class BibliotecaComponent implements OnInit {
 
   onLivroAdicionado(livro: any): void {
     this.modalAberto = false;
-    this.alertService.success('Livro adicionado ao catálogo!');
-    this.carregarPagina(1);
-    this.carregarDadosIniciais();
+    this.catalogoService.limparCache();
+
+    this.livroAdicionado = livro;
+    this.tipoSelecionado = livro?.tipo || 'livro';
+    this.statusSelecionado = livro?.status || 1;
+    this.livroAdicionado.publico = livro?.publico !== false;
+    this.modalPosAdicionar = true;
+
+    this.cdr.markForCheck();
   }
+
 
   abrirDetalhesLivro(livro: CatalogoLivro): void {
     this.router.navigate(['/inicio/livro', livro.id], {
@@ -337,4 +351,49 @@ export class BibliotecaComponent implements OnInit {
 
     this.cdr.markForCheck();
   }
+
+  fecharModalPosAdicionar(): void {
+    this.modalPosAdicionar = false;
+    this.livroAdicionado = null;
+    this.tipoSelecionado = 'livro';
+    this.statusSelecionado = 1;
+    this.cdr.markForCheck();
+  }
+
+  salvarPosAdicionar(): void {
+    if (!this.livroAdicionado) return;
+
+    const dados = {
+      titulo: this.livroAdicionado.titulo,
+      autor: this.livroAdicionado.autor,
+      descricao: this.livroAdicionado.descricao || '',
+      imagem: this.livroAdicionado.imagem || null,
+      codigoBarras: this.livroAdicionado.codigoBarras || null,
+      generos: this.livroAdicionado.generos || [],
+      anoPublicacao: this.livroAdicionado.anoPublicacao || null,
+      editora: this.livroAdicionado.editora || null,
+      idioma: this.livroAdicionado.idioma || null,
+      arquivoLeitura: this.livroAdicionado.arquivoLeitura || null,
+      tipo: this.tipoSelecionado,
+      status: this.statusSelecionado,
+      publico: this.livroAdicionado.publico !== false
+    };
+
+    this.modalPosAdicionar = false;
+    this.livroAdicionado = null;
+    this.cdr.detectChanges();
+
+    this.catalogoService.adicionarLivro(dados).subscribe({
+      next: () => {
+        this.alertService.success('Livro cadastrado!');
+        this.catalogoService.limparCache();
+        this.carregarPagina(1);
+        this.carregarDadosIniciais();
+      },
+      error: (err) => {
+        this.alertService.error(err.error?.mensagem || 'Erro ao adicionar livro');
+      }
+    });
+  }
+
 }

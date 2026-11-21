@@ -339,6 +339,12 @@
   margin-top: 8px;
 }
 
+.feed-acoes-esquerda {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .btn-curtir {
   display: flex;
   align-items: center;
@@ -535,12 +541,103 @@
   .nickname { font-size: 12px; color: var(--accent); }
 }
 
+// Estilo do botão de seguir (Modal do Feed)
 .btn-seguir-modal {
   margin-left: auto;
-  padding: 6px 16px; border: 1px solid var(--accent); border-radius: 16px;
-  background: transparent; color: var(--accent); font-size: 12px; cursor: pointer;
-  &:hover { background: var(--accent); color: #fff; }
-  &.seguindo { background: var(--accent); color: #fff; }
+  padding: 6px 16px;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  // 🆕 ESTADO PRINCIPAL: Seguir (Fundo laranja)
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  color: white;
+
+  &:hover {
+    opacity: 0.9;
+  }
+
+  // 🆕 ESTADO SECUNDÁRIO: Seguindo (Transparente com borda)
+  &.seguindo {
+    background: transparent;
+    color: var(--accent);
+    border-color: var(--accent);
+
+    &:hover {
+      background: rgba(219, 124, 0, 0.1);
+    }
+  }
+}
+// ===== BOTÃO COMENTAR =====
+.btn-comentar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 16px;
+  font-size: 12px;
+  transition: all 0.2s ease;
+
+  svg { width: 16px; height: 16px; }
+
+  &:hover {
+    color: var(--accent);
+  }
+
+  &:active { transform: scale(0.9); }
+}
+
+// ===== COMENTÁRIOS DE ATIVIDADE =====
+.comentarios-atividade {
+  border-top: 1px solid var(--border-color);
+  padding-top: 12px;
+  margin-bottom: 16px;
+
+  h4 {
+    margin: 0 0 12px;
+    font-size: 14px;
+    color: var(--text-primary);
+  }
+}
+
+.comentario-atividade-item {
+  padding: 10px;
+  background: var(--bg-primary);
+  border-radius: 8px;
+  margin-bottom: 8px;
+
+  p {
+    margin: 6px 0 4px;
+    font-size: 13px;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: pre-wrap;
+  }
+
+  .data {
+    font-size: 11px;
+    color: var(--text-secondary);
+  }
+}
+
+.comentario-autor-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  .avatar-mini-comentario {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
 }
 
 .comunidade-livro {

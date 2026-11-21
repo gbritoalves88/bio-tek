@@ -2,7 +2,7 @@
 
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, shareReplay, tap } from 'rxjs';
+import { Observable, of, shareReplay, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { CatalogoLivro } from './biblioteca.model';
 
@@ -52,22 +52,43 @@ export class CatalogoService {
   }
 
   // 🆕 Método com cache
-  getBibliotecaInicial(): Observable<any> {
+getBibliotecaInicial(): Observable<any> {
     const agora = Date.now();
+    const cacheKey = 'bliteca_biblioteca_inicial';
 
-    // Se cache válido, retorna ele
+    // 1. Tenta pegar do cache em memória
     if (this.bibliotecaCache$ && (agora - this.bibliotecaCacheTimestamp) < this.CACHE_DURATION) {
       return this.bibliotecaCache$;
     }
 
-    // Cria novo cache
-    this.bibliotecaCache$ = this.http.get(`${this.apiUrl}/biblioteca-inicial`).pipe(
-      shareReplay(1),
-      tap(() => {
-        this.bibliotecaCacheTimestamp = Date.now();
-      })
+    // 2. Se não tem em memória, tenta pegar do localStorage (Instantâneo)
+    const cacheSalvo = localStorage.getItem(cacheKey);
+    let dadosIniciais = null;
+
+    if (cacheSalvo) {
+      try {
+        dadosIniciais = JSON.parse(cacheSalvo);
+      } catch (e) {}
+    }
+
+    // 3. Faz a requisição para o servidor
+    const request$ = this.http.get(`${this.apiUrl}/biblioteca-inicial`).pipe(
+      tap((res) => {
+        // Salva no localStorage para a próxima vez
+        localStorage.setItem(cacheKey, JSON.stringify(res));
+      }),
+      shareReplay(1)
     );
 
+    // Se tem dados no localStorage, retorna eles AGORA e busca os novos em background
+    if (dadosIniciais) {
+      request$.subscribe(); // Dispara a requisição em background
+      return of(dadosIniciais); // Retorna o cache na hora
+    }
+
+    // Se não tem nada, espera o servidor
+    this.bibliotecaCache$ = request$;
+    this.bibliotecaCacheTimestamp = agora;
     return this.bibliotecaCache$;
   }
 
@@ -90,5 +111,9 @@ export class CatalogoService {
     if (genero) url += `&genero=${encodeURIComponent(genero)}`;
 
     return this.http.get<any>(url);
+  }
+
+  adicionarLivro(livro: any): Observable<any> {
+    return this.http.post(`${environment.apiUrl}/Livro`, livro);
   }
 }

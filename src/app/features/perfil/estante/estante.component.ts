@@ -51,6 +51,9 @@ export class EstanteComponent implements OnInit {
   carregandoPrateleiras = true;
   filtroPrateleira = false;
 
+  etapaComentarios: 'lista' | 'grupo' = 'lista';
+  grupoSelecionado: any = null;
+
   // 🆕 Bottom sheet de cadastro de prateleira
   modalPrateleiraAberto = false;
   prateleiraEditando = {
@@ -112,7 +115,8 @@ export class EstanteComponent implements OnInit {
   carregarLivros(): void {
     this.carregando = true;
 
-    this.perfilService.getPerfilCompleto(this.usuarioId).subscribe({
+    // 🆕 Força a atualização do cache ao entrar na tela
+    this.perfilService.getPerfilCompleto(this.usuarioId, true).subscribe({
       next: (data) => {
         this.livros = data.livros || [];
         this.carregando = false;
@@ -165,7 +169,8 @@ export class EstanteComponent implements OnInit {
       editora: livro.editora || null,
       idioma: livro.idioma || null,
       arquivoLeitura: livro.arquivoLeitura || null,
-      idColecao: livro.idColecao || null
+      idColecao: livro.idColecao || null,
+      publico: livro.publico !== false
     };
     this.edicaoCapaPreview = livro.imagem || null;
     this.modalEdicaoLivroAberto = true;
@@ -270,7 +275,6 @@ export class EstanteComponent implements OnInit {
       this.enviarEdicaoLivro();
     }
   }
-
   private enviarEdicaoLivro(): void {
     if (!this.livroEditando) return;
 
@@ -288,27 +292,66 @@ export class EstanteComponent implements OnInit {
       editora: this.livroEditando.editora || null,
       idioma: this.livroEditando.idioma || null,
       arquivoLeitura: this.livroEditando.arquivoLeitura || null,
-      idColecao: this.livroEditando.idColecao || null
+
+      // 🆕 BLINDAGEM: Só envia o idColecao se ele realmente existir no objeto
+      idColecao: this.livroEditando.idColecao ? this.livroEditando.idColecao : undefined,
+      publico: this.livroEditando.publico
     };
+
+    // Remove a chave idColecao se ela estiver undefined para o JSON não enviar "null"
+    if (dados.idColecao === undefined) {
+      delete dados.idColecao;
+    }
 
     if (this.livroEditando.status === 3 && this.livroEditando.estrelas) {
       dados.estrelas = this.livroEditando.estrelas;
     }
 
-    this.perfilService.atualizarLivro(this.livroEditando.id, dados).subscribe({
-      next: () => {
-        this.enviandoEdicao = false;
-        this.fecharEdicaoLivro();
-        this.alertService.success('Livro atualizado!');
+    const livroId = this.livroEditando.id;
+    const livroAntigo = this.livros.find(l => l.id === livroId);
+    const copiaAntiga = livroAntigo ? { ...livroAntigo } : null;
 
+    // OPTIMISTIC UI
+    this.livros = this.livros.map(l => {
+      if (l.id === livroId) {
+        return {
+          ...l,
+          ...this.livroEditando!,
+          avaliacao: dados.estrelas
+            ? { id: l.avaliacao?.id || 'temp', nota: dados.estrelas, dataCriacao: new Date().toISOString() }
+            : l.avaliacao
+        };
+      }
+      return l;
+    });
+
+    this.fecharEdicaoLivro();
+    this.enviandoEdicao = false;
+    this.alertService.success('Livro atualizado!');
+    this.cdr.detectChanges();
+
+    this.perfilService.atualizarLivro(livroId, dados).subscribe({
+      next: () => {
         this.perfilService.limparCache();
-        this.carregarLivros();
-        this.carregarPrateleiras();
+        // 🆕 Recarrega do servidor de forma silenciosa para garantir que o idColecao está correto
+        this.carregarLivrosSilencioso();
       },
       error: () => {
-        this.enviandoEdicao = false;
         this.alertService.error('Erro ao atualizar livro');
+        if (copiaAntiga) {
+          this.livros = this.livros.map(l => l.id === livroId ? copiaAntiga : l);
+        }
         this.cdr.markForCheck();
+      }
+    });
+  }
+
+   private carregarLivrosSilencioso(): void {
+    this.perfilService.getPerfilCompleto(this.usuarioId, true).subscribe({
+      next: (data) => {
+        this.livros = data.livros || [];
+        this.cdr.markForCheck();
+        this.carregarPrateleiras(); // Atualiza as capas das prateleiras
       }
     });
   }
@@ -332,20 +375,81 @@ export class EstanteComponent implements OnInit {
     });
   }
 
+  limparNick(nick: string | null | undefined): string {
+    if (!nick) return '';
+    return nick.startsWith('@') ? nick.substring(1) : nick;
+  }
+
   // ============ COMENTÁRIOS ============
   abrirComentarios(livro: LivroDoUsuario): void {
     this.livroComentarioId = livro.id;
     this.livroComentarioTitulo = livro.titulo;
-    this.livroComentarioProntos = livro.comentarios?.map((c: any) => ({
-      id: c.id,
-      idUsuario: c.usuario?.id || '',
-      usuarioNickname: c.usuario?.nickname || '@user',
-      comentario: c.comentario,
-      dataCriacao: c.dataCriacao
-    })) || null;
+    this.livroComentarioProntos = null;
+    this.novoComentarioPerfil = '';
+    this.etapaComentarios = 'lista';
+    this.grupoSelecionado = null;
     this.comentariosAberto = true;
+    this.cdr.markForCheck();
+
+    const usuarioLogado = JSON.parse(localStorage.getItem('usuario') || '{}');
+
+    this.perfilService.getComentariosLivro(livro.id).subscribe({
+      next: (comentarios) => {
+        // Agrupa por idAtividade
+        const grupos = new Map<string, any[]>();
+
+        (comentarios || []).forEach((c: any) => {
+          const chave = c.idAtividade || '__avaliacao__';
+          if (!grupos.has(chave)) grupos.set(chave, []);
+          grupos.get(chave)!.push({
+            id: c.id,
+            idUsuario: c.idUsuario,
+            usuarioNickname: c.idUsuario === usuarioLogado.id
+              ? usuarioLogado.nickname
+              : (c.usuario?.nickname || '@user'),
+            usuarioAvatar: c.idUsuario === usuarioLogado.id
+              ? usuarioLogado.avatar
+              : (c.usuario?.avatar || ''),
+            comentario: c.comentario,
+            dataCriacao: c.dataCriacao,
+            origem: c.origem,
+            idAtividade: c.idAtividade
+          });
+        });
+
+        // Transforma em array com metadados do grupo
+        this.livroComentarioProntos = Array.from(grupos.entries()).map(([idAtividade, items]) => {
+          const primeiro = items[0];
+          return {
+            idAtividade: idAtividade === '__avaliacao__' ? null : idAtividade,
+            origem: primeiro.origem,
+            icone: this.getIconeOrigem(primeiro.origem),
+            titulo: this.getTipoLabel(primeiro.origem),
+            total: items.length,
+            comentarios: items,
+            novoComentario: ''
+          };
+        });
+
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        console.error('Erro ao carregar comentários:', err);
+        this.livroComentarioProntos = [];
+        this.cdr.markForCheck();
+      }
+    });
   }
 
+
+  fecharComentarios(): void {
+  this.comentariosAberto = false;
+  this.etapaComentarios = 'lista';
+  this.grupoSelecionado = null;
+  this.livroComentarioProntos = null;
+  this.novoComentarioPerfil = '';
+  this.cdr.markForCheck();
+}
   enviarComentario(): void {
     if (!this.novoComentarioPerfil?.trim() || !this.livroComentarioId) return;
 
@@ -379,17 +483,28 @@ export class EstanteComponent implements OnInit {
   }
 
   deletarComentario(id: string): void {
-    this.perfilService.deletarComentario(id).subscribe({
-      next: () => {
-        if (this.livroComentarioProntos) {
-          this.livroComentarioProntos = this.livroComentarioProntos.filter(c => c.id !== id);
+  this.perfilService.deletarComentario(id).subscribe({
+    next: () => {
+      // Remove do grupo selecionado (se estiver aberto)
+      if (this.grupoSelecionado) {
+        this.grupoSelecionado.comentarios = this.grupoSelecionado.comentarios
+          .filter((c: any) => c.id !== id);
+        this.grupoSelecionado.total = this.grupoSelecionado.comentarios.length;
+
+        // Se o grupo ficou vazio, volta pra lista
+        if (this.grupoSelecionado.total === 0) {
+          this.voltarParaLista();
+          // E recarrega a lista pra remover o grupo vazio
+          const livro = this.livros.find(l => l.id === this.livroComentarioId);
+          if (livro) this.abrirComentarios(livro);
         }
-        this.alertService.success('Comentário removido!');
-        this.cdr.markForCheck();
-      },
-      error: () => this.alertService.error('Erro ao remover comentário')
-    });
-  }
+      }
+      this.alertService.success('Comentário removido!');
+      this.cdr.markForCheck();
+    },
+    error: () => this.alertService.error('Erro ao remover comentário')
+  });
+}
 
   // ============ EXCLUSÃO ============
   abrirConfirmacaoExclusao(id: string): void {
@@ -402,19 +517,35 @@ export class EstanteComponent implements OnInit {
     this.livroParaExcluir = null;
   }
 
-  confirmarExcluirLivro(): void {
-    if (this.livroParaExcluir) {
-      this.perfilService.deletarLivro(this.livroParaExcluir).subscribe({
-        next: () => {
-          this.alertService.success('Livro removido!');
-          this.perfilService.limparCache();
-          this.carregarLivros();
-          this.carregarPrateleiras();
-          this.fecharConfirmacaoExclusao();
-        },
-        error: () => this.alertService.error('Erro ao remover livro')
-      });
-    }
+   confirmarExcluirLivro(): void {
+    if (!this.livroParaExcluir) return;
+
+    const livroId = this.livroParaExcluir;
+    const livroRemovido = this.livros.find(l => l.id === livroId);
+
+    // 1. Fecha a confirmação
+    this.fecharConfirmacaoExclusao();
+
+    // 2. Remove da tela na hora
+    this.livros = this.livros.filter(l => l.id !== livroId);
+    this.cdr.detectChanges();
+
+    // 3. Faz a chamada HTTP em background
+    this.perfilService.deletarLivro(livroId).subscribe({
+      next: () => {
+        this.alertService.success('Livro removido!');
+        this.perfilService.limparCache();
+        this.carregarPrateleiras(); // Atualiza contadores de prateleiras
+      },
+      error: () => {
+        // Rollback
+        this.alertService.error('Erro ao remover livro');
+        if (livroRemovido) {
+          this.livros = [...this.livros, livroRemovido];
+        }
+        this.cdr.markForCheck();
+      }
+    });
   }
 
   // ============ NAVEGAÇÃO ============
@@ -489,7 +620,7 @@ export class EstanteComponent implements OnInit {
 
     const request$ = this.modoVisualizacao
       ? this.estanteService.getPrateleirasDoUsuario(this.usuarioId)
-      : this.estanteService.getMinhasPrateleiras();
+      : this.estanteService.getMinhasPrateleiras(true); // 🆕 Força atualização
 
     request$.subscribe({
       next: (data) => {
@@ -831,5 +962,92 @@ export class EstanteComponent implements OnInit {
   // 🆕 Rastreia os livros pelo ID (evita que as capas pisquem ao filtrar)
   trackByLivro(index: number, livro: LivroDoUsuario): string {
     return livro.id;
+  }
+
+  getIconeOrigem(origem: string): string {
+  switch (origem) {
+    case 'Adicionou': return '📕';
+    case 'ComecouLer': return '📖';
+    case 'Finalizou': return '✅';
+    case 'Avaliacao': return '⭐';
+    default: return '💬';
+  }
+}
+
+getTipoLabel(origem: string): string {
+  switch (origem) {
+    case 'Adicionou': return 'Adicionou o livro';
+    case 'ComecouLer': return 'Começou a ler';
+    case 'Finalizou': return 'Finalizou a leitura';
+    case 'Avaliacao': return 'Avaliação';
+    default: return 'Comentários';
+  }
+}
+
+irParaPerfil(idUsuario: string | undefined, event?: Event): void {
+  if (event) {
+    event.stopPropagation();
+    event.preventDefault();
+  }
+  if (!idUsuario || idUsuario === this.meuId) return;
+  this.router.navigate(['/inicio/perfil', idUsuario]);
+}
+
+abrirGrupo(grupo: any): void {
+  this.grupoSelecionado = grupo;
+  this.etapaComentarios = 'grupo';
+  this.cdr.markForCheck();
+}
+
+voltarParaLista(): void {
+  this.grupoSelecionado = null;
+  this.etapaComentarios = 'lista';
+  this.cdr.markForCheck();
+}
+
+enviarComentarioNoGrupo(): void {
+  if (!this.grupoSelecionado?.novoComentario?.trim() || !this.livroComentarioId) return;
+
+    const grupo = this.grupoSelecionado;
+    const texto = grupo.novoComentario.trim();
+    const usuarioLogado = JSON.parse(localStorage.getItem('usuario') || '{}');
+
+    this.perfilService.enviarComentarioNoLivro(
+      this.livroComentarioId,
+      texto,
+      grupo.idAtividade,
+      grupo.origem
+    ).subscribe({
+      next: () => {
+        grupo.novoComentario = '';
+        this.alertService.success('Comentário enviado!');
+
+        // Recarrega
+        const livro = this.livros.find(l => l.id === this.livroComentarioId);
+        if (livro) {
+          // Recarrega mantendo o grupo aberto
+          const grupoAbertoId = grupo.idAtividade;
+          const eraGrupo = this.etapaComentarios === 'grupo';
+
+          this.abrirComentarios(livro);
+
+          if (eraGrupo) {
+            setTimeout(() => {
+              const grupoAtualizado = this.livroComentarioProntos?.find(
+                (g: any) => g.idAtividade === grupoAbertoId
+              );
+              if (grupoAtualizado) {
+                this.grupoSelecionado = grupoAtualizado;
+                this.etapaComentarios = 'grupo';
+              }
+              this.cdr.markForCheck();
+            }, 200);
+          }
+        }
+      },
+      error: (err) => {
+        this.alertService.error(err.error?.mensagem || 'Erro ao enviar comentário');
+      }
+    });
   }
 }

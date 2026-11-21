@@ -1,5 +1,39 @@
 <div class="shell">
   <header class="header">
+
+    <!-- 🆕 NUDGE DE NOTIFICAÇÃO (Balão estilo Duolingo) -->
+    <div class="nudge-notificacao" *ngIf="mostrarNudgeNotificacao">
+      <div class="nudge-card">
+        <!-- Botão de fechar -->
+        <button class="nudge-close" (click)="fecharNudgeNotificacao()" aria-label="Fechar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+
+        <!-- Ícone com animação -->
+        <div class="nudge-icone">
+          <div class="icone-pulso">🔔</div>
+        </div>
+
+        <!-- Conteúdo -->
+        <div class="nudge-conteudo">
+          <strong>Ative seus lembretes! 🔥</strong>
+          <p>Não perca o ritmo da sua leitura. Vamos te lembrar na hora certa.</p>
+        </div>
+
+        <!-- Ações -->
+        <div class="nudge-acoes">
+          <button class="nudge-btn-primario" (click)="ativarNotificacoesNudge()">
+            Ativar lembretes
+          </button>
+          <button class="nudge-btn-secundario" (click)="fecharNudgeNotificacao()">
+            Agora não
+          </button>
+        </div>
+      </div>
+    </div>
+
     <div class="header-inner">
       <a routerLink="/inicio" class="logo-link" aria-label="Ir para Home">
         <svg class="logo-full" viewBox="0 0 120 30" fill="none">

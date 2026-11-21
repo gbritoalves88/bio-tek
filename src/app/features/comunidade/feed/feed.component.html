@@ -33,8 +33,7 @@
           decoding="async" />
         <div class="feed-header">
           <div class="usuario-info">
-            <span class="usuario-nome">{{ item.usuario?.nome || 'Usuário' }}</span>
-            <span class="usuario-nickname">{{ item.usuario?.nickname || '@user' }}</span>
+            <span class="usuario-nickname">{{ limparNick(item.usuario?.nickname) || 'user' }}</span>
           </div>
           <span class="feed-acao">{{ getTextoTipo(item.tipo) }}</span>
         </div>
@@ -144,7 +143,7 @@
                   <span class="aspas">"</span>
                 </div>
                 <div class="comentario-autor-destaque">
-                  — {{ item.comentarios[item.comentarios.length - 1].usuario?.nickname || item.comentarios[item.comentarios.length - 1].usuarioNickname || 'Usuário' }}
+                  — {{ limparNick(item.comentarios[item.comentarios.length - 1].usuario?.nickname || item.comentarios[item.comentarios.length - 1].usuarioNickname) || 'Usuário' }}
                 </div>
               </div>
             </div>
@@ -153,12 +152,23 @@
       </ng-container>
 
       <div class="feed-rodape">
-        <button class="btn-curtir" [class.curtiu]="item.curtiu" (click)="toggleCurtir(item); $event.stopPropagation()">
-          <svg viewBox="0 0 24 24" [attr.fill]="item.curtiu ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2">
-            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-          </svg>
-          <span>{{ item.curtidas || 0 }}</span>
-        </button>
+        <div class="feed-acoes-esquerda">
+          <button class="btn-curtir" [class.curtiu]="item.curtiu" (click)="toggleCurtir(item); $event.stopPropagation()">
+            <svg viewBox="0 0 24 24" [attr.fill]="item.curtiu ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+            </svg>
+            <span>{{ item.curtidas || 0 }}</span>
+          </button>
+
+          <!-- 🆕 Botão de comentar (abre o modal) -->
+          <button class="btn-comentar" (click)="abrirModal(item); $event.stopPropagation()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </svg>
+          <!--<span>{{ item.totalComentarios || 0 }}</span> -->
+          </button>
+        </div>
+
         <span class="feed-data">{{ item.data | date:'dd/MM/yyyy HH:mm' }}</span>
       </div>
     </div>
@@ -182,19 +192,24 @@
       </button>
     </div>
 
-    <div class="comunidade-usuario">
+    <div class="comunidade-usuario"
+         (click)="irParaPerfil(itemSelecionado.usuario?.id, $event)"
+         style="cursor: pointer;">
+
       <img [src]="itemSelecionado.usuario?.avatar || 'assets/capas/perfilSemFoto.png'"
            [alt]="itemSelecionado.usuario?.nome || 'Usuário'"
            class="avatar" loading="lazy"
            decoding="async" />
       <div>
         <span class="nome">{{ itemSelecionado.usuario?.nome || 'Usuário' }}</span>
-        <span class="nickname">{{ itemSelecionado.usuario?.nickname || '@user' }}</span>
+        <span class="nickname">{{ limparNick(itemSelecionado.usuario?.nickname) || 'user' }}</span>
       </div>
+
+      <!-- O botão de seguir continua aqui -->
       <button class="btn-seguir-modal"
-              *ngIf="itemSelecionado.usuario?.id !== meuId"
-              (click)="itemSelecionado.usuario?.segue ? deixarDeSeguirUsuario(itemSelecionado.usuario.id) : seguirUsuario(itemSelecionado.usuario.id)"
-              [class.seguindo]="itemSelecionado.usuario?.segue">
+        *ngIf="itemSelecionado.usuario?.id !== meuId"
+        (click)="itemSelecionado.usuario?.segue ? deixarDeSeguirUsuario(itemSelecionado.usuario.id) : seguirUsuario(itemSelecionado.usuario.id); $event.stopPropagation()"
+        [class.seguindo]="itemSelecionado.usuario?.segue">
         {{ itemSelecionado.usuario?.segue ? 'Seguindo' : 'Seguir' }}
       </button>
     </div>
@@ -213,25 +228,32 @@
       </div>
     </div>
 
-    <!-- REMOVIDO: Botão "Adicionar à minha biblioteca" -->
-
     <div class="comunidade-avaliacao" *ngIf="itemSelecionado.tipo === 'livro_avaliado' && itemSelecionado.avaliacao">
       <div class="estrelas-grandes">
         {{ getEstrelas(itemSelecionado.avaliacao.nota) }}
       </div>
     </div>
 
-    <div class="comunidade-comentarios" *ngIf="itemSelecionado && itemSelecionado.tipo === 'livro_avaliado'">
-      <h4>Comentários</h4>
-      <div class="loading" *ngIf="carregandoComentarios">🔍 Carregando...</div>
+    <!-- ========== COMENTÁRIOS DA ATIVIDADE (NOVO) ========== -->
+    <div class="comentarios-atividade">
+      <h4>💬 Comentários da atividade ({{ comentariosAtividade.length }})</h4>
 
-      <div class="comentario-item" *ngFor="let c of comentarios">
+      <div class="loading" *ngIf="carregandoComentariosAtividade">🔍 Carregando...</div>
+
+      <div class="comentario-atividade-item" *ngFor="let c of comentariosAtividade">
         <div class="comentario-topo">
-          <span class="comentario-autor">{{ c.usuario?.nickname || c.usuarioNickname || '@user' }}</span>
+          <div class="comentario-autor-info"
+              (click)="irParaPerfil(c.idUsuario, $event)"
+              style="cursor: pointer;">
+            <img [src]="c.usuario?.avatar || 'assets/capas/perfilSemFoto.png'"
+                class="avatar-mini-comentario"
+                [alt]="c.usuario?.nome || 'Usuário'" />
+            <span class="comentario-autor">{{ limparNick(c.usuario?.nickname) || 'user' }}</span>
+          </div>
           <button class="btn-deletar-comentario"
-                  *ngIf="c.idUsuario === meuId || c.usuario?.id === meuId"
-                  (click)="deletarComentario(c.id)"
-                  title="Excluir comentário">
+        *ngIf="c.idUsuario === meuId"
+        (click)="deletarComentarioAtividade(c.id)"
+        title="Excluir comentário">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polyline points="3 6 5 6 21 6"/>
               <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
@@ -242,24 +264,26 @@
         <span class="data">{{ c.dataCriacao | date:'dd/MM/yyyy HH:mm' }}</span>
       </div>
 
-      <div class="empty" *ngIf="!carregandoComentarios && comentarios.length === 0">
+      <div class="empty" *ngIf="!carregandoComentariosAtividade && comentariosAtividade.length === 0">
         Nenhum comentário ainda. Seja o primeiro!
       </div>
 
       <div class="novo-comentario">
         <textarea
-          [(ngModel)]="novoComentario"
-          name="comentario"
-          placeholder="Escreva um comentário..."
+          [(ngModel)]="novoComentarioAtividade"
+          name="comentarioAtividade"
+          placeholder="O que você acha dessa atividade?"
           rows="2"
           maxlength="200">
         </textarea>
         <div class="comentario-actions">
-          <span class="contador">{{ novoComentario.length }}/200</span>
-          <button [disabled]="!novoComentario.trim()" (click)="enviarComentario()">Enviar</button>
+          <span class="contador">{{ novoComentarioAtividade.length }}/200</span>
+          <button [disabled]="!novoComentarioAtividade.trim()" (click)="enviarComentarioAtividade()">Enviar</button>
         </div>
       </div>
     </div>
+
+
   </ng-container>
 </app-bottom-sheet>
 </app-pull-to-refresh>

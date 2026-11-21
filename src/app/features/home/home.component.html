@@ -2,7 +2,7 @@
 <section class="home">
   <div class="hero">
     <div>
-      <h1>Olá, {{ nickname }} 👋</h1>
+      <h1>Olá, {{ limparNick(nickname) }} 👋</h1>
     </div>
     <button class="btn-circle" title="Adicionar livro" (click)="abrirModal()">
       <span class="btn-label">Cadastrar Livro</span>
@@ -101,17 +101,17 @@
             <button
               *ngIf="livroAtual.progresso === 100 && livroAtual.status !== 3"
               class="btn-finalizar"
-              (click)="finalizarLeitura($event)"
+              (click)="abrirModalAvaliacao($event)"
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <polyline points="20 6 9 17 4 12"/>
               </svg>
-              Finalizar leitura
+              Finalizar e Avaliar
             </button>
           </ng-container>
 
           <ng-template #semProgresso>
-            <button class="progress-btn" (click)="abrirLendoAgora(); $event.stopPropagation()">
+            <button class="btn-atualizar-progresso-primario" (click)="abrirLendoAgora(); $event.stopPropagation()">
               📖 Atualizar progresso
             </button>
           </ng-template>
@@ -131,6 +131,21 @@
           </small>
         </div>
     </ng-template>
+
+    <!-- 🆕 Importar PDF/EPUB -->
+    <button class="btn-importar-arquivo" (click)="importarArquivo()" [disabled]="importandoArquivo">
+      <div class="btn-conteudo">
+        <!-- Ícone de Livro Aberto -->
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+          <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+        </svg>
+        <div class="textos">
+          <strong>Adicionar ao meu leitor</strong>
+          <span>Adicione seus arquivos PDF ou EPUB para ler pelo BliTeca.</span>
+        </div>
+      </div>
+    </button>
 
     <!-- Livros recomendados -->
     <div class="reading-now" *ngIf="topAvaliados.length > 0; else semRecomendados">
@@ -177,9 +192,10 @@
       </h2>
 
       <div class="scroll-horizontal">
-        <div class="scroll-track">
+             <div class="scroll-track">
 
-          <div class="oferta-card" *ngFor="let oferta of ofertas">
+          <!-- 🆕 Clique no card inteiro leva para os detalhes -->
+          <div class="oferta-card" *ngFor="let oferta of ofertas" (click)="abrirDetalhesLivro(oferta)">
 
             <!-- 1. Capa do Livro -->
             <div class="oferta-capa-wrapper">
@@ -204,7 +220,7 @@
                 target="_blank"
                 rel="noopener noreferrer"
                 class="oferta-btn"
-                (click)="registrarCliqueOferta(oferta)">
+                (click)="registrarCliqueOferta(oferta); $event.stopPropagation()"> <!-- 🆕 Impede que o clique no botão abra o detalhe -->
                 <svg viewBox="0 0 24 24" fill="currentColor" width="12" height="12">
                   <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49A1 1 0 0 0 20 4H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/>
                 </svg>
@@ -222,7 +238,7 @@
       </div>
     </div>
 
-    <!-- Próximas leituras -->
+    <!-- Próximas leituras
     <div class="reading-now" *ngIf="listaLeitura.length > 0; else semLista">
       <h2>
         <svg class="section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -253,7 +269,7 @@
         <p>Nenhum livro na fila.</p>
         <small>Adicione livros como "Quero ler" para vê-los aqui.</small>
       </div>
-    </ng-template>
+    </ng-template>-->
 
   </ng-container>
 
@@ -295,8 +311,12 @@
   </app-bottom-sheet>
 
   <!-- Bottom Sheet: Lendo Agora -->
+    <!-- Bottom Sheet: Lendo Agora -->
+   <!-- Bottom Sheet: Lendo Agora -->
   <app-bottom-sheet [aberto]="lendoAgoraAberto" (fechar)="fecharLendoAgora()">
     <ng-container *ngIf="livroAtual">
+
+      <!-- Header -->
       <div class="bottom-sheet-header">
         <h3>📖 Lendo agora</h3>
         <button class="bottom-sheet-close" (click)="fecharLendoAgora()">
@@ -306,6 +326,7 @@
         </button>
       </div>
 
+      <!-- 1. Topo do Modal (Capa + Progresso) -->
       <div class="bs-livro-destaque">
         <img [src]="livroAtual.imagem || 'assets/capas/perfilSemFoto.png'"
           [alt]="livroAtual.titulo"
@@ -323,41 +344,50 @@
         </div>
       </div>
 
-      <!-- LIVRO -->
+      <!-- 2. BOTÃO DE AÇÃO PRINCIPAL -->
+      <div class="bs-acao-principal">
+
+        <!-- Se TEM arquivo: Mostra o botão laranja gigante "Continuar lendo" -->
+        <button class="bs-btn bs-btn-primary bs-btn-large"
+                *ngIf="livroAtual.arquivoLeitura && !arquivoInacessivel"
+                (click)="lerLivroAtual()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+          </svg>
+          Continuar lendo
+        </button>
+
+        <!-- Se NÃO TEM arquivo: Atualizar progresso assume o papel de principal -->
+        <button class="bs-btn bs-btn-primary bs-btn-large"
+                *ngIf="!livroAtual.arquivoLeitura || arquivoInacessivel"
+                (click)="atualizarProgresso()"
+                [disabled]="
+                  (livroAtual.tipo === 'audiobook'
+                    ? (!posicaoAtualInput && !duracaoTotalInput)
+                    : modoProgresso === 'paginas'
+                      ? (!paginaAtual && !totalPaginas)
+                      : (progressoInput === null || progressoInput === undefined))
+                ">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>
+          </svg>
+          Atualizar progresso
+        </button>
+      </div>
+
+      <!-- 3. ÁREA DE INPUTS (Progresso) -->
       <div class="bs-pagina" *ngIf="!livroAtual.tipo || livroAtual.tipo === 'livro'">
-
-        <!-- 🆕 Toggle: Páginas ↔ Porcentagem -->
-        <div class="bs-modo-progresso">
-          <span class="bs-modo-label"
-                [class.ativo]="modoProgresso === 'paginas'"
-                (click)="setModoProgresso('paginas')">
-            📄 Páginas
-          </span>
-
-          <span class="toggle-switch"
-                [class.on]="modoProgresso === 'percentual'"
-                (click)="alternarModoProgresso()">
-            <span class="toggle-knob"></span>
-          </span>
-
-          <span class="bs-modo-label"
-                [class.ativo]="modoProgresso === 'percentual'"
-                (click)="setModoProgresso('percentual')">
-            📊 Porcentagem
-          </span>
-        </div>
-
-        <!-- Modo PÁGINAS -->
         <ng-container *ngIf="modoProgresso === 'paginas'">
           <label class="bs-label">📄 Página atual</label>
           <div class="bs-pagina-inputs">
             <input type="number" [(ngModel)]="paginaAtual" placeholder="Página" min="0" class="bs-input-pagina" />
             <span class="bs-de">de</span>
             <input type="number" [(ngModel)]="totalPaginas" placeholder="Total" min="0" class="bs-input-pagina" />
+
           </div>
         </ng-container>
 
-        <!-- Modo % -->
         <ng-container *ngIf="modoProgresso === 'percentual'">
           <label class="bs-label">📊 Progresso de leitura (%)</label>
           <div class="bs-pagina-inputs">
@@ -365,84 +395,76 @@
             <span class="bs-de">%</span>
           </div>
         </ng-container>
-
-        <!-- Frase -->
-        <label class="bs-label">💬 Compartilhar frase (opcional)</label>
-        <textarea
-          [(ngModel)]="fraseAtividade"
-          placeholder="Ex: Capítulo 5 finalizado! Muito bom até agora..."
-          rows="2"
-          maxlength="200"
-          class="bs-textarea"
-        ></textarea>
-        <span class="bs-contador">{{ fraseAtividade.length }}/200</span>
       </div>
 
       <!-- AUDIOBOOK -->
       <div class="bs-pagina" *ngIf="livroAtual.tipo === 'audiobook'">
         <label class="bs-label">🎧 Posição atual / Duração total</label>
         <div class="bs-pagina-inputs">
-          <input
-            type="text"
-            inputmode="numeric"
-            maxlength="6"
-            placeholder="00:00"
-            [(ngModel)]="posicaoAtualInput"
-            (input)="formatarEntradaHHMM($event); posicaoAtualInput = $any($event.target).value"
-            class="bs-input-tempo"
-          />
+          <input type="text" inputmode="numeric" maxlength="6" placeholder="00:00" [(ngModel)]="posicaoAtualInput" (input)="formatarEntradaHHMM($event); posicaoAtualInput = $any($event.target).value" class="bs-input-tempo" />
           <span class="bs-de">de</span>
-          <input
-            type="text"
-            inputmode="numeric"
-            maxlength="6"
-            placeholder="00:00"
-            [(ngModel)]="duracaoTotalInput"
-            (input)="formatarEntradaHHMM($event); duracaoTotalInput = $any($event.target).value"
-            class="bs-input-tempo"
-          />
+          <input type="text" inputmode="numeric" maxlength="6" placeholder="00:00" [(ngModel)]="duracaoTotalInput" (input)="formatarEntradaHHMM($event); duracaoTotalInput = $any($event.target).value" class="bs-input-tempo" />
         </div>
-
         <div class="bs-progresso-info" *ngIf="progressoAudiobook > 0">
           <span class="bs-progresso-percent">{{ progressoAudiobook }}% concluído</span>
           <span class="bs-progresso-restante" *ngIf="restanteAudiobook">
             • Faltam {{ restanteAudiobook }}
           </span>
         </div>
-
-        <label class="bs-label">💬 Compartilhar frase (opcional)</label>
-        <textarea
-          [(ngModel)]="fraseAtividade"
-          placeholder="Ex: Acabei de ouvir o capítulo 3! Incrível..."
-          rows="2"
-          maxlength="200"
-          class="bs-textarea"
-        ></textarea>
-        <span class="bs-contador">{{ fraseAtividade.length }}/200</span>
       </div>
 
-      <!-- Ações -->
+      <!-- 4. AÇÕES SECUNDÁRIAS -->
       <div class="bs-acoes">
 
-        <!-- Compartilhar -->
-        <button class="bs-btn bs-btn-outline" (click)="compartilharLeitura()" [disabled]="compartilhando">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="18" cy="5" r="3"/>
-            <circle cx="6" cy="12" r="3"/>
-            <circle cx="18" cy="19" r="3"/>
-            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
-            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
-          </svg>
-          {{ compartilhando ? 'Gerando...' : 'Compartilhar leitura' }}
+        <!-- 1. Compartilhar (sempre em segundo) -->
+        <button class="bs-btn bs-btn-outline" (click)="abrirCompartilharLeitura()" [disabled]="compartilhando">
+          <ng-container *ngIf="!compartilhando">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+            </svg>
+            Compartilhar leitura
+          </ng-container>
+          <ng-container *ngIf="compartilhando">
+            <span class="spinner-mini"></span>
+            Gerando...
+          </ng-container>
         </button>
 
-        <!-- Parar / Continuar -->
+        <!-- 2. Associar arquivo (SÓ aparece se NÃO tiver arquivo) -->
+        <button class="bs-btn bs-btn-outline"
+                *ngIf="!livroAtual.arquivoLeitura || arquivoInacessivel"
+                (click)="vincularArquivoNovamente()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+          </svg>
+          {{ arquivoInacessivel ? 'Vincular arquivo novamente' : 'Associar arquivo' }}
+        </button>
+
+        <!-- 3. Atualizar progresso (SÓ aparece aqui se JÁ tiver arquivo) -->
+        <button class="bs-btn bs-btn-outline"
+                *ngIf="livroAtual.arquivoLeitura && !arquivoInacessivel"
+                (click)="atualizarProgresso()"
+                [disabled]="
+                  (livroAtual.tipo === 'audiobook'
+                    ? (!posicaoAtualInput && !duracaoTotalInput)
+                    : modoProgresso === 'paginas'
+                      ? (!paginaAtual && !totalPaginas)
+                      : (progressoInput === null || progressoInput === undefined))
+                ">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>
+          </svg>
+          Atualizar progresso
+        </button>
+
+        <!-- 4. Pausar / Continuar (sempre por último) -->
         <button class="bs-btn bs-btn-outline" (click)="togglePausar()">
           <ng-container *ngIf="!livroAtual.pausado">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>
             </svg>
-            Parar leitura
+            Pausar leitura
           </ng-container>
           <ng-container *ngIf="livroAtual.pausado">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -452,49 +474,14 @@
           </ng-container>
         </button>
 
-        <!-- Ler agora -->
-        <button
-          class="bs-btn bs-btn-outline"
-          (click)="lerLivroAtual()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
-            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
-          </svg>
-          {{ arquivoInacessivel ? 'Vincular novamente' : 'Ler arquivo' }}
-        </button>
-
-        <!-- Atualizar progresso -->
-        <button
-          class="bs-btn bs-btn-primary"
-          (click)="atualizarProgresso()"
-          [disabled]="
-            (livroAtual.tipo === 'audiobook'
-              ? (!posicaoAtualInput && !duracaoTotalInput)
-              : modoProgresso === 'paginas'
-                ? (!paginaAtual && !totalPaginas)
-                : (progressoInput === null || progressoInput === undefined))
-          "
-        >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>
-          </svg>
-          Atualizar progresso
-        </button>
-
       </div>
 
-      <!-- Continuar lendo -->
+      <!-- Continuar lendo (Outros livros pausados) -->
       <div class="bs-outros-pausados" *ngIf="outrosEmAndamento.length > 0">
         <h4>📚 Continuar lendo</h4>
         <div class="bs-pausados-lista">
-          <div class="bs-pausado-item"
-              *ngFor="let p of outrosEmAndamento"
-              (click)="trocarLivroAtual(p)">
-            <img [src]="p.imagem || 'assets/capas/perfilSemFoto.png'"
-                [alt]="p.titulo"
-                class="bs-pausado-capa"
-                loading="lazy"
-                decoding="async" />
+          <div class="bs-pausado-item" *ngFor="let p of outrosEmAndamento" (click)="trocarLivroAtual(p)">
+            <img [src]="p.imagem || 'assets/capas/perfilSemFoto.png'" [alt]="p.titulo" class="bs-pausado-capa" loading="lazy" decoding="async" />
             <div class="bs-pausado-info">
               <strong>{{ p.titulo }}</strong>
               <span>{{ p.autor }}</span>
@@ -508,10 +495,227 @@
         </div>
       </div>
 
+      <!-- Última leitura -->
       <p class="bs-ultima-leitura" *ngIf="livroAtual.ultimaLeitura">
         📅 Última leitura: {{ livroAtual.ultimaLeitura | date:'dd/MM/yyyy HH:mm' }}
       </p>
+
+    </ng-container>
+  </app-bottom-sheet>
+
+  <!-- Bottom Sheet: Pós-Adicionar -->
+  <app-bottom-sheet [aberto]="modalPosAdicionar" (fechar)="fecharModalPosAdicionar()">
+    <ng-container *ngIf="livroAdicionado">
+      <div class="bottom-sheet-header">
+        <h3>🎉 Livro adicionado!</h3>
+        <button class="bottom-sheet-close" (click)="fecharModalPosAdicionar()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="bs-livro-destaque">
+        <img
+          [src]="livroAdicionado.imagem || 'assets/capas/perfilSemFoto.png'"
+          [alt]="livroAdicionado.titulo"
+          class="bs-capa"
+        />
+        <div class="bs-info">
+          <strong class="bs-titulo">📖 "{{ livroAdicionado.titulo }}"</strong>
+          <span class="bs-autor">{{ livroAdicionado.autor }}</span>
+        </div>
+      </div>
+
+      <div class="bs-form">
+        <label class="bs-label">Tipo</label>
+        <select [(ngModel)]="tipoSelecionado" class="bs-select">
+          <option value="livro">📖 Livro</option>
+          <option value="audiobook">🎧 Audiobook</option>
+        </select>
+
+        <label class="bs-label">Status</label>
+        <select [(ngModel)]="statusSelecionado" class="bs-select">
+          <option [ngValue]="1">📕 Quero ler</option>
+          <option [ngValue]="2">📖 Lendo</option>
+          <option [ngValue]="3">✅ Lido</option>
+        </select>
+      </div>
+
+      <label class="check-privacidade">
+        <input type="checkbox" [(ngModel)]="livroAdicionado.publico" />
+        <span>Deixar este livro visível para outros usuários</span>
+      </label>
+
+      <button class="bs-salvar" (click)="salvarPosAdicionar()">
+        Salvar
+      </button>
     </ng-container>
   </app-bottom-sheet>
 </section>
+
+  <!-- Bottom Sheet: Compartilhar Leitura (Layout Premium) -->
+  <!-- Bottom Sheet: Compartilhar Leitura -->
+<app-bottom-sheet [aberto]="modalCompartilharAberto" (fechar)="fecharCompartilharLeitura()">
+  <ng-container *ngIf="livroAtual">
+
+    <div class="bottom-sheet-header">
+      <h3>Compartilhar leitura</h3>
+      <button class="bottom-sheet-close" (click)="fecharCompartilharLeitura()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Card 1: Compartilhar no BliTeca -->
+    <div class="card-opcao" [class.ativo]="mostrarTextarea" (click)="mostrarTextarea = true">
+      <div class="card-header">
+        <div class="icone-wrapper">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
+        </div>
+        <div class="textos">
+          <strong>Compartilhar no BliTeca</strong>
+          <span>Publique seu progresso na comunidade</span>
+        </div>
+        <svg class="seta" *ngIf="!mostrarTextarea" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="9 18 15 12 9 6"/>
+        </svg>
+      </div>
+
+      <!-- Área de texto expandida -->
+      <div class="card-body-expandido" *ngIf="mostrarTextarea" (click)="$event.stopPropagation()">
+        <textarea
+          [(ngModel)]="textoCompartilhar"
+          placeholder="O que você está achando da leitura?"
+          rows="3"
+          maxlength="200"
+          class="textarea-compartilhar">
+        </textarea>
+        <div class="card-footer">
+          <span class="contador">{{ textoCompartilhar.length }}/200</span>
+          <button class="btn-publicar" (click)="publicarNoFeed()" [disabled]="!textoCompartilhar.trim() || compartilhandoBliTeca">
+            {{ compartilhandoBliTeca ? 'Publicando...' : 'Publicar' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 2: Compartilhar Externo -->
+    <!-- Card 2: Compartilhar Externo -->
+  <div class="card-opcao externo" (click)="!compartilhando && compartilharExterno()">
+    <div class="externo-conteudo">
+      <div class="preview-livro">
+        <img [src]="livroAtual.imagem || 'assets/capas/perfilSemFoto.png'" class="preview-capa" />
+        <div class="preview-texto">
+          📖 Estou lendo "{{ livroAtual.titulo }}" no BliTeca!
+        </div>
+      </div>
+
+      <!-- 🆕 Seta ou Spinner -->
+      <ng-container *ngIf="!compartilhando">
+        <svg class="seta" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="9 18 15 12 9 6"/>
+        </svg>
+      </ng-container>
+      <span class="spinner-mini" *ngIf="compartilhando"></span>
+    </div>
+    <span class="label-externo">
+      {{ compartilhando ? 'Gerando imagem...' : 'Compartilhar em outros apps' }}
+    </span>
+  </div>
+
+  </ng-container>
+</app-bottom-sheet>
+
+<!-- 🆕 Loader de importação -->
+<div class="import-loader-overlay" *ngIf="importandoArquivo">
+  <div class="import-loader-box">
+    <div class="loader-spinner"></div>
+    <span>Importando seu livro...</span>
+    <small>Extraindo capa e salvando na estante</small>
+  </div>
+</div>
+
+
+<!-- 🆕 Bottom Sheet: Avaliação -->
+<app-bottom-sheet [aberto]="modalAvaliacaoAberto" (fechar)="fecharModalAvaliacao()">
+  <ng-container *ngIf="livroParaAvaliar">
+
+    <!-- Header -->
+    <div class="bottom-sheet-header">
+      <h3>⭐ Avaliar Leitura</h3>
+      <button class="bottom-sheet-close" (click)="fecharModalAvaliacao()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Livro em destaque -->
+    <div class="bs-livro-destaque">
+      <img [src]="livroParaAvaliar.imagem || 'assets/capas/perfilSemFoto.png'"
+        [alt]="livroParaAvaliar.titulo"
+        class="bs-capa"
+        loading="lazy"
+        decoding="async" />
+      <div class="bs-info">
+        <strong class="bs-titulo">{{ livroParaAvaliar.titulo }}</strong>
+        <span class="bs-autor">{{ livroParaAvaliar.autor }}</span>
+        <span class="bs-aviso">Parabéns por finalizar! Que nota você dá para esta leitura?</span>
+      </div>
+    </div>
+
+    <!-- Formulário -->
+    <div class="bs-form">
+
+      <!-- Estrelas -->
+      <label class="bs-label">Sua nota</label>
+      <div class="estrelas-avaliacao">
+        <span
+          *ngFor="let estrela of [1,2,3,4,5]"
+          class="estrela"
+          [class.ativa]="estrela <= notaAvaliacao"
+          (click)="selecionarNota(estrela)"
+          [attr.aria-label]="estrela + ' estrelas'"
+        >★</span>
+      </div>
+
+      <!-- Comentário -->
+      <label class="bs-label" style="margin-top: 16px;">Deixe um comentário (opcional)</label>
+      <textarea
+        [(ngModel)]="comentarioAvaliacao"
+        placeholder="O que você achou do livro?"
+        rows="3"
+        maxlength="200"
+        class="bs-textarea"
+      ></textarea>
+      <span class="bs-contador">{{ comentarioAvaliacao.length }}/200</span>
+    </div>
+
+    <!-- Botão de envio -->
+    <button
+      class="bs-btn bs-btn-primary bs-btn-large"
+      (click)="salvarAvaliacao()"
+      [disabled]="notaAvaliacao === 0 || salvandoAvaliacao"
+    >
+      <ng-container *ngIf="!salvandoAvaliacao">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+          <polyline points="22 4 12 14.01 9 11.01"/>
+        </svg>
+        Finalizar e Enviar Avaliação
+      </ng-container>
+      <ng-container *ngIf="salvandoAvaliacao">
+        <span class="spinner-mini"></span>
+        Enviando...
+      </ng-container>
+    </button>
+
+  </ng-container>
+</app-bottom-sheet>
+
 </app-pull-to-refresh>
+

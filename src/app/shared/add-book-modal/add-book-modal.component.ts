@@ -52,7 +52,8 @@ export class AddBookModalComponent {
     idioma: '',
     arquivoLeitura: '' as string | null,
     tipo: 'livro',  // Padrão
-    status: 1       // Padrão: Quero ler
+    status: 1,      // Padrão: Quero ler
+    publico: true
   };
 
   // Gêneros disponíveis para seleção
@@ -88,7 +89,8 @@ export class AddBookModalComponent {
       idioma: '',
       arquivoLeitura: null,
       tipo: 'livro',
-      status: 1
+      status: 1,
+      publico : true
     };
     this.livroEncontrado = false;
     this.livroNaoEncontrado = false;
@@ -211,7 +213,7 @@ export class AddBookModalComponent {
         this.uploadService.uploadImagem(comprimida).subscribe({
           next: (url) => {
             this.novoLivro.capa = url;
-            this.adicionarLivro();
+            this.emitirLivroParaAdicionar();
           },
           error: () => {
             this.alertService.error('Erro ao enviar imagem. Tente novamente.');
@@ -219,9 +221,33 @@ export class AddBookModalComponent {
         });
       });
     } else {
-      this.adicionarLivro();
+      this.emitirLivroParaAdicionar();
     }
   }
+
+  private emitirLivroParaAdicionar(): void {
+    // 🆕 NÃO cria no backend. Só emite os dados pro pai (home/biblioteca).
+    this.livroAdicionado.emit({
+      titulo: this.novoLivro.titulo.trim(),
+      autor: this.novoLivro.autor.trim(),
+      descricao: this.novoLivro.descricao || '',
+      imagem: this.novoLivro.capa || null,
+      codigoBarras: this.novoLivro.codigoBarras || null,
+      generos: this.novoLivro.generos || [],
+      anoPublicacao: this.novoLivro.anoPublicacao
+        ? parseInt(this.novoLivro.anoPublicacao.toString())
+        : null,
+      editora: this.novoLivro.editora || null,
+      idioma: this.novoLivro.idioma || null,
+      arquivoLeitura: this.novoLivro.arquivoLeitura || null,
+      tipo: this.novoLivro.tipo || 'livro',
+      status: this.novoLivro.status || 1,
+      publico: this.novoLivro.publico
+    });
+
+    this.fecharModal();
+  }
+
 
   private adicionarLivro(): void {
     this.addBookService.adicionarLivro({
@@ -237,7 +263,8 @@ export class AddBookModalComponent {
       idioma: this.novoLivro.idioma || null,
       arquivoLeitura: this.novoLivro.arquivoLeitura || null,
       tipo: this.novoLivro.tipo || 'livro',
-      status: this.novoLivro.status || 1
+      status: this.novoLivro.status || 1,
+      publico: this.novoLivro.publico
     }).subscribe({
       next: (livro) => {
         this.livroAdicionado.emit(livro);

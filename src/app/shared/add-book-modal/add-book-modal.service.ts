@@ -28,6 +28,7 @@ export class AddBookModalService {
   arquivoLeitura?: string | null;
   tipo?: string;
   status?: number;
+  publico?: boolean;
 }): Observable<any> {
   return this.http.post(this.apiUrl, livro);
 }

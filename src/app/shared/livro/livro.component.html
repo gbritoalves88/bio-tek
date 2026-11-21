@@ -275,8 +275,16 @@
       </select>
     </div>
 
-    <button class="bs-salvar" (click)="salvarPosAdicionar()">
-      Salvar
+    <label class="check-privacidade">
+      <input type="checkbox" [(ngModel)]="publicoSelecionado" />
+      <div>
+        <strong>Livro público</strong>
+        <span>Outros usuários podem ver e comentar</span>
+      </div>
+    </label>
+
+    <button class="bs-salvar" (click)="salvarPosAdicionar()" [disabled]="adicionando">
+      {{ adicionando ? 'Salvando...' : 'Salvar' }}
     </button>
   </ng-container>
 </app-bottom-sheet>

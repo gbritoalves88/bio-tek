@@ -159,7 +159,8 @@ export class PerfilComponent implements OnInit {
   carregarPerfilVisualizacao(id: string): void {
     this.carregando = true;
 
-    this.perfilService.getPerfilCompleto(id).subscribe({
+    // 🆕 Force a atualização (ignora o cache)
+    this.perfilService.getPerfilCompleto(id, true).subscribe({
       next: (data: Usuario) => {
         this.usuario = data;
         this.carregando = false;
@@ -417,6 +418,7 @@ export class PerfilComponent implements OnInit {
   }
 
   // Atualizar posição do highlight
+  // Atualizar posição do highlight
   atualizarHighlight(): void {
     const elemento = this.getElementoPassoAtual();
 
@@ -425,54 +427,74 @@ export class PerfilComponent implements OnInit {
       return;
     }
 
-    const rect = elemento.getBoundingClientRect();
-    this.windowHeight = window.innerHeight;
-    this.windowWidth = window.innerWidth;
+    // 🆕 Pequeno delay para garantir que o DOM terminou de renderizar (evita ficar fora de lugar)
+    setTimeout(() => {
+      const rect = elemento.getBoundingClientRect();
+      this.windowHeight = window.innerHeight;
+      this.windowWidth = window.innerWidth;
 
-    // Adiciona padding ao highlight
-    const padding = 8;
-    this.posicaoHighlight = {
-      top: rect.top - padding,
-      left: rect.left - padding,
-      width: rect.width + (padding * 2),
-      height: rect.height + (padding * 2)
-    };
+      // Adiciona padding ao highlight
+      const padding = 8;
+      let highlightTop = rect.top - padding;
+      let highlightLeft = rect.left - padding;
+      let highlightWidth = rect.width + (padding * 2);
+      let highlightHeight = rect.height + (padding * 2);
 
-    // Posiciona tooltip de forma inteligente
-    const tooltipWidth = Math.min(280, this.windowWidth - 32);
-    const tooltipHeight = 180;
+      // 🆕 Se o elemento for muito grande, limitamos a altura dele
+      if (highlightHeight > 300) {
+        highlightHeight = 300;
+      }
 
-    // Posição horizontal: centralizado com o campo
-    let tooltipLeft = rect.left + (rect.width / 2) - (tooltipWidth / 2);
+      // 🆕 Garante que o highlight não saia da tela pelas laterais
+      if (highlightLeft < 0) highlightLeft = 0;
+      if (highlightLeft + highlightWidth > this.windowWidth) {
+        highlightWidth = this.windowWidth - highlightLeft;
+      }
 
-    // Ajusta se sair da tela
-    tooltipLeft = Math.max(16, Math.min(tooltipLeft, this.windowWidth - tooltipWidth - 16));
+      this.posicaoHighlight = {
+        top: highlightTop,
+        left: highlightLeft,
+        width: highlightWidth,
+        height: highlightHeight
+      };
 
-    // Posição vertical: abaixo ou acima do campo
-    let tooltipTop = rect.bottom + 16;
+      // Posiciona tooltip de forma inteligente
+      const tooltipWidth = Math.min(320, this.windowWidth - 32);
+      const tooltipHeight = 180; // Altura estimada do tooltip
 
-    // Se não couber abaixo, coloca acima
-    if (tooltipTop + tooltipHeight > this.windowHeight - 16) {
-      tooltipTop = rect.top - tooltipHeight - 16;
-    }
+      // Posição horizontal: centralizado com o campo
+      let tooltipLeft = rect.left + (rect.width / 2) - (tooltipWidth / 2);
+      tooltipLeft = Math.max(16, Math.min(tooltipLeft, this.windowWidth - tooltipWidth - 16));
 
-    this.tooltipTop = tooltipTop;
-    this.tooltipLeft = tooltipLeft;
+      // Posição vertical: tenta colocar abaixo do campo. Se não couber, coloca acima.
+      let tooltipTop = highlightTop + highlightHeight + 16;
 
-    // Foca no campo (se for input/select/textarea)
-    if (elemento instanceof HTMLInputElement ||
-        elemento instanceof HTMLTextAreaElement ||
-        elemento instanceof HTMLSelectElement) {
-      elemento.focus();
-    }
+      if (tooltipTop + tooltipHeight > this.windowHeight - 16) {
+        tooltipTop = highlightTop - tooltipHeight - 16;
+      }
 
-    this.cdr.markForCheck(); // 🆕 Força atualização visual
+      // Garante que o tooltip não fique escondido atrás da barra superior
+      if (tooltipTop < 16) tooltipTop = 16;
+
+      this.tooltipTop = tooltipTop;
+      this.tooltipLeft = tooltipLeft;
+
+      if (elemento instanceof HTMLInputElement ||
+          elemento instanceof HTMLTextAreaElement ||
+          elemento instanceof HTMLSelectElement) {
+        elemento.focus();
+      }
+
+      this.cdr.detectChanges(); // Força a renderização
+    }, 150);
   }
 
-  // Obter elemento do passo atual
+    // Obter elemento do passo atual
   getElementoPassoAtual(): HTMLElement | null {
     switch (this.passoOnboarding) {
-      case 0: return this.avatarEdicao?.nativeElement;
+      case 0:
+        // 🆕 Para o avatar, pega a imagem e não a lista inteira
+        return this.avatarEdicao?.nativeElement.querySelector('.avatar-grande') || this.avatarEdicao?.nativeElement;
       case 1: return this.inputNome?.nativeElement;
       case 2: return this.inputNickname?.nativeElement;
       case 3: return this.inputBiografia?.nativeElement;
@@ -481,6 +503,7 @@ export class PerfilComponent implements OnInit {
       default: return null;
     }
   }
+
 
   // Títulos dos passos
   getTituloPasso(): string {
@@ -552,10 +575,10 @@ export class PerfilComponent implements OnInit {
     // Primeiro, scroll até o elemento
     elemento.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
-    // Depois do scroll, recalcula a posição
+    // Depois do scroll, recalcula a posição (esperando o scroll terminar)
     setTimeout(() => {
       this.atualizarHighlight();
-    }, 400); // Aguarda o scroll terminar
+    }, 500);
   }
 
   // Finalizar onboarding
@@ -583,5 +606,37 @@ export class PerfilComponent implements OnInit {
     this.usuarioEdit.avatar = url;
     this.uploadErro = '';
     this.cdr.markForCheck();
+  }
+
+  toggleSeguir(): void {
+    if (!this.usuario || !this.usuario.id) return;
+
+    const eraSeguindo = this.usuario.segue;
+
+    // 1. Atualiza a tela na hora (Optimistic UI)
+    this.usuario.segue = !eraSeguindo;
+    this.cdr.detectChanges();
+
+    // 2. Chama a API
+    const request$ = eraSeguindo
+      ? this.perfilService.deixarDeSeguir(this.usuario.id)
+      : this.perfilService.seguir(this.usuario.id);
+
+    request$.subscribe({
+      next: () => {
+        this.alertService.success(eraSeguindo ? 'Deixou de seguir' : 'Agora você segue este usuário!');
+      },
+      error: () => {
+        // 3. Desfaz se der erro
+        this.usuario!.segue = eraSeguindo;
+        this.alertService.error('Erro ao atualizar. Tente novamente.');
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  limparNick(nick: string | null | undefined): string {
+    if (!nick) return '';
+    return nick.startsWith('@') ? nick.substring(1) : nick;
   }
 }
