@@ -152,6 +152,14 @@
       color: var(--text-primary);
     }
 
+    .grupo-descricao {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--text-secondary);
+  line-height: 1.35;
+  opacity: 1;
+}
+
     .grupo-total {
       font-size: 12px;
       color: var(--text-secondary);
@@ -174,23 +182,74 @@
 
 // ===== BOTÃO VOLTAR NO HEADER =====
 .bottom-sheet-voltar {
-  position: absolute;
-  left: 12px;
-  top: 12px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 28px;
+  height: 28px;
   padding: 4px;
+
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  flex-shrink: 0;
+
+  // Pequeno ajuste vertical
+  transform: translateY(2px);
 
   svg {
     width: 20px;
     height: 20px;
+    display: block;
   }
 
   &:hover {
     color: var(--accent);
   }
+}
+
+.atividade-contexto {
+  margin: 12px 0 16px;
+  padding: 14px;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  background: var(--surface-secondary);
+}
+
+.atividade-contexto-acao {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  strong {
+    display: block;
+    color: var(--text-primary);
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  span {
+    display: block;
+    color: var(--text-secondary);
+    font-size: 11px;
+    margin-top: 3px;
+  }
+}
+
+.atividade-contexto-icone {
+  font-size: 23px;
+}
+
+.atividade-contexto-texto {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-color);
+  color: var(--text-primary);
+  font-size: 13px;
+  line-height: 1.5;
+  white-space: pre-wrap;
 }
 
 // Centraliza o título do header quando o botão voltar está presente

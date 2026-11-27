@@ -135,10 +135,15 @@ export class PerfilService {
     );
   }
 
-  enviarComentario(idLivro: string, comentario: string): Observable<any> {
+  enviarComentario(
+    idLivro: string,
+    comentario: string,
+    origem: string = 'Livro'
+  ): Observable<any> {
     return this.http.post(`${environment.apiUrl}/ComentarioLivro`, {
       idLivro,
-      comentario
+      comentario,
+      origem
     }).pipe(
       tap(() => this.limparCache())
     );
@@ -232,6 +237,46 @@ export class PerfilService {
       idAtividade,
       origem
     });
+  }
+
+  // Busca as atualizações de progresso de um livro,
+  // incluindo a quantidade de respostas de cada publicação.
+  getAtividadesLivro(idLivro: string): Observable<any[]> {
+    return this.http.get<any[]>(
+      `${environment.apiUrl}/ComentarioLivro/livro/${idLivro}/atividades`
+    );
+  }
+
+  // Busca as respostas de uma atualização específica.
+  getComentariosAtividade(idAtividade: string): Observable<any[]> {
+    return this.http.get<any[]>(
+      `${environment.apiUrl}/ComentarioLivro/atividade/${encodeURIComponent(idAtividade)}`
+    );
+  }
+
+  // Envia uma resposta vinculada à atualização.
+  enviarComentarioAtividade(
+    idAtividade: string,
+    idLivro: string,
+    comentario: string
+  ): Observable<any> {
+
+    return this.http.post(
+      `${environment.apiUrl}/ComentarioLivro`,
+      {
+        idLivro,
+        comentario,
+        idAtividade,
+        origem: 'Progresso'
+      }
+    );
+  }
+
+  // Exclui uma resposta de uma atualização.
+  deletarComentarioAtividade(id: string): Observable<any> {
+    return this.http.delete(
+      `${environment.apiUrl}/ComentarioLivro/${id}`
+    );
   }
 
 }

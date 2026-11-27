@@ -77,30 +77,36 @@
   </div>
 
   <!-- Livros (paginados) -->
-  <div class="book-item"
+ <div class="book-item"
      *ngFor="let livro of livrosPaginados; trackBy: trackByLivro"
      (click)="abrirBottomSheetLivro(livro)">
-    <div class="book-cover-wrapper">
-      <img [src]="livro.imagem || 'assets/capas/perfilSemFoto.png'"
-           [alt]="livro.titulo"
-           class="book-cover"
-           loading="lazy"
-           decoding="async" />
 
-        <div class="book-cover-wrapper">
-        <img [src]="livro.imagem || 'assets/capas/perfilSemFoto.png'" ... />
-
-      </div>
-    </div>
-    <div class="book-info">
-      <span class="book-title" [title]="livro.titulo">{{ livro.titulo || 'Sem título' }}</span>
-      <span class="book-status" [class]="getStatusClass(livro.status)">{{ getStatusTexto(livro.status) }}</span>
-    </div>
-
-
-      <span class="badge-privado" *ngIf="livro.publico === false" title="Livro privado">🔒</span>
-
+  <div class="book-cover-wrapper">
+    <img
+      [src]="livro.imagem || 'assets/capas/perfilSemFoto.png'"
+      [alt]="livro.titulo"
+      class="book-cover"
+      loading="lazy"
+      decoding="async" />
   </div>
+
+  <div class="book-info">
+    <span class="book-title" [title]="livro.titulo">
+      {{ livro.titulo || 'Sem título' }}
+    </span>
+
+    <span class="book-status" [class]="getStatusClass(livro.status)">
+      {{ getStatusTexto(livro.status) }}
+    </span>
+  </div>
+
+  <span
+    class="badge-privado"
+    *ngIf="livro.publico === false"
+    title="Livro privado">
+    🔒
+  </span>
+</div>
 
   <!-- 🆕 Carregar mais -->
   <button class="btn-carregar-mais"
@@ -324,7 +330,16 @@
         <span class="grupo-icone">{{ grupo.icone }}</span>
         <div class="grupo-info">
           <span class="grupo-titulo">{{ grupo.titulo }}</span>
-          <span class="grupo-total">{{ grupo.total }} comentário(s)</span>
+
+          <span
+            class="grupo-descricao"
+            *ngIf="grupo.descricao">
+            {{ grupo.descricao }}
+          </span>
+
+          <span class="grupo-total">
+            {{ grupo.total }} comentário(s)
+          </span>
         </div>
         <svg class="grupo-seta" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <polyline points="9 18 15 12 9 6"/>
@@ -353,6 +368,36 @@
       </button>
     </div>
 
+
+    <!-- Contexto da publicação original -->
+    <div
+      class="atividade-contexto"
+      *ngIf="grupoSelecionado.tipo === 'atividade'">
+
+      <div class="atividade-contexto-acao">
+        <span class="atividade-contexto-icone">
+          {{ grupoSelecionado.icone }}
+        </span>
+
+        <div>
+          <strong>{{ grupoSelecionado.descricao }}</strong>
+
+          <span>
+            Atualização de leitura
+          </span>
+        </div>
+      </div>
+
+      <!-- Texto escrito pelo autor, quando existir -->
+      <div
+        class="atividade-contexto-texto"
+        *ngIf="grupoSelecionado.textoPublicacao">
+
+        {{ grupoSelecionado.textoPublicacao }}
+
+      </div>
+
+    </div>
     <div class="comentario-item" *ngFor="let c of grupoSelecionado.comentarios">
       <div class="comentario-topo">
             <div class="comentario-autor-info"

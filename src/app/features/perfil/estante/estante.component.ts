@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, Input, ChangeDetectorRef, ViewChild, ElementRef, OnChanges, SimpleChanges,  } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -11,7 +11,7 @@ import { Capacitor } from '@capacitor/core';
 import { EstanteService } from './estante.service';
 import { Prateleira } from './estante.model';
 import { FilePicker } from '@hotend/capacitor-file-picker';
-
+import { forkJoin } from 'rxjs';
 @Component({
   selector: 'app-estante',
   standalone: true,
@@ -19,10 +19,11 @@ import { FilePicker } from '@hotend/capacitor-file-picker';
   templateUrl: './estante.component.html',
   styleUrl: './estante.component.scss'
 })
-export class EstanteComponent implements OnInit {
+export class EstanteComponent implements  OnInit, OnChanges {
   @Input() usuarioId = '';
   @Input() modoVisualizacao = false;
   @Input() colecoesPerfil: Prateleira[] | null = null;
+  @Input() livrosPerfil: LivroDoUsuario[] = [];
 
   livros: LivroDoUsuario[] = [];
   carregando = true;
@@ -106,8 +107,15 @@ export class EstanteComponent implements OnInit {
     this.meuId = usuarioLogado.id || '';
 
     if (this.usuarioId) {
-      this.carregarLivros();
       this.carregarPrateleiras();
+    }
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['livrosPerfil']) {
+      this.livros = this.livrosPerfil || [];
+      this.paginaAtual = 1;
+      this.cdr.markForCheck();
     }
   }
 
@@ -381,7 +389,217 @@ export class EstanteComponent implements OnInit {
   }
 
   // ============ COMENTÁRIOS ============
-  abrirComentarios(livro: LivroDoUsuario): void {
+
+  abrirComentarios(
+    livro: LivroDoUsuario,
+    grupoIdParaAbrir?: string
+  ): void {
+
+    this.livroComentarioId = livro.id;
+    this.livroComentarioTitulo = livro.titulo;
+
+    this.livroComentarioProntos = null;
+    this.novoComentarioPerfil = '';
+
+    this.etapaComentarios = 'lista';
+    this.grupoSelecionado = null;
+    this.comentariosAberto = true;
+
+    this.cdr.markForCheck();
+
+    const usuarioLogado = JSON.parse(
+      localStorage.getItem('usuario') || '{}'
+    );
+
+    forkJoin({
+      comentarios: this.perfilService.getComentariosLivro(livro.id),
+      atividades: this.perfilService.getAtividadesLivro(livro.id)
+    }).subscribe({
+
+      next: ({ comentarios, atividades }) => {
+
+        // ======================================
+        // 1. COMENTÁRIOS NORMAIS DO LIVRO
+        // ======================================
+
+        const grupos = new Map<string, any[]>();
+
+        (comentarios || []).forEach((c: any) => {
+
+          const origem = c.origem || 'Avaliacao';
+
+          // Quando não existe idAtividade, agrupa pela origem.
+          // Assim Avaliação e Finalização não se misturam.
+          const chave = c.idAtividade
+            ? `respostas:${c.idAtividade}`
+            : `origem:${origem}`;
+
+          if (!grupos.has(chave)) {
+            grupos.set(chave, []);
+          }
+
+          grupos.get(chave)!.push({
+
+            id: c.id,
+            idUsuario: c.idUsuario,
+
+            usuarioNickname: c.idUsuario === usuarioLogado.id
+              ? usuarioLogado.nickname
+              : (c.usuario?.nickname || '@user'),
+
+            usuarioAvatar: c.idUsuario === usuarioLogado.id
+              ? usuarioLogado.avatar
+              : (c.usuario?.avatar || ''),
+
+            comentario: c.comentario,
+            dataCriacao: c.dataCriacao,
+            origem: origem,
+            idAtividade: c.idAtividade
+
+          });
+
+        });
+
+        const gruposLivro = Array.from(grupos.entries()).map(
+          ([chave, items]) => {
+
+            items.sort((a, b) =>
+              new Date(b.dataCriacao).getTime() -
+              new Date(a.dataCriacao).getTime()
+            );
+
+            const primeiro = items[0];
+
+            return {
+
+              grupoId: chave,
+              tipo: 'livro',
+
+              idAtividade: primeiro.idAtividade || null,
+              origem: primeiro.origem,
+
+              icone: this.getIconeOrigem(primeiro.origem),
+              titulo: this.getTipoLabel(
+                primeiro.origem,
+                primeiro.idAtividade
+              ),
+
+              descricao: primeiro.comentario || '',
+              dataCriacao: primeiro.dataCriacao,
+
+              total: items.length,
+              comentarios: items,
+              novoComentario: ''
+
+            };
+
+          }
+        );
+
+        // ======================================
+        // 2. ATUALIZAÇÕES DE PROGRESSO
+        // ======================================
+
+       const gruposAtividades = (atividades || [])
+        .filter((a: any) => a.totalComentarios > 0)
+        .map((a: any) => ({
+          grupoId: `post:${a.id}`,
+          tipo: 'atividade',
+
+          id: a.id,
+          idAtividade: a.idAtividade,
+
+          origem: a.origem,
+          icone: this.getIconeOrigem(a.origem),
+          titulo: this.getTituloAtividade(a.origem),
+
+          // Descrição da ação
+          descricao: this.getResumoAtividade(a),
+
+          // Texto adicional da publicação
+          textoPublicacao: this.getTextoAtividade(a),
+
+          dataCriacao: a.dataCriacao,
+          total: a.totalComentarios,
+          comentarios: [],
+          novoComentario: ''
+        }));
+
+        // ======================================
+        // 3. JUNTA E ORDENA
+        // ======================================
+
+        this.livroComentarioProntos = [
+          ...gruposLivro,
+          ...gruposAtividades
+        ].sort((a, b) =>
+          new Date(b.dataCriacao).getTime() -
+          new Date(a.dataCriacao).getTime()
+        );
+
+        // Reabre o grupo após envio ou exclusão
+        if (grupoIdParaAbrir) {
+
+          const grupo = this.livroComentarioProntos.find(
+            g => g.grupoId === grupoIdParaAbrir
+          );
+
+          if (grupo) {
+            this.abrirGrupo(grupo);
+          }
+
+        }
+
+        this.cdr.markForCheck();
+
+      },
+
+      error: (err) => {
+
+        console.error('Erro ao carregar comentários:', err);
+
+        this.livroComentarioProntos = [];
+
+        this.cdr.markForCheck();
+
+      }
+
+    });
+
+  }
+
+
+  getTextoAtividade(atividade: any): string {
+
+    // Para novos registros, usa o campo separado
+    if (atividade.frase?.trim()) {
+      return atividade.frase.trim();
+    }
+
+    // Compatibilidade com registros antigos:
+    // anteriormente a frase era gravada no campo Comentario.
+    const comentario = atividade.comentario?.trim();
+
+    if (!comentario) return '';
+
+    const mensagensAutomaticas = [
+      'Começou a leitura',
+      'Pausou a leitura',
+      'Retomou a leitura'
+    ];
+
+    if (mensagensAutomaticas.includes(comentario)) {
+      return '';
+    }
+
+    if (/^Avançou para \d+% da leitura$/i.test(comentario)) {
+      return '';
+    }
+
+    return comentario;
+  }
+
+  abrirComentariosOld(livro: LivroDoUsuario): void {
     this.livroComentarioId = livro.id;
     this.livroComentarioTitulo = livro.titulo;
     this.livroComentarioProntos = null;
@@ -482,28 +700,46 @@ export class EstanteComponent implements OnInit {
     });
   }
 
-  deletarComentario(id: string): void {
-  this.perfilService.deletarComentario(id).subscribe({
-    next: () => {
-      // Remove do grupo selecionado (se estiver aberto)
-      if (this.grupoSelecionado) {
-        this.grupoSelecionado.comentarios = this.grupoSelecionado.comentarios
-          .filter((c: any) => c.id !== id);
-        this.grupoSelecionado.total = this.grupoSelecionado.comentarios.length;
+deletarComentario(id: string): void {
 
-        // Se o grupo ficou vazio, volta pra lista
-        if (this.grupoSelecionado.total === 0) {
-          this.voltarParaLista();
-          // E recarrega a lista pra remover o grupo vazio
-          const livro = this.livros.find(l => l.id === this.livroComentarioId);
-          if (livro) this.abrirComentarios(livro);
-        }
-      }
+  const grupo = this.grupoSelecionado;
+
+  const request$ = grupo?.tipo === 'atividade'
+
+    ? this.perfilService.deletarComentarioAtividade(id)
+
+    : this.perfilService.deletarComentario(id);
+
+  request$.subscribe({
+
+    next: () => {
+
       this.alertService.success('Comentário removido!');
+
+      const livro = this.livros.find(
+        l => l.id === this.livroComentarioId
+      );
+
+      if (livro && grupo) {
+
+        // Atualiza a contagem e a lista
+        // Se o grupo ficar vazio, ele não será reaberto.
+        this.abrirComentarios(livro, grupo.grupoId);
+
+      }
+
       this.cdr.markForCheck();
+
     },
-    error: () => this.alertService.error('Erro ao remover comentário')
+
+    error: () => {
+
+      this.alertService.error('Erro ao remover comentário');
+
+    }
+
   });
+
 }
 
   // ============ EXCLUSÃO ============
@@ -970,17 +1206,44 @@ export class EstanteComponent implements OnInit {
     case 'ComecouLer': return '📖';
     case 'Finalizou': return '✅';
     case 'Avaliacao': return '⭐';
+    case 'Atividade': return '📖';
+    case 'Pausa': return '⏸️';
+    case 'Retomada': return '▶️';
     default: return '💬';
   }
 }
 
-getTipoLabel(origem: string): string {
+getTipoLabel(
+  origem: string,
+  idAtividade?: string | null
+): string {
+
+  if (origem === 'Avaliacao') {
+
+    if (idAtividade?.includes('__livro_avaliado__')) {
+      return 'Comentários na finalização';
+    }
+
+    return 'Comentários no livro';
+  }
+
   switch (origem) {
-    case 'Adicionou': return 'Adicionou o livro';
-    case 'ComecouLer': return 'Começou a ler';
-    case 'Finalizou': return 'Finalizou a leitura';
-    case 'Avaliacao': return 'Avaliação';
-    default: return 'Comentários';
+
+    case 'Adicionou':
+      return 'Adicionou o livro';
+
+    case 'ComecouLer':
+      return 'Começou a ler';
+
+    case 'Finalizou':
+      return 'Finalizou a leitura';
+
+    case 'Livro':
+      return 'Comentários no livro';
+
+    default:
+      return 'Comentários no livro';
+
   }
 }
 
@@ -994,9 +1257,62 @@ irParaPerfil(idUsuario: string | undefined, event?: Event): void {
 }
 
 abrirGrupo(grupo: any): void {
+
   this.grupoSelecionado = grupo;
   this.etapaComentarios = 'grupo';
+
   this.cdr.markForCheck();
+
+  // Grupos normais já possuem os comentários carregados
+  if (grupo.tipo !== 'atividade') {
+    return;
+  }
+
+  // Busca as respostas da atualização específica
+  this.perfilService
+    .getComentariosAtividade(grupo.idAtividade)
+    .subscribe({
+
+      next: (comentarios) => {
+
+        const usuarioLogado = JSON.parse(
+          localStorage.getItem('usuario') || '{}'
+        );
+
+        grupo.comentarios = (comentarios || []).map((c: any) => ({
+
+          id: c.id,
+          idUsuario: c.idUsuario,
+
+          usuarioNickname: c.idUsuario === usuarioLogado.id
+            ? usuarioLogado.nickname
+            : (c.usuario?.nickname || '@user'),
+
+          usuarioAvatar: c.idUsuario === usuarioLogado.id
+            ? usuarioLogado.avatar
+            : (c.usuario?.avatar || ''),
+
+          comentario: c.comentario,
+          dataCriacao: c.dataCriacao
+
+        }));
+
+        grupo.total = grupo.comentarios.length;
+
+        this.cdr.markForCheck();
+
+      },
+
+      error: (err) => {
+
+        console.error('Erro ao carregar respostas da atividade:', err);
+
+        this.alertService.error('Erro ao carregar comentários');
+
+      }
+
+    });
+
 }
 
 voltarParaLista(): void {
@@ -1005,49 +1321,109 @@ voltarParaLista(): void {
   this.cdr.markForCheck();
 }
 
-enviarComentarioNoGrupo(): void {
-  if (!this.grupoSelecionado?.novoComentario?.trim() || !this.livroComentarioId) return;
+getTituloAtividade(origem: string): string {
 
-    const grupo = this.grupoSelecionado;
-    const texto = grupo.novoComentario.trim();
-    const usuarioLogado = JSON.parse(localStorage.getItem('usuario') || '{}');
+  switch (origem) {
 
-    this.perfilService.enviarComentarioNoLivro(
-      this.livroComentarioId,
-      texto,
-      grupo.idAtividade,
-      grupo.origem
-    ).subscribe({
-      next: () => {
-        grupo.novoComentario = '';
-        this.alertService.success('Comentário enviado!');
+    case 'Pausa':
+      return 'Leitura pausada';
 
-        // Recarrega
-        const livro = this.livros.find(l => l.id === this.livroComentarioId);
-        if (livro) {
-          // Recarrega mantendo o grupo aberto
-          const grupoAbertoId = grupo.idAtividade;
-          const eraGrupo = this.etapaComentarios === 'grupo';
+    case 'Retomada':
+      return 'Leitura retomada';
 
-          this.abrirComentarios(livro);
+    default:
+      return 'Atualização de leitura';
 
-          if (eraGrupo) {
-            setTimeout(() => {
-              const grupoAtualizado = this.livroComentarioProntos?.find(
-                (g: any) => g.idAtividade === grupoAbertoId
-              );
-              if (grupoAtualizado) {
-                this.grupoSelecionado = grupoAtualizado;
-                this.etapaComentarios = 'grupo';
-              }
-              this.cdr.markForCheck();
-            }, 200);
-          }
-        }
-      },
-      error: (err) => {
-        this.alertService.error(err.error?.mensagem || 'Erro ao enviar comentário');
-      }
-    });
   }
+
+}
+
+getResumoAtividade(atividade: any): string {
+
+  if (atividade.origem === 'Pausa') {
+    return 'Pausou a leitura';
+  }
+
+  if (atividade.origem === 'Retomada') {
+    return 'Retomou a leitura';
+  }
+
+  if (atividade.progresso != null) {
+    return `Avançou para ${atividade.progresso}% da leitura`;
+  }
+
+  if (atividade.paginaAtual != null) {
+    return `Atualizou a leitura até a página ${atividade.paginaAtual}`;
+  }
+
+  if (atividade.minutoAtual != null) {
+    return `Atualizou o progresso do audiobook`;
+  }
+
+  return 'Começou a leitura';
+}
+
+private formatarTempoAtividade(minutos: number): string {
+
+  const horas = Math.floor(minutos / 60);
+  const resto = minutos % 60;
+
+  return horas > 0
+    ? `${horas}h ${resto}min`
+    : `${resto}min`;
+
+}
+enviarComentarioNoGrupo(): void {
+
+  if (
+    !this.grupoSelecionado?.novoComentario?.trim() ||
+    !this.livroComentarioId
+  ) return;
+
+  const grupo = this.grupoSelecionado;
+  const texto = grupo.novoComentario.trim();
+
+  const request$ = grupo.tipo === 'atividade'
+
+    ? this.perfilService.enviarComentarioAtividade(
+        grupo.idAtividade,
+        this.livroComentarioId,
+        texto
+      )
+
+    : this.perfilService.enviarComentarioNoLivro(
+        this.livroComentarioId,
+        texto,
+        grupo.idAtividade,
+        grupo.origem
+      );
+
+  request$.subscribe({
+
+    next: () => {
+
+      this.alertService.success('Comentário enviado!');
+
+      const livro = this.livros.find(
+        l => l.id === this.livroComentarioId
+      );
+
+      if (livro) {
+        this.abrirComentarios(livro, grupo.grupoId);
+      }
+
+    },
+
+    error: (err) => {
+
+      this.alertService.error(
+        err.error?.mensagem || 'Erro ao enviar comentário'
+      );
+
+    }
+
+  });
+
+}
+
 }
