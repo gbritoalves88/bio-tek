@@ -98,58 +98,80 @@ modalAvaliacaoAberto = false;
   ) {}
 
   ngOnInit(): void {
-  if (isPlatformBrowser(this.platformId)) {
-    const token = localStorage.getItem('token');
-    if (!token || token === 'undefined' || token === 'null' || token.length < 10) {
-      this.router.navigate(['/']);
-      return;
-    }
+    if (isPlatformBrowser(this.platformId)) {
+      const token = localStorage.getItem('token');
 
-    this.homeService.limparCache();
-    this.carregarDashboard();
-    this.carregarStreak();
-    this.carregarOfertas();
-    this.verificarNotificacoes();
-
-    // 🆕 Escuta progresso ao fechar o leitor (unificado)
-    this.leitorService.progresso$.subscribe((p) => {
-      if (!p || !this.livroAtual) return;
-
-      // 1. Atualiza as variáveis
-      this.paginaAtual = p.paginaAtual ?? this.paginaAtual;
-      this.totalPaginas = p.totalPaginas ?? this.totalPaginas;
-
-      if (p.progresso !== undefined && p.progresso !== null) {
-        this.progressoInput = p.progresso;
+      if (!token || token === 'undefined' || token === 'null' || token.length < 10) {
+        this.router.navigate(['/']);
+        return;
       }
 
-      // 2. Define o modo baseado no que o leitor enviou
-      if (p.cfi) {
-        this.modoProgresso = 'percentual';
-        const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
-        localStorage.setItem(`modoProgresso:${usuario.id || 'anon'}:${this.livroAtual.id}`, 'percentual');
-      } else if (p.paginaAtual) {
-        this.modoProgresso = 'paginas';
-        const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
-        localStorage.setItem(`modoProgresso:${usuario.id || 'anon'}:${this.livroAtual.id}`, 'paginas');
-      }
+      this.homeService.limparCache();
+      this.carregarDashboard();
+      this.carregarStreak();
+      this.carregarOfertas();
+      this.verificarNotificacoes();
 
-      // 3. Força repintura
-      if (this.lendoAgoraAberto) {
-        this.cdr.detectChanges();
-      } else {
+      // Escuta progresso ao fechar o leitor
+      this.leitorService.progresso$.subscribe((p) => {
+        if (!p || !this.livroAtual) return;
+
+        this.paginaAtual = p.paginaAtual ?? this.paginaAtual;
+        this.totalPaginas = p.totalPaginas ?? this.totalPaginas;
+
+        if (p.progresso !== undefined && p.progresso !== null) {
+          this.progressoInput = p.progresso;
+        }
+
+        if (p.cfi) {
+          this.modoProgresso = 'percentual';
+
+          const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+
+          localStorage.setItem(
+            `modoProgresso:${usuario.id || 'anon'}:${this.livroAtual.id}`,
+            'percentual'
+          );
+        } else if (p.paginaAtual) {
+          this.modoProgresso = 'paginas';
+
+          const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+
+          localStorage.setItem(
+            `modoProgresso:${usuario.id || 'anon'}:${this.livroAtual.id}`,
+            'paginas'
+          );
+        }
+
+        if (this.lendoAgoraAberto) {
+          this.cdr.detectChanges();
+        } else {
+          this.cdr.markForCheck();
+        }
+
+        this.salvarProgressoDoLeitor(p);
+
+        if (this.lendoAgoraAberto) {
+          this.fecharLendoAgora();
+        }
+      });
+
+      // Recupera arquivo que ficou inacessível
+      this.leitorService.arquivoInacessivel$.subscribe((inacessivel) => {
+        if (!inacessivel || !this.livroAtual) return;
+
+        this.arquivoInacessivel = true;
+
+        // Evita que o evento seja processado novamente
+        this.leitorService.limparArquivoInacessivel();
+
         this.cdr.markForCheck();
-      }
 
-      // 🆕 4. Salva o progresso automaticamente (só se houver avanço)
-      this.salvarProgressoDoLeitor(p);
-
-      if (this.lendoAgoraAberto) {
-        this.fecharLendoAgora();
-      }
-    });
+        // Abre o seletor para reassociar o arquivo ao livro atual
+        this.vincularArquivoNovamente();
+      });
+    }
   }
-}
 
   get nickname(): string {
     const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
@@ -1187,6 +1209,7 @@ modalAvaliacaoAberto = false;
 
   // ============ IMPORTAR PDF/EPUB ============
 
+
 async importarArquivo(): Promise<void> {
   if (!Capacitor.isNativePlatform()) {
     this.importarArquivoWeb();
@@ -1215,23 +1238,28 @@ async importarArquivo(): Promise<void> {
     this.importandoArquivo = true;
     this.cdr.markForCheck();
 
-    // 1. Título a partir do nome do arquivo
+    // 1. Obtém o título pelo nome do arquivo
     const titulo = (file.name || 'Livro')
       .replace(/\.(pdf|epub)$/i, '')
       .replace(/[_-]/g, ' ')
       .trim() || 'Livro sem título';
 
-    // 2. Tenta extrair capa (com timeout curto, sem bloquear)
+    // 2. Tenta extrair a capa
     let imagemUrl: string | null = null;
+
     try {
       const capaBase64 = await Promise.race([
         this.extrairCapa(uri, tipo),
-        new Promise<string | null>((resolve) => setTimeout(() => resolve(null), 5000))
+        new Promise<string | null>((resolve) =>
+          setTimeout(() => resolve(null), 5000)
+        )
       ]);
 
       if (capaBase64) {
         try {
-          imagemUrl = await firstValueFrom(this.uploadService.uploadImagem(capaBase64));
+          imagemUrl = await firstValueFrom(
+            this.uploadService.uploadImagem(capaBase64)
+          );
         } catch (e) {
           console.warn('Falha ao subir capa:', e);
         }
@@ -1240,105 +1268,115 @@ async importarArquivo(): Promise<void> {
       console.warn('Falha ao extrair capa:', e);
     }
 
-    // 3. Tenta pegar autor do catálogo (rápido, com timeout)
+    // 3. Tenta localizar autor e capa no catálogo
     let autor = 'Autor desconhecido';
+
     if (titulo.length >= 3) {
       try {
         const resultados: any[] = await firstValueFrom(
           this.homeService.buscarPorTitulo(titulo).pipe(timeout(3000))
         );
+
         if (Array.isArray(resultados) && resultados.length > 0) {
           autor = resultados[0]?.autor || autor;
+
           if (!imagemUrl && resultados[0]?.imagem) {
             imagemUrl = resultados[0].imagem;
           }
         }
-      } catch { /* segue com fallback */ }
+      } catch {
+        // Continua com os dados disponíveis
+      }
     }
 
-    // 4. Salva o livro (mesmo padrão de "vincularArquivoNovamente")
-    const valorArquivo = `${tipo}://${uri}`;
+    // 4. Prepara os dados, sem cadastrar na API
     const payload = {
       titulo,
       autor,
       imagem: imagemUrl,
       tipo: 'livro',
-      status: 1, // Quero Ler (backend também força)
-      arquivoLeitura: valorArquivo
+      status: 1,
+      arquivoLeitura: `${tipo}://${uri}`
     };
 
-    this.homeService.adicionarLivro(payload).subscribe({
-      next: (livroCriado: any) => {
-        this.importandoArquivo = false;
-        this.cdr.markForCheck();
-
-        // 5. Reaproveita o Bottom Sheet pós-adicionar existente
-        this.onLivroAdicionado({
-          ...livroCriado,
-          tipo: livroCriado?.tipo || 'livro',
-          status: livroCriado?.status || 1
-        });
-      },
-      error: (err) => {
-        this.importandoArquivo = false;
-        if (err.status === 400 && err.error?.mensagem) {
-          this.alertService.warning(err.error.mensagem);
-        } else {
-          this.alertService.error('Erro ao importar livro.');
-        }
-        this.cdr.markForCheck();
-      }
-    });
+    // 5. Abre o modal para o usuário confirmar
+    this.importandoArquivo = false;
+    this.onLivroAdicionado(payload);
+    this.cdr.markForCheck();
 
   } catch (error: any) {
-    if (error?.message?.includes('cancel')) return;
+    if (error?.message?.toLowerCase().includes('cancel')) {
+      this.importandoArquivo = false;
+      this.cdr.markForCheck();
+      return;
+    }
+
     console.error('Erro ao importar:', error);
+
     this.importandoArquivo = false;
     this.alertService.error('Erro ao selecionar arquivo.');
     this.cdr.markForCheck();
   }
 }
 
+
 // Fallback para web (PWA): usa input file nativo
+
 private importarArquivoWeb(): void {
   const input = document.createElement('input');
+
   input.type = 'file';
   input.accept = '.pdf,.epub,application/pdf,application/epub+zip';
+
   input.onchange = async (event: any) => {
     const file: File = event.target.files?.[0];
+
     if (!file) return;
 
     this.importandoArquivo = true;
     this.cdr.markForCheck();
 
     try {
+      // 1. Obtém o título pelo nome do arquivo
       const titulo = file.name
         .replace(/\.(pdf|epub)$/i, '')
         .replace(/[_-]/g, ' ')
         .trim() || 'Livro sem título';
 
-      const tipo: 'pdf' | 'epub' = file.name.toLowerCase().endsWith('.epub') ? 'epub' : 'pdf';
+      const tipo: 'pdf' | 'epub' =
+        file.name.toLowerCase().endsWith('.epub') ? 'epub' : 'pdf';
 
-      // Capa (tenta com timeout)
+      // 2. Tenta extrair e enviar a capa
       let imagemUrl: string | null = null;
+
       try {
         const arrayBuffer = await file.arrayBuffer();
+
         const capaBase64 = await Promise.race([
           this.extrairCapaDeArrayBuffer(arrayBuffer, tipo),
-          new Promise<string | null>((resolve) => setTimeout(() => resolve(null), 5000))
+          new Promise<string | null>((resolve) =>
+            setTimeout(() => resolve(null), 5000)
+          )
         ]);
+
         if (capaBase64) {
           try {
-            imagemUrl = await firstValueFrom(this.uploadService.uploadImagem(capaBase64));
-          } catch {}
+            imagemUrl = await firstValueFrom(
+              this.uploadService.uploadImagem(capaBase64)
+            );
+          } catch (e) {
+            console.warn('Falha ao enviar capa na web:', e);
+          }
         }
       } catch (e) {
         console.warn('Falha ao extrair capa na web:', e);
       }
 
-      // Impressão digital (mesmo formato do AddBookModal)
-      const valorArquivo = `pwa://${file.name}|${file.size}|${file.lastModified}`;
+      // 3. Gera a identificação do arquivo
+      const valorArquivo =
+        `pwa://${file.name}|${file.size}|${file.lastModified}`;
 
+      // 4. Prepara os dados, sem cadastrar na API
       const payload = {
         titulo,
         autor: 'Autor desconhecido',
@@ -1348,30 +1386,23 @@ private importarArquivoWeb(): void {
         arquivoLeitura: `${tipo}://${valorArquivo}`
       };
 
-      this.homeService.adicionarLivro(payload).subscribe({
-        next: (livroCriado: any) => {
-          this.importandoArquivo = false;
-          this.cdr.markForCheck();
-          this.onLivroAdicionado({
-            ...livroCriado,
-            tipo: livroCriado?.tipo || 'livro',
-            status: livroCriado?.status || 1
-          });
-        },
-        error: () => {
-          this.importandoArquivo = false;
-          this.alertService.error('Erro ao importar livro.');
-          this.cdr.markForCheck();
-        }
-      });
-    } catch {
+      // 5. Abre o modal para o usuário confirmar
+      this.importandoArquivo = false;
+      this.onLivroAdicionado(payload);
+      this.cdr.markForCheck();
+
+    } catch (error) {
+      console.error('Erro ao importar arquivo na web:', error);
+
       this.importandoArquivo = false;
       this.alertService.error('Erro ao importar arquivo.');
       this.cdr.markForCheck();
     }
   };
+
   input.click();
 }
+
 
 // ============ EXTRAIR CAPA ============
 
@@ -1547,7 +1578,7 @@ salvarAvaliacao(): void {
       next: () => {
         // 🎯 PASSO 2: Se o usuário digitou comentário, envia separado
         if (comentario) {
-          this.perfilService.enviarComentario(livroId, comentario).subscribe({
+          this.perfilService.enviarComentario(livroId, comentario, 'Avaliacao').subscribe({
             next: () => {
               this.finalizarAvaliacaoComSucesso();
             },

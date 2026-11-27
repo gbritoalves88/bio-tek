@@ -83,3 +83,5 @@ src/environments/environment.prod.ts
 
 # Google Services
 google-services.json
+
+keystore.properties

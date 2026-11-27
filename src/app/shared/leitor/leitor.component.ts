@@ -410,22 +410,29 @@ export class LeitorComponent implements OnInit, OnDestroy {
   }
 
   private falharAbertura(): void {
+    this.fechar(false);
     this.leitorService.emitirArquivoInacessivel();
-    this.fechar();
   }
 
-  fechar(): void {
+  fechar(salvarProgresso: boolean = true): void {
     const progressoFinal = this.progresso;
     const cfiFinal = this.cfiAtual;
     const paginaAtualPdf = this.pdfPaginaAtual;
     const totalPaginasPdf = this.pdfTotalPaginas;
 
-    this.leitorService.emitirProgresso({
-      paginaAtual: this.tipo === 'pdf' ? paginaAtualPdf : null,
-      totalPaginas: this.tipo === 'pdf' ? totalPaginasPdf : null,
-      progresso: progressoFinal || null,
-      cfi: this.tipo === 'epub' ? cfiFinal : null
-    });
+    if (salvarProgresso) {
+      const progressoFinal = this.progresso;
+      const cfiFinal = this.cfiAtual;
+      const paginaAtualPdf = this.pdfPaginaAtual;
+      const totalPaginasPdf = this.pdfTotalPaginas;
+
+      this.leitorService.emitirProgresso({
+        paginaAtual: this.tipo === 'pdf' ? paginaAtualPdf : null,
+        totalPaginas: this.tipo === 'pdf' ? totalPaginasPdf : null,
+        progresso: progressoFinal || null,
+        cfi: this.tipo === 'epub' ? cfiFinal : null
+      });
+    }
 
     this.titleService.setTitle('BliTeca');
 

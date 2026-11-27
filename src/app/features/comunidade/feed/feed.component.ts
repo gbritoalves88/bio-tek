@@ -365,91 +365,94 @@ export class FeedComponent implements OnInit {
 
   // ============ COMENTÁRIOS DE ATIVIDADE ============
 
-carregarComentariosDaAtividade(idAtividade: string): void {
-  this.carregandoComentariosAtividade = true;
-  this.comunidadeService.getComentariosAtividade(idAtividade).subscribe({
-    next: (comentarios) => {
-      this.comentariosAtividade = comentarios || [];
-      this.carregandoComentariosAtividade = false;
-      this.cdr.markForCheck();
-    },
-    error: (err) => {
-      console.error('Erro ao carregar comentários da atividade:', err);
-      this.carregandoComentariosAtividade = false;
-    }
-  });
-}
-
-enviarComentarioAtividade(): void {
-  if (!this.novoComentarioAtividade.trim() || !this.itemSelecionado) return;
-
-  const texto = this.novoComentarioAtividade.trim();
-  const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
-  const idAtividade = this.gerarIdAtividade(this.itemSelecionado);
-  const idLivro = this.itemSelecionado.livro?.id || '';
-
-  // Mapeia o tipo do feed para a Origem do backend
-  const origem = this.mapearOrigem(this.itemSelecionado.tipo);
-
-  // Optimistic UI
-  const temp: any = {
-    id: 'temp-' + Date.now(),
-    idUsuario: usuario.id,
-    comentario: texto,
-    dataCriacao: new Date().toISOString(),
-    usuario: {
-      id: usuario.id,
-      nome: usuario.nome,
-      nickname: usuario.nickname,
-      avatar: usuario.avatar
-    }
-  };
-  this.comentariosAtividade = [...this.comentariosAtividade, temp];
-  this.novoComentarioAtividade = '';
-  this.cdr.markForCheck();
-
-  this.comunidadeService.enviarComentarioAtividade(idLivro, idAtividade, texto, origem).subscribe({
-    next: (criado: any) => {
-      this.comentariosAtividade = this.comentariosAtividade.map(c =>
-        c.id === temp.id ? { ...temp, id: criado.id || temp.id } : c
-      );
-      this.alertService.success('Comentário enviado!');
-      this.cdr.markForCheck();
-    },
-    error: (err) => {
-      this.comentariosAtividade = this.comentariosAtividade.filter(c => c.id !== temp.id);
-      console.error('Erro ao comentar:', err);
-      this.alertService.error(err.error?.mensagem || 'Erro ao enviar comentário');
-      this.cdr.markForCheck();
-    }
-  });
-}
-
-private mapearOrigem(tipo: string): string {
-  switch (tipo) {
-    case 'livro_novo': return 'Adicionou';
-    case 'livro_lendo': return 'ComecouLer';
-    case 'livro_lido': return 'Finalizou';
-    case 'livro_avaliado': return 'Avaliacao';
-    case 'livro_progresso': return 'Progresso';
-    default: return 'Avaliacao';
+  carregarComentariosDaAtividade(idAtividade: string): void {
+    this.carregandoComentariosAtividade = true;
+    this.comunidadeService.getComentariosAtividade(idAtividade).subscribe({
+      next: (comentarios) => {
+        this.comentariosAtividade = comentarios || [];
+        this.carregandoComentariosAtividade = false;
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        console.error('Erro ao carregar comentários da atividade:', err);
+        this.carregandoComentariosAtividade = false;
+      }
+    });
   }
-}
 
-deletarComentarioAtividade(id: string): void {
-  this.comunidadeService.deletarComentario(id).subscribe({
-    next: () => {
-      this.comentariosAtividade = this.comentariosAtividade.filter(c => c.id !== id);
-      this.alertService.success('Comentário removido!');
-      this.cdr.markForCheck();
-    },
-    error: () => this.alertService.error('Erro ao remover comentário')
-  });
-}
+  enviarComentarioAtividade(): void {
+    if (!this.novoComentarioAtividade.trim() || !this.itemSelecionado) return;
+
+    const texto = this.novoComentarioAtividade.trim();
+    const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+    const idAtividade = this.gerarIdAtividade(this.itemSelecionado);
+    const idLivro = this.itemSelecionado.livro?.id || '';
+
+    // Mapeia o tipo do feed para a Origem do backend
+    const origem = this.mapearOrigem(this.itemSelecionado.tipo);
+
+    // Optimistic UI
+    const temp: any = {
+      id: 'temp-' + Date.now(),
+      idUsuario: usuario.id,
+      comentario: texto,
+      dataCriacao: new Date().toISOString(),
+      usuario: {
+        id: usuario.id,
+        nome: usuario.nome,
+        nickname: usuario.nickname,
+        avatar: usuario.avatar
+      }
+    };
+    this.comentariosAtividade = [...this.comentariosAtividade, temp];
+    this.novoComentarioAtividade = '';
+    this.cdr.markForCheck();
+
+    this.comunidadeService.enviarComentarioAtividade(idLivro, idAtividade, texto, origem).subscribe({
+      next: (criado: any) => {
+        this.comentariosAtividade = this.comentariosAtividade.map(c =>
+          c.id === temp.id ? { ...temp, id: criado.id || temp.id } : c
+        );
+        this.alertService.success('Comentário enviado!');
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        this.comentariosAtividade = this.comentariosAtividade.filter(c => c.id !== temp.id);
+        console.error('Erro ao comentar:', err);
+        this.alertService.error(err.error?.mensagem || 'Erro ao enviar comentário');
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  private mapearOrigem(tipo: string): string {
+    switch (tipo) {
+      case 'livro_novo': return 'Adicionou';
+      case 'livro_lendo': return 'ComecouLer';
+      case 'livro_lido': return 'Finalizou';
+      case 'livro_avaliado': return 'Avaliacao';
+      case 'livro_progresso': return 'Progresso';
+      default: return 'Avaliacao';
+    }
+  }
+
+  deletarComentarioAtividade(id: string): void {
+    this.comunidadeService.deletarComentario(id).subscribe({
+      next: () => {
+        this.comentariosAtividade = this.comentariosAtividade.filter(c => c.id !== id);
+        this.alertService.success('Comentário removido!');
+        this.cdr.markForCheck();
+      },
+      error: () => this.alertService.error('Erro ao remover comentário')
+    });
+  }
 
   private gerarIdAtividade(item: AtividadeComunidade): string {
-    // Formato: {idLivro}__{tipo}__{data}
-    return `${item.livro?.id}__${item.tipo}__${item.data}`;
+    const data = item.tipo === 'livro_avaliado'
+      ? new Date(item.data).toISOString()
+      : item.data;
+
+    return `${item.livro?.id}__${item.tipo}__${data}`;
   }
 
 
