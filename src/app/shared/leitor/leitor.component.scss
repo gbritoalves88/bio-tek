@@ -7,8 +7,27 @@
   display: flex; align-items: center; gap: 16px;
   padding: 12px 16px; min-height: 56px; z-index: 10;
 
-  .leitor-titulo-container { flex: 1; }
-  h2 { margin: 0; font-size: 16px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  // Permite que o título encolha em telas estreitas sem empurrar os botões.
+  .leitor-titulo-container {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .leitor-close,
+  .leitor-header-actions {
+    flex-shrink: 0;
+  }
+
+  h2 {
+    margin: 0;
+    min-width: 0;
+    max-width: 100%;
+    font-size: 16px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 }
 
 .leitor-close, .leitor-icon-btn, .pdf-nav {
