@@ -337,6 +337,11 @@
       </div>
 
       <div class="bs-acoes" *ngIf="($any(livroSelecionado).media > 0)">
+        <label class="check-privacidade">
+          <input type="checkbox" [(ngModel)]="publicoSelecionado" />
+          <span>Deixar este livro visível para outros usuários</span>
+        </label>
+
         <button class="bs-btn bs-btn-primary" (click)="adicionarABiblioteca(livroSelecionado)">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <line x1="12" y1="5" x2="12" y2="19"/>

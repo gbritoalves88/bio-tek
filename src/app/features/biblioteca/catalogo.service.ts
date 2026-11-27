@@ -32,8 +32,11 @@ export class CatalogoService {
     return this.catalogoCache$;
   }
 
-  adicionarBiblioteca(catalogoId: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/${catalogoId}/adicionar-biblioteca`, {}).pipe(
+  adicionarBiblioteca(catalogoId: string, publico: boolean = true): Observable<any> {
+    return this.http.post(
+      `${this.apiUrl}/${catalogoId}/adicionar-biblioteca?publico=${publico}`,
+      {}
+    ).pipe(
       tap(() => this.limparCache())
     );
   }

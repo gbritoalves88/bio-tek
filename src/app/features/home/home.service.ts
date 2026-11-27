@@ -55,6 +55,7 @@ export class HomeService {
     arquivoLeitura?: string | null;  // 🆕
     tipo?: string;                    // 🆕
     status?: number;                  // 🆕
+    publico?: boolean;
   }): Observable<any> {
     return this.http.post(this.livroApiUrl, livro).pipe(
       tap(() => this.limparCache())

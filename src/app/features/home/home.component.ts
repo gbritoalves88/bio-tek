@@ -42,6 +42,7 @@ export class HomeComponent implements OnInit {
   topAvaliados: LivroTop[] = [];
   carregando = true;
   bottomSheetAberto = false;
+  publicoSelecionado = true;
   livroSelecionado: LivroTop | LivroLeitura | null = null;
   lendoAgoraAberto = false;
   paginaAtual: number | null = null;
@@ -232,6 +233,7 @@ modalAvaliacaoAberto = false;
 
   abrirBottomSheet(livro: LivroTop | LivroLeitura): void {
     this.livroSelecionado = livro;
+    this.publicoSelecionado = true;
     this.bottomSheetAberto = true;
     this.cdr.markForCheck();
   }
@@ -277,7 +279,8 @@ modalAvaliacaoAberto = false;
     this.homeService.adicionarLivro({
       titulo: livro.titulo,
       autor: livro.autor,
-      imagem: livro.imagem || null
+      imagem: livro.imagem || null,
+      publico: this.publicoSelecionado
     }).subscribe({
       next: () => {
         this.homeService.limparCache();
