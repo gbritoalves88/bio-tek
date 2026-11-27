@@ -157,7 +157,7 @@ export class LivroComponent implements OnInit {
       codigoBarras: this.livroAdicionado.codigoBarras || null,
       tipo: this.tipoSelecionado,
       status: this.statusSelecionado,
-      publico: this.livroAdicionado.publico !== false
+      publico: this.publicoSelecionado
     };
 
     this.livroService.adicionarABiblioteca(dados).subscribe({
